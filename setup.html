@@ -339,18 +339,22 @@
             // Get values from form
             const weatherKey = document.getElementById('weather-key').value.trim();
             const googleClientId = document.getElementById('google-client-id').value.trim();
-            const lat = parseFloat(document.getElementById('location-lat').value) || 40.7128;
-            const lon = parseFloat(document.getElementById('location-lon').value) || -74.0060;
-            const city = document.getElementById('location-city').value.trim() || 'New York';
-            const state = document.getElementById('location-state').value.trim() || 'NY';
+            const lat = parseFloat(document.getElementById('location-lat').value);
+            const lon = parseFloat(document.getElementById('location-lon').value);
+            const city = document.getElementById('location-city').value.trim();
+            const state = document.getElementById('location-state').value.trim();
+            
+            console.log('Saving configuration:', { weatherKey: !!weatherKey, googleClientId: !!googleClientId, lat, lon, city, state });
             
             // Save configuration
             if (weatherKey) config.set('openweather_api_key', weatherKey);
             if (googleClientId) config.set('google_client_id', googleClientId);
-            config.set('location.lat', lat);
-            config.set('location.lon', lon);
-            config.set('location.city', city);
-            config.set('location.state', state);
+            
+            // Save location if values are provided
+            if (!isNaN(lat)) config.set('location.lat', lat);
+            if (!isNaN(lon)) config.set('location.lon', lon);
+            if (city) config.set('location.city', city);
+            if (state) config.set('location.state', state);
             
             updateConfigStatus();
             showStatus('Configuration saved successfully!', 'success');
