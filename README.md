@@ -107,6 +107,22 @@ A responsive personal dashboard application that displays calendar events, weath
    - Use the admin panel at `admin-control-panel.php` for setup
    - Add Google accounts via `add-account.html`
 
+## Deployment Options
+
+### ⚠️ Important: This is a PHP Application
+This dashboard **cannot run on GitHub Pages** (which only serves static HTML). You need a web server with PHP support.
+
+### Recommended Hosting Services
+- **Shared Hosting**: Bluehost, SiteGround, Hostinger (with PHP 7.0+)
+- **VPS/Cloud**: DigitalOcean, Linode, AWS EC2, Google Cloud
+- **Local Development**: XAMPP, WAMP, MAMP, or Docker
+
+### Quick Deploy Steps
+1. **Upload files** to your web server's public directory
+2. **Set permissions**: `chmod 755 tokens/` (create if needed)
+3. **Configure**: Copy `config.example.php` to `config.php` and add your API keys
+4. **Test**: Visit `yourdomain.com/index.php`
+
 ## File Structure
 
 ```
