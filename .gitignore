@@ -1,0 +1,28 @@
+# Sensitive configuration files
+config.php
+
+# Token storage directory
+tokens/
+*.json
+
+# Server logs
+error_log
+access_log
+
+# Temporary files
+*.tmp
+*.log
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

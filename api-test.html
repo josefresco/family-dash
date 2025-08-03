@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Page for iOS 12.5.7</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .test-section { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .result { background: #e8f5e9; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .error { background: #ffebee; color: #c62828; }
+        .button { background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>API Test Page for iOS 12.5.7</h1>
+    <p>This page tests your API endpoints with iOS 12.5.7 compatible JavaScript.</p>
+    
+    <div class="test-section">
+        <h3>1. Calendar API Test</h3>
+        <button class="button" onclick="testCalendar()">Test Calendar API</button>
+        <div id="calendar-result" class="result">Click button to test...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Weather API Test</h3>
+        <button class="button" onclick="testWeather()">Test Weather API</button>
+        <div id="weather-result" class="result">Click button to test...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Tides API Test</h3>
+        <button class="button" onclick="testTides()">Test Tides API</button>
+        <div id="tides-result" class="result">Click button to test...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Sunrise/Sunset API Test</h3>
+        <button class="button" onclick="testSunrise()">Test Sunrise API</button>
+        <div id="sunrise-result" class="result">Click button to test...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Auth Status Test</h3>
+        <button class="button" onclick="testAuth()">Test Auth Status</button>
+        <div id="auth-result" class="result">Click button to test...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Debug Info</h3>
+        <div id="debug-info" class="result"></div>
+    </div>
+
+    <script>
+        // Show debug info immediately
+        document.getElementById('debug-info').textContent = 
+            'User Agent: ' + navigator.userAgent + '\n' +
+            'Current Time: ' + new Date().toString() + '\n' +
+            'Page URL: ' + window.location.href + '\n' +
+            'XMLHttpRequest available: ' + (typeof XMLHttpRequest !== 'undefined') + '\n' +
+            'JSON available: ' + (typeof JSON !== 'undefined');
+
+        function makeRequest(endpoint, resultElementId) {
+            var resultEl = document.getElementById(resultElementId);
+            resultEl.className = 'result loading';
+            resultEl.textContent = 'Loading...';
+            
+            var url = '/ccc/api.php?endpoint=' + endpoint + '&debug=1&v=' + Date.now();
+            
+            console.log('Testing API:', url);
+            
+            var xhr = new XMLHttpRequest();
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    var timestamp = new Date().toLocaleTimeString();
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            resultEl.className = 'result';
+                            resultEl.textContent = '[' + timestamp + '] SUCCESS:\n' + JSON.stringify(data, null, 2);
+                        } catch (e) {
+                            resultEl.className = 'result error';
+                            resultEl.textContent = '[' + timestamp + '] JSON PARSE ERROR:\n' + e.message + '\n\nRaw Response:\n' + xhr.responseText;
+                        }
+                    } else {
+                        resultEl.className = 'result error';
+                        resultEl.textContent = '[' + timestamp + '] HTTP ERROR:\nStatus: ' + xhr.status + ' ' + xhr.statusText + '\nResponse: ' + xhr.responseText;
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] NETWORK ERROR: Could not connect to server';
+            };
+            
+            xhr.ontimeout = function() {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] TIMEOUT ERROR: Request took too long';
+            };
+            
+            try {
+                xhr.open('GET', url, true);
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.setRequestHeader('Cache-Control', 'no-cache');
+                xhr.timeout = 30000;
+                xhr.send();
+            } catch (e) {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] EXCEPTION: ' + e.message;
+            }
+        }
+        
+        function makeAuthRequest(resultElementId) {
+            var resultEl = document.getElementById(resultElementId);
+            resultEl.className = 'result loading';
+            resultEl.textContent = 'Loading...';
+            
+            var url = '/ccc/auth.php?action=status&v=' + Date.now();
+            
+            console.log('Testing Auth:', url);
+            
+            var xhr = new XMLHttpRequest();
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    var timestamp = new Date().toLocaleTimeString();
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            resultEl.className = 'result';
+                            resultEl.textContent = '[' + timestamp + '] SUCCESS:\n' + JSON.stringify(data, null, 2);
+                        } catch (e) {
+                            resultEl.className = 'result error';
+                            resultEl.textContent = '[' + timestamp + '] JSON PARSE ERROR:\n' + e.message + '\n\nRaw Response:\n' + xhr.responseText;
+                        }
+                    } else {
+                        resultEl.className = 'result error';
+                        resultEl.textContent = '[' + timestamp + '] HTTP ERROR:\nStatus: ' + xhr.status + ' ' + xhr.statusText + '\nResponse: ' + xhr.responseText;
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] NETWORK ERROR: Could not connect to server';
+            };
+            
+            xhr.ontimeout = function() {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] TIMEOUT ERROR: Request took too long';
+            };
+            
+            try {
+                xhr.open('GET', url, true);
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.setRequestHeader('Cache-Control', 'no-cache');
+                xhr.timeout = 30000;
+                xhr.send();
+            } catch (e) {
+                resultEl.className = 'result error';
+                resultEl.textContent = '[' + new Date().toLocaleTimeString() + '] EXCEPTION: ' + e.message;
+            }
+        }
+
+        function testCalendar() {
+            makeRequest('calendar', 'calendar-result');
+        }
+
+        function testWeather() {
+            makeRequest('weather', 'weather-result');
+        }
+
+        function testTides() {
+            makeRequest('tides', 'tides-result');
+        }
+
+        function testSunrise() {
+            makeRequest('sunrise-sunset', 'sunrise-result');
+        }
+
+        function testAuth() {
+            makeAuthRequest('auth-result');
+        }
+        
+        // Auto-test calendar on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, auto-testing calendar API...');
+            setTimeout(function() {
+                testCalendar();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
