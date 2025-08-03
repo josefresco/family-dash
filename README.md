@@ -1,6 +1,6 @@
-# Daily Dashboard - Eastham, MA
+# Daily Dashboard - New York, NY
 
-A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information for Eastham, Massachusetts. Designed for room-readable display with large text and optimized for modern iPad viewing.
+A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information for New York, New York. Designed for room-readable display with large text and optimized for modern iPad viewing.
 
 ## Features
 
@@ -20,11 +20,11 @@ A responsive personal dashboard application that displays calendar events, weath
 - **Dynamic favicon** updates based on current weather
 
 ### 🌊 Intelligent Tide Information
-- High and low tide times and heights for Cape Cod area
-- Data from multiple NOAA stations (Chatham, Woods Hole, Cape Cod Canal)
-- Automatic failover between stations for maximum reliability
+- High and low tide times and heights for East Coast area
+- Data from multiple NOAA stations with automatic failover
 - **Smart fallback estimation** when NOAA APIs are unavailable
 - Real-time tide station testing and monitoring
+- Configurable for different coastal locations
 
 ### 🌅 Solar Information
 - Daily sunrise and sunset times

@@ -127,9 +127,9 @@ class APIClient {
     // Tide API - Direct call to NOAA
     async getTideData(date_param = 'today') {
         const stations = [
-            { id: '8447435', name: 'Chatham, MA' },
-            { id: '8446613', name: 'Woods Hole, MA' },
-            { id: '8447173', name: 'Cape Cod Canal, MA' }
+            { id: '8518750', name: 'The Battery, New York' },
+            { id: '8516945', name: 'Kings Point, NY' },
+            { id: '8519483', name: 'Bergen Point West Reach, NY' }
         ];
         
         const now = new Date();
@@ -231,7 +231,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '8.5 ft'
+                    height: '6.2 ft'
                 },
                 {
                     type: 'Low',
@@ -240,7 +240,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '1.2 ft'
+                    height: '0.8 ft'
                 },
                 {
                     type: 'High',
@@ -249,7 +249,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '8.3 ft'
+                    height: '6.1 ft'
                 },
                 {
                     type: 'Low',
@@ -258,7 +258,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '1.4 ft'
+                    height: '0.9 ft'
                 }
             ].filter(tide => {
                 const tideTime = new Date();
@@ -276,7 +276,7 @@ class APIClient {
             }),
             date_requested: date_param,
             source: 'fallback_estimate',
-            station: 'Cape Cod (Estimated)',
+            station: 'New York Harbor (Estimated)',
             note: 'NOAA tide stations unavailable - showing estimated times'
         };
     }
@@ -320,13 +320,13 @@ class APIClient {
             
             throw new Error('Invalid sunrise/sunset API response');
         } catch (error) {
-            // Fallback to approximate times for Eastham, MA
+            // Fallback to approximate times for New York, NY
             return {
-                sunrise: date_param === 'tomorrow' ? '6:45 AM' : '6:44 AM',
-                sunset: date_param === 'tomorrow' ? '7:15 PM' : '7:16 PM',
+                sunrise: date_param === 'tomorrow' ? '6:30 AM' : '6:29 AM',
+                sunset: date_param === 'tomorrow' ? '7:40 PM' : '7:41 PM',
                 date_requested: date_param,
                 source: 'fallback_estimate',
-                note: 'Sunrise/Sunset API unavailable - showing estimated times for Eastham, MA'
+                note: 'Sunrise/Sunset API unavailable - showing estimated times for New York, NY'
             };
         }
     }

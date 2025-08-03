@@ -12,10 +12,10 @@ class DashboardApp {
         this.config = {
             refreshInterval: this.appConfig.get('settings.refresh_interval') || 1800000, // 30 minutes
             location: {
-                city: this.appConfig.get('location.city') || 'Eastham',
-                state: this.appConfig.get('location.state') || 'MA',
-                lat: this.appConfig.get('location.lat') || 41.8354,
-                lon: this.appConfig.get('location.lon') || -69.9789,
+                city: this.appConfig.get('location.city') || 'New York',
+                state: this.appConfig.get('location.state') || 'NY',
+                lat: this.appConfig.get('location.lat') || 40.7128,
+                lon: this.appConfig.get('location.lon') || -74.0060,
                 timezone: this.appConfig.get('settings.timezone') || 'America/New_York'
             },
             // Time threshold for showing tomorrow's data (5:00 PM = 17:00)

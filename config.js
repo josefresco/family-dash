@@ -10,10 +10,10 @@ class AppConfig {
             
             // Location settings
             location: {
-                lat: 41.8354,
-                lon: -69.9789,
-                city: 'Eastham',
-                state: 'MA'
+                lat: 40.7128,
+                lon: -74.0060,
+                city: 'New York',
+                state: 'NY'
             },
             
             // App settings

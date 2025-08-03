@@ -224,7 +224,7 @@
             </div>
             <div class="config-item">
                 <span>Location:</span>
-                <span id="location-status" class="config-status configured">Eastham, MA</span>
+                <span id="location-status" class="config-status configured">New York, NY</span>
             </div>
         </div>
         
@@ -258,23 +258,23 @@
             <div class="location-section">
                 <div class="form-group">
                     <label for="location-lat">Latitude:</label>
-                    <input type="text" id="location-lat" placeholder="41.8354">
+                    <input type="text" id="location-lat" placeholder="40.7128">
                 </div>
                 <div class="form-group">
                     <label for="location-lon">Longitude:</label>
-                    <input type="text" id="location-lon" placeholder="-69.9789">
+                    <input type="text" id="location-lon" placeholder="-74.0060">
                 </div>
                 <div class="form-group">
                     <label for="location-city">City:</label>
-                    <input type="text" id="location-city" placeholder="Eastham">
+                    <input type="text" id="location-city" placeholder="New York">
                 </div>
                 <div class="form-group">
                     <label for="location-state">State:</label>
-                    <input type="text" id="location-state" placeholder="MA">
+                    <input type="text" id="location-state" placeholder="NY">
                 </div>
             </div>
             <div class="help-text">
-                Default location is Eastham, MA. Update these coordinates for your location.
+                Default location is New York, NY. Update these coordinates for your location.
                 Find coordinates at <a href="https://www.latlong.net/" target="_blank">LatLong.net</a>.
             </div>
         </div>
@@ -303,10 +303,10 @@
             // Load values into form
             document.getElementById('weather-key').value = config.get('openweather_api_key') || '';
             document.getElementById('google-client-id').value = config.get('google_client_id') || '';
-            document.getElementById('location-lat').value = config.get('location.lat') || '41.8354';
-            document.getElementById('location-lon').value = config.get('location.lon') || '-69.9789';
-            document.getElementById('location-city').value = config.get('location.city') || 'Eastham';
-            document.getElementById('location-state').value = config.get('location.state') || 'MA';
+            document.getElementById('location-lat').value = config.get('location.lat') || '40.7128';
+            document.getElementById('location-lon').value = config.get('location.lon') || '-74.0060';
+            document.getElementById('location-city').value = config.get('location.city') || 'New York';
+            document.getElementById('location-state').value = config.get('location.state') || 'NY';
             
             updateConfigStatus();
         }
@@ -338,10 +338,10 @@
             // Get values from form
             const weatherKey = document.getElementById('weather-key').value.trim();
             const googleClientId = document.getElementById('google-client-id').value.trim();
-            const lat = parseFloat(document.getElementById('location-lat').value) || 41.8354;
-            const lon = parseFloat(document.getElementById('location-lon').value) || -69.9789;
-            const city = document.getElementById('location-city').value.trim() || 'Eastham';
-            const state = document.getElementById('location-state').value.trim() || 'MA';
+            const lat = parseFloat(document.getElementById('location-lat').value) || 40.7128;
+            const lon = parseFloat(document.getElementById('location-lon').value) || -74.0060;
+            const city = document.getElementById('location-city').value.trim() || 'New York';
+            const state = document.getElementById('location-state').value.trim() || 'NY';
             
             // Save configuration
             if (weatherKey) config.set('openweather_api_key', weatherKey);
