@@ -395,7 +395,8 @@
         function goToDashboard() {
             const config = window.dashboardConfig;
             if (config.isConfigured()) {
-                window.location.href = 'index.php';
+                // Force cache bust and redirect to dashboard.html
+                window.location.href = 'dashboard.html?t=' + Date.now();
             } else {
                 showStatus('Please configure all required API keys first', 'error');
             }

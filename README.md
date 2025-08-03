@@ -1,6 +1,6 @@
 # Daily Dashboard - New York, NY
 
-A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information for New York, New York. Designed for room-readable display with large text and optimized for modern iPad viewing.
+A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information for New York, New York. Built with modern HTML5, JavaScript, and CSS for GitHub Pages deployment. Designed for room-readable display with large text and optimized for modern iPad viewing.
 
 ## Features
 
@@ -68,25 +68,17 @@ A responsive personal dashboard application that displays calendar events, weath
 
 ## Quick Start
 
-1. **Set up the environment**
+1. **Deploy to GitHub Pages**
    ```bash
-   # Upload files to your web server
-   # Ensure PHP 7.0+ support
-   # Create tokens directory with write permissions
-   mkdir tokens
-   chmod 755 tokens
+   # Fork or clone this repository
+   # Enable GitHub Pages in repository settings
+   # Set source to main branch
    ```
 
 2. **Configure the application**
-   ```bash
-   # Copy the example configuration file
-   cp config.example.php config.php
-   ```
-   
-   Edit `config.php` and update:
-   - **Google OAuth2 credentials** (client ID, client secret, redirect URI)
-   - **OpenWeatherMap API key**
-   - **Location coordinates** (if different from Eastham, MA)
+   - Navigate to your deployed site (e.g., `username.github.io/daily-dashboard`)
+   - Click "Setup Configuration" on the welcome screen
+   - Enter your API credentials in the setup form
 
 3. **Get API credentials**
    
@@ -95,159 +87,140 @@ A responsive personal dashboard application that displays calendar events, weath
    - Create a new project or select existing
    - Enable Google Calendar API
    - Create OAuth2 credentials (Web application)
-   - Add your domain to authorized redirect URIs
+   - Add your GitHub Pages domain to authorized origins
    
    **OpenWeatherMap API:**
    - Sign up at [OpenWeatherMap](https://openweathermap.org/api)
    - Get your free API key
-   - Add it to `config.php`
+   - Enter it in the setup form
 
 4. **Access the dashboard**
-   - Navigate to `index.php` in your browser
-   - Use the admin panel at `admin-control-panel.php` for setup
-   - Add Google accounts via `add-account.html`
+   - Complete the setup form with your API keys
+   - Click "Go to Dashboard" to view your personal dashboard
+   - Use the Setup link in the dashboard to modify configuration
 
 ## Deployment Options
 
-### ⚠️ Important: This is a PHP Application
-This dashboard **cannot run on GitHub Pages** (which only serves static HTML). You need a web server with PHP support.
+### ✅ GitHub Pages Ready
+This dashboard is built with modern HTML5, JavaScript, and CSS - **perfect for GitHub Pages deployment**!
 
-### Recommended Hosting Services
-- **Shared Hosting**: Bluehost, SiteGround, Hostinger (with PHP 7.0+)
-- **VPS/Cloud**: DigitalOcean, Linode, AWS EC2, Google Cloud
-- **Local Development**: XAMPP, WAMP, MAMP, or Docker
+### Deployment Options
+- **GitHub Pages**: Free hosting with automatic HTTPS
+- **Netlify**: Free tier with form handling and custom domains
+- **Vercel**: Free deployment with global CDN
+- **Any static hosting service**
 
-### Quick Deploy Steps
-1. **Upload files** to your web server's public directory
-2. **Set permissions**: `chmod 755 tokens/` (create if needed)
-3. **Configure**: Copy `config.example.php` to `config.php` and add your API keys
-4. **Test**: Visit `yourdomain.com/index.php`
+### GitHub Pages Setup
+1. **Fork this repository** to your GitHub account
+2. **Enable GitHub Pages** in repository settings
+3. **Set source** to main branch
+4. **Visit your site** at `username.github.io/repository-name`
+5. **Configure APIs** using the setup interface
 
 ## File Structure
 
 ```
 dashboard/
-├── index.php                    # Main dashboard interface
-├── app.js                      # Modern JavaScript application
-├── api.php                     # Backend API endpoints
-├── auth.php                    # Authentication management
-├── config.example.php          # Configuration template
-├── config.php                  # User configuration (gitignored)
-├── oauth-multi-config.php      # OAuth2 configuration handler
-├── oauth-multi-callback.php    # OAuth2 callback handler
-├── manifest.json               # PWA manifest
-├── sw.js                       # Service worker
-├── admin-control-panel.php     # Admin dashboard
-├── token-diagnostic.php        # Token analysis tools
-├── calendar-debug-detailed.php # Calendar debugging
-├── tide-test.html              # Tide API testing
-├── cache-buster.html           # Cache management
-├── add-account.html            # Account addition interface
-├── api-test.html               # API endpoint testing
-├── clear-sessions.php          # Session cleanup
-└── tokens/                     # OAuth2 token storage (gitignored)
-    └── *.json                  # Individual account tokens
+├── index.html                  # Smart entry point with config detection
+├── dashboard.html              # Main dashboard interface
+├── setup.html                  # API configuration interface
+├── config.js                   # Configuration management
+├── api-client.js              # Direct API calls to external services
+├── auth-client.js             # Browser-based Google OAuth
+├── app-client.js              # Main application logic
+├── manifest.json              # PWA manifest
+├── .gitignore                 # Git ignore rules
+└── README.md                  # Documentation
 ```
 
-## New in Version 2.0
+## New in Version 3.0 - GitHub Pages Edition
 
-### Breaking Changes
-- **Minimum iOS version increased to 15.7.3**
-- Removed legacy iOS 12.5.7 compatibility code
-- Unified JavaScript into single `app.js` file (no more `app-legacy.js`)
+### Major Changes
+- **Converted from PHP to pure HTML/JavaScript** for GitHub Pages compatibility
+- **Client-side API integration** with direct calls to external services
+- **Browser-based Google OAuth** using Google's JavaScript library
+- **LocalStorage configuration** replacing server-side config files
 
 ### New Features
-- **Weather-responsive UI** with dynamic color schemes
-- **Enhanced admin control panel** with real-time monitoring
-- **Comprehensive diagnostic tools** for all APIs
-- **Request cancellation** with AbortController
-- **Improved error handling** with Promise.allSettled
-- **Modern code organization** with ES2015+ features
+- **GitHub Pages deployment ready** - no server required
+- **User-friendly setup interface** for API configuration
+- **Smart configuration detection** with automatic redirects
+- **Enhanced error handling** for API failures
+- **Modern ES2015+ JavaScript** with async/await patterns
 
-### Performance Improvements
-- **25-40% faster execution** with native ES2015+ features
-- **Reduced memory usage** without polyfills
-- **Better garbage collection** with modern patterns
-- **Enhanced security** with modern browser APIs
+### Security & Storage
+- **No server-side credential storage** - all config in browser
+- **Secure token management** with automatic refresh
+- **CORS-compliant API calls** to external services
+- **Git-safe repository** with no hard-coded secrets
 
-## API Endpoints
+## External API Integration
 
-The dashboard connects to several APIs to gather data:
+The dashboard connects directly to external APIs from the browser:
 
-### Calendar API
-- **Endpoint**: `/api.php?endpoint=calendar&date={today|tomorrow}`
-- **Function**: Retrieves events from connected Google Calendar accounts
-- **Features**: Multi-account support, automatic token refresh
+### Google Calendar API
+- **Service**: Google Calendar API via JavaScript SDK
+- **Function**: Retrieves events from connected Google accounts
+- **Features**: Multi-account OAuth, automatic token refresh, browser-based authentication
 
-### Weather API
-- **Endpoint**: `/api.php?endpoint=weather&date={today|tomorrow}`
-- **Function**: Current conditions and hourly forecasts from OpenWeatherMap
-- **Features**: Weather-responsive UI, dynamic color schemes
+### OpenWeatherMap API
+- **Endpoint**: `https://api.openweathermap.org/data/2.5/forecast`
+- **Function**: Current conditions and hourly forecasts
+- **Features**: Weather-responsive UI, dynamic color schemes, CORS-enabled
 
-### Tides API  
-- **Endpoint**: `/api.php?endpoint=tides&date={today|tomorrow}`
-- **Function**: Tide data from NOAA stations (Chatham, Woods Hole, Cape Cod Canal)
-- **Features**: Automatic station failover, fallback estimation
+### NOAA Tides API
+- **Endpoint**: `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter`
+- **Function**: Tide data from multiple East Coast stations
+- **Features**: Automatic station failover, fallback estimation, New York Harbor focus
 
-### Sunrise/Sunset API
-- **Endpoint**: `/api.php?endpoint=sunrise-sunset&date={today|tomorrow}`
+### Sunrise-Sunset API
+- **Endpoint**: `https://api.sunrise-sunset.org/json`
 - **Function**: Solar data with timezone handling
-- **Features**: Eastern Time conversion, weather theme integration
+- **Features**: Automatic timezone conversion, weather theme integration
 
 ## Configuration
 
-The application uses a centralized configuration file (`config.php`) for all credentials and settings.
+The application uses browser-based LocalStorage for secure configuration management.
 
 ### Setup Configuration
-1. Copy `config.example.php` to `config.php`
-2. Edit `config.php` with your credentials:
+1. Navigate to your deployed dashboard
+2. Click "Setup Configuration" on the welcome screen
+3. Enter your API credentials in the setup form:
 
-```php
-return [
-    // OpenWeatherMap API Key
-    'openweather_api_key' => 'your_api_key_here',
-    
-    // Google OAuth2 Credentials
-    'google_oauth' => [
-        'client_id' => 'your_client_id_here',
-        'client_secret' => 'your_client_secret_here',
-        'redirect_uri' => 'https://yourdomain.com/path/oauth-multi-callback.php'
-    ],
-    
-    // Location Settings (optional - defaults to Eastham, MA)
-    'location' => [
-        'lat' => 41.8354,
-        'lon' => -69.9789,
-        'city' => 'Your City',
-        'state' => 'ST'
-    ]
-];
-```
+**Required:**
+- **OpenWeatherMap API Key**: Get from [OpenWeatherMap](https://openweathermap.org/api)
+- **Google Client ID**: Get from [Google Cloud Console](https://console.cloud.google.com/)
+
+**Optional:**
+- **Location coordinates**: Defaults to New York, NY (40.7128, -74.0060)
 
 ### Security
-- `config.php` is automatically ignored by git
-- Never commit credentials to version control
-- Use environment variables in production if preferred
+- All configuration stored in browser LocalStorage
+- No server-side credential storage required
+- Credentials never leave your browser
+- Git repository contains no secrets
 
-## Administrative Tools
+## Configuration Management
 
-Access comprehensive management tools:
-- **Admin Panel**: `admin-control-panel.php` - Real-time monitoring
-- **Token Diagnostics**: `token-diagnostic.php` - OAuth2 troubleshooting  
-- **API Testing**: `api-test.html` - Endpoint verification
-- **Tide Testing**: `tide-test.html` - NOAA station monitoring
-- **Cache Management**: `cache-buster.html` - Browser cache clearing
+Access configuration tools:
+- **Setup Interface**: `setup.html` - API key configuration and testing
+- **Dashboard Settings**: Available via "Setup" link in dashboard header
+- **Browser DevTools**: Use console for debugging API calls and errors
+- **LocalStorage Management**: Clear browser data to reset configuration
 
 ## Troubleshooting
 
 ### Common Issues
-- **No calendar events**: Check OAuth2 setup in admin panel
-- **Weather not loading**: Verify OpenWeatherMap API key in `api.php`
-- **Tide data missing**: Use tide test tool to check NOAA stations
-- **Layout issues**: Clear browser cache, especially on iOS Safari
+- **No calendar events**: Check Google OAuth setup and permissions in browser console
+- **Weather not loading**: Verify OpenWeatherMap API key in setup interface
+- **Tide data missing**: NOAA stations may be temporarily unavailable (fallback data will show)
+- **Configuration lost**: Check browser LocalStorage and re-run setup if needed
+- **CORS errors**: Ensure APIs support cross-origin requests (all integrated APIs do)
 
 ### Debug Tools
-Use the built-in diagnostic tools accessible from the admin panel for detailed troubleshooting of authentication, API connectivity, and performance issues.
+- **Browser Console**: Check for JavaScript errors and API response details
+- **Setup Interface**: Test API credentials before saving configuration
+- **Network Tab**: Monitor API calls and responses in browser DevTools
 
 ## License
 
