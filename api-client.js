@@ -90,7 +90,16 @@ class APIClient {
     }
     
     processCurrentWeatherWithForecast(currentData, forecastData, date_param) {
+        console.log('Processing current weather data:', currentData);
+        console.log('Processing forecast data:', forecastData);
+        
         if (!currentData?.main || !currentData?.weather?.length) {
+            console.error('Invalid weather data structure:', {
+                hasMain: !!currentData?.main,
+                hasWeather: !!currentData?.weather,
+                weatherLength: currentData?.weather?.length,
+                currentData
+            });
             throw new Error('Invalid current weather data received');
         }
         
@@ -198,17 +207,20 @@ class APIClient {
             { id: '8519483', name: 'Bergen Point West Reach, NY' }
         ];
         
-        const now = new Date();
-        const targetDate = date_param === 'tomorrow'
-            ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
-            : now;
-        
-        const dateStr = targetDate.toISOString().split('T')[0].replace(/-/g, '');
+        // NOAA API only supports 'today' for current day, use different approach for tomorrow
+        let noaaDateParam;
+        if (date_param === 'today') {
+            noaaDateParam = 'today';
+        } else {
+            // For tomorrow, we'll get today's data and use fallback
+            console.log('NOAA API does not support future dates, using fallback for tomorrow');
+            return this.getFallbackTideData(date_param);
+        }
         
         // Try each station until one works
         for (const station of stations) {
             try {
-                const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=${dateStr}&station=${station.id}&product=predictions&datum=mllw&units=english&time_zone=lst_ldt&format=json`;
+                const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=${noaaDateParam}&station=${station.id}&product=predictions&datum=mllw&units=english&time_zone=lst_ldt&format=json`;
                 
                 const data = await this.makeRequest(url);
                 

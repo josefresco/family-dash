@@ -808,18 +808,41 @@
         
         // Initialize dashboard when all scripts are loaded
         window.addEventListener('load', function() {
+            console.log('=== DASHBOARD.HTML INITIALIZATION ===');
+            
             // Check configuration
             const config = window.dashboardConfig;
-            if (!config.isConfigured()) {
+            console.log('Config object:', config);
+            console.log('Config isConfigured:', config?.isConfigured());
+            
+            if (!config) {
+                console.error('dashboardConfig not available');
                 window.location.href = 'index.html';
                 return;
             }
             
+            if (!config.isConfigured()) {
+                console.warn('Configuration not complete, redirecting to index.html');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            console.log('Configuration validated, creating API clients...');
+            
             // Initialize API clients
-            window.apiClient = new APIClient(config);
-            window.googleAuthClient = new GoogleAuthClient(config);
+            try {
+                window.apiClient = new APIClient(config);
+                window.googleAuthClient = new GoogleAuthClient(config);
+                console.log('API clients created successfully');
+                console.log('window.apiClient:', window.apiClient);
+                console.log('window.googleAuthClient:', window.googleAuthClient);
+            } catch (error) {
+                console.error('Failed to create API clients:', error);
+                return;
+            }
             
             // Initialize dashboard
+            console.log('Creating dashboard app...');
             const dashboard = new DashboardApp();
             window.dashboard = dashboard; // Make globally available for button clicks
             dashboard.init();
