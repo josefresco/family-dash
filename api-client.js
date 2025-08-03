@@ -223,11 +223,29 @@ class APIClient {
     
     // Tide API - Direct call to NOAA
     async getTideData(date_param = 'today') {
-        const stations = [
-            { id: '8518750', name: 'The Battery, New York' },
-            { id: '8516945', name: 'Kings Point, NY' },
-            { id: '8519483', name: 'Bergen Point West Reach, NY' }
-        ];
+        // Get user's location to determine appropriate tide stations
+        const userCity = this.config.get('location.city') || 'New York';
+        const userState = this.config.get('location.state') || 'NY';
+        const userLat = this.config.get('location.lat') || 40.7128;
+        
+        let stations;
+        
+        // Determine stations based on location
+        if (userCity.toLowerCase().includes('eastham') || userState === 'MA' || userLat > 41.0) {
+            // Cape Cod / Massachusetts stations
+            stations = [
+                { id: '8447930', name: 'Woods Hole, MA' },
+                { id: '8449130', name: 'Nantucket Island, MA' },
+                { id: '8447386', name: 'Chatham, MA' }
+            ];
+        } else {
+            // New York area stations (default)
+            stations = [
+                { id: '8518750', name: 'The Battery, New York' },
+                { id: '8516945', name: 'Kings Point, NY' },
+                { id: '8519483', name: 'Bergen Point West Reach, NY' }
+            ];
+        }
         
         // NOAA API only supports 'today' for current day, use different approach for tomorrow
         let noaaDateParam;
@@ -309,7 +327,14 @@ class APIClient {
     }
     
     getFallbackTideData(date_param) {
-        // Simple fallback based on typical Cape Cod tide patterns
+        // Get user location for appropriate fallback station name
+        const userCity = this.config.get('location.city') || 'New York';
+        const userState = this.config.get('location.state') || 'NY';
+        
+        const isCapeCod = userCity.toLowerCase().includes('eastham') || userState === 'MA';
+        const stationName = isCapeCod ? 'Cape Cod Bay (Estimated)' : 'New York Harbor (Estimated)';
+        
+        // Simple fallback based on typical tide patterns
         const now = new Date();
         const baseOffset = date_param === 'tomorrow' ? 24 * 60 * 60 * 1000 : 0;
         
@@ -322,6 +347,11 @@ class APIClient {
         const highTide2 = new Date(highTide1.getTime() + cycle);
         const lowTide2 = new Date(lowTide1.getTime() + cycle);
         
+        // Adjust tide heights based on location
+        const tideHeights = isCapeCod 
+            ? { high1: '9.8 ft', low1: '0.2 ft', high2: '9.6 ft', low2: '0.4 ft' }
+            : { high1: '6.2 ft', low1: '0.8 ft', high2: '6.1 ft', low2: '0.9 ft' };
+        
         return {
             tides: [
                 {
@@ -331,7 +361,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '6.2 ft'
+                    height: tideHeights.high1
                 },
                 {
                     type: 'Low',
@@ -340,7 +370,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '0.8 ft'
+                    height: tideHeights.low1
                 },
                 {
                     type: 'High',
@@ -349,7 +379,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '6.1 ft'
+                    height: tideHeights.high2
                 },
                 {
                     type: 'Low',
@@ -358,7 +388,7 @@ class APIClient {
                         minute: '2-digit',
                         hour12: true
                     }),
-                    height: '0.9 ft'
+                    height: tideHeights.low2
                 }
             ].filter(tide => {
                 const tideTime = new Date();
@@ -376,7 +406,7 @@ class APIClient {
             }),
             date_requested: date_param,
             source: 'fallback_estimate',
-            station: 'New York Harbor (Estimated)',
+            station: stationName,
             note: 'NOAA tide stations unavailable - showing estimated times'
         };
     }
