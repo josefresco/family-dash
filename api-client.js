@@ -19,7 +19,8 @@ class APIClient {
     }
     
     async makeRequest(url, options = {}) {
-        const signal = this.cancelRequests();
+        // Use the signal provided in options, or create a new one for this request
+        const signal = options.signal || new AbortController().signal;
         
         try {
             console.log('API Request:', url.replace(/appid=[^&]*/, 'appid=[API_KEY]'));
@@ -75,7 +76,7 @@ class APIClient {
                 // Use current weather API for today
                 const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
                 console.log('Requesting current weather...');
-                const currentData = await this.makeRequest(currentUrl);
+                const currentData = await this.makeRequest(currentUrl, {});
                 
                 if (!currentData) {
                     console.error('Current weather request returned null - likely cancelled or failed');
@@ -85,7 +86,7 @@ class APIClient {
                 // Also get forecast for hourly data
                 const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
                 console.log('Requesting forecast data...');
-                const forecastData = await this.makeRequest(forecastUrl);
+                const forecastData = await this.makeRequest(forecastUrl, {});
                 
                 if (!forecastData) {
                     console.warn('Forecast request returned null, continuing with current data only');
@@ -96,7 +97,7 @@ class APIClient {
                 // Use forecast API for tomorrow
                 const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
                 console.log('Requesting forecast for tomorrow...');
-                const data = await this.makeRequest(url);
+                const data = await this.makeRequest(url, {});
                 
                 if (!data) {
                     throw new Error('Weather forecast request was cancelled or failed');
