@@ -291,6 +291,7 @@
     </div>
     
     <script src="config.js"></script>
+    <script src="api-client.js"></script>
     <script>
         // Load current configuration on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -366,20 +367,62 @@
             
             try {
                 showStatus('Testing APIs...', 'info');
+                console.log('=== API TEST START ===');
+                console.log('Config:', {
+                    weatherKey: weatherKey ? `${weatherKey.substring(0, 8)}...` : 'missing',
+                    lat: config.get('location.lat'),
+                    lon: config.get('location.lon'),
+                    city: config.get('location.city'),
+                    state: config.get('location.state')
+                });
                 
-                // Test weather API
+                // Test weather API (current weather - same as setup)
                 const lat = config.get('location.lat');
                 const lon = config.get('location.lon');
                 const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=imperial`;
                 
+                console.log('Testing current weather API:', weatherUrl.replace(weatherKey, '[API_KEY]'));
+                
                 const response = await fetch(weatherUrl);
+                console.log('Weather API Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Weather API Data:', data);
                     showStatus(`API test successful! Current weather: ${Math.round(data.main.temp)}°F, ${data.weather[0].description}`, 'success');
                 } else {
-                    showStatus('Weather API test failed. Check your API key.', 'error');
+                    const errorText = await response.text();
+                    console.error('Weather API Error Response:', errorText);
+                    showStatus(`Weather API test failed (${response.status}): ${response.statusText}`, 'error');
                 }
+                
+                // Test what dashboard will use
+                console.log('--- Testing Dashboard API Client ---');
+                try {
+                    if (window.APIClient) {
+                        const apiClient = new APIClient(config);
+                        console.log('API Client created successfully');
+                        
+                        const dashboardData = await apiClient.getWeatherData('today');
+                        console.log('Dashboard Weather Data:', dashboardData);
+                        showStatus(`Dashboard API also works! Temp: ${dashboardData.temperature}°F`, 'success');
+                    } else {
+                        console.warn('APIClient not available for testing');
+                    }
+                } catch (dashError) {
+                    console.error('Dashboard API test failed:', dashError);
+                    showStatus(`Dashboard API failed: ${dashError.message}`, 'error');
+                }
+                
+                console.log('=== API TEST END ===');
+                
             } catch (error) {
+                console.error('API test failed:', error);
                 showStatus(`API test failed: ${error.message}`, 'error');
             }
         }

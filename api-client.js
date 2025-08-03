@@ -20,6 +20,7 @@ class APIClient {
         const signal = this.cancelRequests();
         
         try {
+            console.log('API Request:', url.replace(/appid=[^&]*/, 'appid=[API_KEY]'));
             const response = await fetch(url, {
                 ...options,
                 signal,
@@ -29,16 +30,28 @@ class APIClient {
                 }
             });
             
+            console.log('API Response:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok,
+                url: response.url.replace(/appid=[^&]*/, 'appid=[API_KEY]')
+            });
+            
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Response Body:', errorText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            return await response.json();
+            const data = await response.json();
+            console.log('API Response Data:', data);
+            return data;
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Request cancelled');
                 return null;
             }
+            console.error('API Request failed:', error);
             throw error;
         }
     }

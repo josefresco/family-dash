@@ -353,16 +353,36 @@ class DashboardApp {
         const weatherDiv = document.getElementById('current-weather');
         
         try {
+            console.log('=== DASHBOARD WEATHER LOADING ===');
+            console.log('Display mode:', this.displayMode);
+            console.log('API Client:', this.apiClient);
+            console.log('Config object:', this.appConfig);
+            console.log('Weather API key configured:', !!this.appConfig.get('openweather_api_key'));
+            console.log('Location:', {
+                lat: this.appConfig.get('location.lat'),
+                lon: this.appConfig.get('location.lon'),
+                city: this.appConfig.get('location.city')
+            });
+            
             const timeContext = this.displayMode === 'tomorrow' ? 'tomorrow\'s' : 'today\'s';
             weatherDiv.innerHTML = this.getLoadingHTML(`Loading ${timeContext} weather forecast...`);
             
+            console.log('Making API request for weather...');
             const data = await this.makeApiRequest('weather');
-            if (!data) return; // Request was cancelled
+            console.log('Weather API response:', data);
             
+            if (!data) {
+                console.log('Request was cancelled');
+                return; // Request was cancelled
+            }
+            
+            console.log('Rendering weather data...');
             this.renderWeatherData(data);
+            console.log('Weather data rendered successfully');
         } catch (error) {
             console.error('Failed to load weather data:', error);
-            weatherDiv.innerHTML = this.getErrorHTML('Failed to load weather data');
+            console.error('Error stack:', error.stack);
+            weatherDiv.innerHTML = this.getErrorHTML('Failed to load weather data: ' + error.message);
         }
     }
 
