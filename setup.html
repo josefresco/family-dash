@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Setup - API Configuration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .setup-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .setup-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .setup-section h3::before {
+            content: '🔑';
+            margin-right: 10px;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        
+        .help-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px 5px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .button-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .current-config {
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .current-config h4 {
+            color: #2d5016;
+            margin-bottom: 10px;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #d5e5d5;
+        }
+        
+        .config-item:last-child {
+            border-bottom: none;
+        }
+        
+        .config-status {
+            font-weight: bold;
+        }
+        
+        .config-status.configured {
+            color: #28a745;
+        }
+        
+        .config-status.missing {
+            color: #dc3545;
+        }
+        
+        .location-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .location-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Dashboard Setup</h1>
+        <p class="subtitle">Configure your API keys to enable all dashboard features</p>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="current-config">
+            <h4>Current Configuration Status</h4>
+            <div class="config-item">
+                <span>OpenWeatherMap API Key:</span>
+                <span id="weather-status" class="config-status missing">Not Configured</span>
+            </div>
+            <div class="config-item">
+                <span>Google Client ID:</span>
+                <span id="google-status" class="config-status missing">Not Configured</span>
+            </div>
+            <div class="config-item">
+                <span>Location:</span>
+                <span id="location-status" class="config-status configured">Eastham, MA</span>
+            </div>
+        </div>
+        
+        <div class="setup-section">
+            <h3>OpenWeatherMap API</h3>
+            <div class="form-group">
+                <label for="weather-key">API Key:</label>
+                <input type="password" id="weather-key" placeholder="Enter your OpenWeatherMap API key">
+                <div class="help-text">
+                    Get your free API key from <a href="https://openweathermap.org/api" target="_blank">OpenWeatherMap</a>. 
+                    Sign up, verify your email, and copy the API key from your account dashboard.
+                </div>
+            </div>
+        </div>
+        
+        <div class="setup-section">
+            <h3>Google Calendar API</h3>
+            <div class="form-group">
+                <label for="google-client-id">Client ID:</label>
+                <input type="text" id="google-client-id" placeholder="Enter your Google Client ID">
+                <div class="help-text">
+                    Get your credentials from <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a>. 
+                    Create a project, enable Calendar API, create OAuth2 credentials, and copy the Client ID.
+                    <br><strong>Important:</strong> Add your domain to authorized origins in Google Cloud Console.
+                </div>
+            </div>
+        </div>
+        
+        <div class="setup-section">
+            <h3>Location Settings (Optional)</h3>
+            <div class="location-section">
+                <div class="form-group">
+                    <label for="location-lat">Latitude:</label>
+                    <input type="text" id="location-lat" placeholder="41.8354">
+                </div>
+                <div class="form-group">
+                    <label for="location-lon">Longitude:</label>
+                    <input type="text" id="location-lon" placeholder="-69.9789">
+                </div>
+                <div class="form-group">
+                    <label for="location-city">City:</label>
+                    <input type="text" id="location-city" placeholder="Eastham">
+                </div>
+                <div class="form-group">
+                    <label for="location-state">State:</label>
+                    <input type="text" id="location-state" placeholder="MA">
+                </div>
+            </div>
+            <div class="help-text">
+                Default location is Eastham, MA. Update these coordinates for your location.
+                Find coordinates at <a href="https://www.latlong.net/" target="_blank">LatLong.net</a>.
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="button" onclick="saveConfiguration()">Save Configuration</button>
+            <button class="button button-secondary" onclick="testConfiguration()">Test APIs</button>
+            <button class="button button-secondary" onclick="clearConfiguration()">Clear All</button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="button" onclick="goToDashboard()" id="dashboard-btn" disabled>Go to Dashboard</button>
+        </div>
+    </div>
+    
+    <script src="config.js"></script>
+    <script>
+        // Load current configuration on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentConfig();
+        });
+        
+        function loadCurrentConfig() {
+            const config = window.dashboardConfig;
+            
+            // Load values into form
+            document.getElementById('weather-key').value = config.get('openweather_api_key') || '';
+            document.getElementById('google-client-id').value = config.get('google_client_id') || '';
+            document.getElementById('location-lat').value = config.get('location.lat') || '41.8354';
+            document.getElementById('location-lon').value = config.get('location.lon') || '-69.9789';
+            document.getElementById('location-city').value = config.get('location.city') || 'Eastham';
+            document.getElementById('location-state').value = config.get('location.state') || 'MA';
+            
+            updateConfigStatus();
+        }
+        
+        function updateConfigStatus() {
+            const config = window.dashboardConfig;
+            
+            // Update status indicators
+            const weatherKey = config.get('openweather_api_key');
+            const googleClientId = config.get('google_client_id');
+            
+            document.getElementById('weather-status').textContent = weatherKey ? 'Configured' : 'Not Configured';
+            document.getElementById('weather-status').className = 'config-status ' + (weatherKey ? 'configured' : 'missing');
+            
+            document.getElementById('google-status').textContent = googleClientId ? 'Configured' : 'Not Configured';
+            document.getElementById('google-status').className = 'config-status ' + (googleClientId ? 'configured' : 'missing');
+            
+            const city = config.get('location.city');
+            const state = config.get('location.state');
+            document.getElementById('location-status').textContent = `${city}, ${state}`;
+            
+            // Enable dashboard button if both APIs are configured
+            document.getElementById('dashboard-btn').disabled = !(weatherKey && googleClientId);
+        }
+        
+        function saveConfiguration() {
+            const config = window.dashboardConfig;
+            
+            // Get values from form
+            const weatherKey = document.getElementById('weather-key').value.trim();
+            const googleClientId = document.getElementById('google-client-id').value.trim();
+            const lat = parseFloat(document.getElementById('location-lat').value) || 41.8354;
+            const lon = parseFloat(document.getElementById('location-lon').value) || -69.9789;
+            const city = document.getElementById('location-city').value.trim() || 'Eastham';
+            const state = document.getElementById('location-state').value.trim() || 'MA';
+            
+            // Save configuration
+            if (weatherKey) config.set('openweather_api_key', weatherKey);
+            if (googleClientId) config.set('google_client_id', googleClientId);
+            config.set('location.lat', lat);
+            config.set('location.lon', lon);
+            config.set('location.city', city);
+            config.set('location.state', state);
+            
+            updateConfigStatus();
+            showStatus('Configuration saved successfully!', 'success');
+        }
+        
+        async function testConfiguration() {
+            const config = window.dashboardConfig;
+            const weatherKey = config.get('openweather_api_key');
+            
+            if (!weatherKey) {
+                showStatus('Please configure OpenWeatherMap API key first', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Testing APIs...', 'info');
+                
+                // Test weather API
+                const lat = config.get('location.lat');
+                const lon = config.get('location.lon');
+                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=imperial`;
+                
+                const response = await fetch(weatherUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`API test successful! Current weather: ${Math.round(data.main.temp)}°F, ${data.weather[0].description}`, 'success');
+                } else {
+                    showStatus('Weather API test failed. Check your API key.', 'error');
+                }
+            } catch (error) {
+                showStatus(`API test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearConfiguration() {
+            if (confirm('Are you sure you want to clear all configuration? This cannot be undone.')) {
+                localStorage.removeItem('dashboard-config');
+                localStorage.removeItem('dashboard-google-tokens');
+                location.reload();
+            }
+        }
+        
+        function goToDashboard() {
+            const config = window.dashboardConfig;
+            if (config.isConfigured()) {
+                window.location.href = 'index.php';
+            } else {
+                showStatus('Please configure all required API keys first', 'error');
+            }
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

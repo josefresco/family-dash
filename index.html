@@ -3,198 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Dashboard - Deployment Required</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
+    <title>Daily Dashboard - Eastham, MA</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            margin: 0;
+            padding: 20px;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
         
-        .container {
+        .setup-prompt {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 800px;
             text-align: center;
+            max-width: 500px;
         }
         
-        .logo {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        h1 {
+        .setup-prompt h1 {
             color: #2c3e50;
             margin-bottom: 20px;
             font-size: 2.5rem;
         }
         
-        .subtitle {
+        .setup-prompt p {
             color: #7f8c8d;
-            font-size: 1.2rem;
             margin-bottom: 30px;
-        }
-        
-        .alert {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
-        }
-        
-        .alert h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-        
-        .alert p {
-            color: #856404;
             line-height: 1.6;
         }
         
-        .features {
-            text-align: left;
-            margin: 30px 0;
-        }
-        
-        .features h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .features ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        
-        .features li {
-            padding: 8px 0;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        
-        .features li:before {
-            content: "✅ ";
-            margin-right: 10px;
-        }
-        
-        .deployment {
-            background: #e8f5e8;
-            border: 1px solid #c3e6c3;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
-        }
-        
-        .deployment h3 {
-            color: #2d5016;
-            margin-bottom: 15px;
-        }
-        
-        .deployment ol {
-            color: #2d5016;
-            line-height: 1.8;
-            padding-left: 20px;
-        }
-        
-        .deployment code {
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        }
-        
-        .buttons {
-            margin-top: 30px;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            margin: 0 10px;
+        .button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            text-decoration: none;
+            border: none;
+            padding: 15px 30px;
             border-radius: 25px;
+            font-size: 16px;
             font-weight: 600;
+            cursor: pointer;
             transition: transform 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
         }
         
-        .btn:hover {
+        .button:hover {
             transform: translateY(-2px);
         }
         
-        .btn-secondary {
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">📊</div>
-        <h1>Daily Dashboard</h1>
-        <p class="subtitle">Personal Dashboard for Eastham, MA</p>
-        
-        <div class="alert">
-            <h3>⚠️ PHP Application - Deployment Required</h3>
-            <p>This is a <strong>PHP application</strong> that cannot run on GitHub Pages (which only serves static HTML). 
-            You need to deploy it to a web server with PHP support to use the dashboard.</p>
+    <div id="setup-prompt" class="setup-prompt">
+        <div id="loading" class="loading">
+            <h1>📊</h1>
+            <p>Loading Dashboard...</p>
         </div>
         
-        <div class="features">
-            <h3>🚀 Features</h3>
-            <ul>
-                <li>Multi-account Google Calendar integration</li>
-                <li>Weather-responsive UI with hourly forecasts</li>
-                <li>NOAA tide data with multiple station failover</li>
-                <li>Smart time-based switching (today/tomorrow)</li>
-                <li>Comprehensive administrative tools</li>
-                <li>Progressive Web App support</li>
-                <li>Modern JavaScript (ES2015+)</li>
-            </ul>
+        <div id="config-needed">
+            <h1>📊 Daily Dashboard</h1>
+            <p>Welcome! To get started, you'll need to configure your API keys for weather data and calendar integration.</p>
+            <a href="setup.html" class="button">🔧 Setup Configuration</a>
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                New to this dashboard? <a href="landing.html" style="color: #667eea;">Learn more about features</a>
+            </p>
         </div>
-        
-        <div class="deployment">
-            <h3>🔧 How to Deploy</h3>
-            <ol>
-                <li><strong>Get PHP hosting:</strong> Use services like Bluehost, SiteGround, Hostinger, or any VPS with PHP 7.0+</li>
-                <li><strong>Upload files:</strong> Download this repository and upload all files to your web server</li>
-                <li><strong>Configure:</strong> Copy <code>config.example.php</code> to <code>config.php</code></li>
-                <li><strong>Add API keys:</strong> Get Google Calendar API and OpenWeatherMap API credentials</li>
-                <li><strong>Set permissions:</strong> Create <code>tokens/</code> directory with write permissions</li>
-                <li><strong>Access:</strong> Navigate to <code>index.php</code> on your domain</li>
-            </ol>
-        </div>
-        
-        <div class="buttons">
-            <a href="https://github.com/josefresco/family-dash" class="btn">
-                📁 View Repository
-            </a>
-            <a href="https://github.com/josefresco/family-dash/blob/main/README.md" class="btn btn-secondary">
-                📖 Setup Guide
-            </a>
-        </div>
-        
-        <p style="margin-top: 30px; color: #7f8c8d; font-size: 0.9rem;">
-            Need help with deployment? Check the README.md for detailed setup instructions.
-        </p>
     </div>
+    
+    <script src="config.js"></script>
+    <script>
+        // Check if configuration is complete and redirect accordingly
+        document.addEventListener('DOMContentLoaded', function() {
+            const config = window.dashboardConfig;
+            
+            // Show loading while checking
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('config-needed').classList.add('hidden');
+            
+            setTimeout(() => {
+                if (config.isConfigured()) {
+                    // Configuration is complete, redirect to dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Show setup prompt
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('config-needed').classList.remove('hidden');
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
