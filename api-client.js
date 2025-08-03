@@ -10,9 +10,11 @@ class APIClient {
     // Cancel any ongoing requests
     cancelRequests() {
         if (this.abortController) {
+            console.log('Aborting previous requests');
             this.abortController.abort();
         }
         this.abortController = new AbortController();
+        console.log('Created new AbortController');
         return this.abortController.signal;
     }
     
@@ -67,24 +69,43 @@ class APIClient {
         }
         
         try {
+            console.log('Weather API request params:', { date_param, lat, lon, hasApiKey: !!apiKey });
+            
             if (date_param === 'today') {
                 // Use current weather API for today
                 const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                console.log('Requesting current weather...');
                 const currentData = await this.makeRequest(currentUrl);
+                
+                if (!currentData) {
+                    console.error('Current weather request returned null - likely cancelled or failed');
+                    throw new Error('Weather API request was cancelled or failed');
+                }
                 
                 // Also get forecast for hourly data
                 const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                console.log('Requesting forecast data...');
                 const forecastData = await this.makeRequest(forecastUrl);
+                
+                if (!forecastData) {
+                    console.warn('Forecast request returned null, continuing with current data only');
+                }
                 
                 return this.processCurrentWeatherWithForecast(currentData, forecastData, date_param);
             } else {
                 // Use forecast API for tomorrow
                 const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                console.log('Requesting forecast for tomorrow...');
                 const data = await this.makeRequest(url);
+                
+                if (!data) {
+                    throw new Error('Weather forecast request was cancelled or failed');
+                }
                 
                 return this.processWeatherForecast(data, date_param);
             }
         } catch (error) {
+            console.error('Weather API error:', error);
             throw new Error(`Weather API failed: ${error.message}`);
         }
     }
