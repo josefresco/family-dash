@@ -6,8 +6,8 @@ class DashboardApp {
     constructor() {
         // Use the global configuration instead of hardcoded values
         this.appConfig = window.dashboardConfig;
-        this.apiClient = window.apiClient;
-        this.authClient = window.googleAuthClient;
+        this.apiClient = null; // Will be set during init()
+        this.authClient = null; // Will be set during init()
         
         this.config = {
             refreshInterval: this.appConfig.get('settings.refresh_interval') || 1800000, // 30 minutes
@@ -37,6 +37,19 @@ class DashboardApp {
 
     async init() {
         try {
+            console.log('=== DASHBOARD INITIALIZATION ===');
+            
+            // Get API clients from global scope (set by dashboard.html)
+            this.apiClient = window.apiClient;
+            this.authClient = window.googleAuthClient;
+            
+            console.log('API Client:', this.apiClient);
+            console.log('Auth Client:', this.authClient);
+            
+            if (!this.apiClient) {
+                throw new Error('API Client not available. Check dashboard.html initialization.');
+            }
+            
             // Determine display mode based on current time
             this.updateDisplayMode();
             
@@ -49,7 +62,7 @@ class DashboardApp {
             this.showLastUpdateTime();
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            this.showError('Failed to load dashboard data');
+            this.showError('Failed to load dashboard data: ' + error.message);
         }
     }
     
