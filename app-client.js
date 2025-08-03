@@ -176,6 +176,18 @@ class DashboardApp {
     }
 
     async loadAllData() {
+        console.log('=== LOADING ALL DATA ===');
+        console.log('this.apiClient available:', !!this.apiClient);
+        console.log('window.apiClient available:', !!window.apiClient);
+        
+        if (!this.apiClient) {
+            console.error('API Client not available in loadAllData. Re-checking...');
+            this.apiClient = window.apiClient;
+            if (!this.apiClient) {
+                throw new Error('API Client still not available after re-check');
+            }
+        }
+        
         // Update display mode before loading data
         this.updateDisplayMode();
         this.updatePanelTitle();
@@ -208,6 +220,14 @@ class DashboardApp {
 
     async makeApiRequest(endpoint) {
         const dateParam = this.displayMode === 'tomorrow' ? 'tomorrow' : 'today';
+        
+        console.log(`Making ${endpoint} API request with dateParam: ${dateParam}`);
+        console.log('this.apiClient:', this.apiClient);
+        console.log('window.apiClient:', window.apiClient);
+        
+        if (!this.apiClient) {
+            throw new Error(`API Client not available for ${endpoint} request. Check initialization.`);
+        }
         
         try {
             let data;
