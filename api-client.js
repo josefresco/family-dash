@@ -54,16 +54,69 @@ class APIClient {
         }
         
         try {
-            // Use forecast API for better data
-            const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
-            const data = await this.makeRequest(url);
-            
-            return this.processWeatherForecast(data, date_param);
+            if (date_param === 'today') {
+                // Use current weather API for today
+                const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                const currentData = await this.makeRequest(currentUrl);
+                
+                // Also get forecast for hourly data
+                const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                const forecastData = await this.makeRequest(forecastUrl);
+                
+                return this.processCurrentWeatherWithForecast(currentData, forecastData, date_param);
+            } else {
+                // Use forecast API for tomorrow
+                const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+                const data = await this.makeRequest(url);
+                
+                return this.processWeatherForecast(data, date_param);
+            }
         } catch (error) {
             throw new Error(`Weather API failed: ${error.message}`);
         }
     }
     
+    processCurrentWeatherWithForecast(currentData, forecastData, date_param) {
+        if (!currentData?.main || !currentData?.weather?.length) {
+            throw new Error('Invalid current weather data received');
+        }
+        
+        // Process hourly forecasts for today
+        const hourlyForecasts = [];
+        if (forecastData?.list?.length) {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            
+            const todayForecasts = forecastData.list.filter(item => {
+                const itemDate = new Date(item.dt * 1000).toISOString().split('T')[0];
+                return itemDate === todayStr;
+            }).slice(0, 4); // Next 4 forecasts
+            
+            hourlyForecasts.push(...todayForecasts.map(f => ({
+                time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    hour12: true
+                }),
+                temperature: Math.round(f.main.temp),
+                description: f.weather[0].description,
+                icon: f.weather[0].icon
+            })));
+        }
+        
+        return {
+            temperature: Math.round(currentData.main.temp),
+            description: currentData.weather[0].description,
+            humidity: currentData.main.humidity,
+            pressure: currentData.main.pressure,
+            windSpeed: Math.round(currentData.wind?.speed || 0),
+            visibility: Math.round((currentData.visibility || 10000) / 1609.34), // Convert m to miles
+            icon: currentData.weather[0].icon,
+            date_requested: date_param,
+            hourly_forecasts: hourlyForecasts,
+            source: 'live_openweather_current'
+        };
+    }
+
     processWeatherForecast(data, date_param) {
         if (!data?.list?.length) {
             throw new Error('Invalid weather data received');
