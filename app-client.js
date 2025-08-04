@@ -272,16 +272,18 @@ class DashboardApp {
             timeZone: this.config.location.timezone
         });
         
-        return this.displayMode === 'tomorrow' 
-            ? `Tomorrow's Schedule - ${dayName}, ${monthDay}`
-            : `Today's Schedule - ${dayName}, ${monthDay}`;
+        const scheduleLabel = this.displayMode === 'tomorrow' ? "Tomorrow's Schedule" : "Today's Schedule";
+        const dateInfo = `${dayName}, ${monthDay}`;
+        
+        return `${scheduleLabel}<br><small style="font-size: 14px; font-weight: 400; opacity: 0.8;">${dateInfo}</small>`;
     }
 
     updatePanelTitle() {
         const panelTitle = document.querySelector('.calendar-panel .panel-title');
         if (panelTitle) {
-            panelTitle.textContent = this.getDisplayDateString();
-            panelTitle.style.fontSize = '20px';
+            panelTitle.innerHTML = this.getDisplayDateString();
+            panelTitle.style.fontSize = '16px';
+            panelTitle.style.lineHeight = '1.2';
         }
     }
 
