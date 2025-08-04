@@ -291,8 +291,11 @@
                 <button class="button" onclick="detectLocation()" id="detect-location-btn">
                     📍 Detect My Location Automatically
                 </button>
+                <button class="button button-secondary" onclick="debugGeolocation()" style="font-size: 12px; padding: 8px 16px; margin-left: 10px;">
+                    🔍 Debug Location
+                </button>
                 <div class="help-text" style="margin-top: 10px;">
-                    Click above to automatically detect your location using your browser's GPS.
+                    <strong>📱 iPad Users:</strong> If location detection fails, try the Debug button first.
                     <br><strong>Recommended:</strong> This provides the most accurate weather data for your area.
                 </div>
             </div>
@@ -549,25 +552,55 @@
             detectBtn.textContent = '🔍 Detecting Location...';
             
             try {
+                // Enhanced geolocation support check
                 if (!navigator.geolocation) {
                     throw new Error('Geolocation is not supported by this browser');
                 }
                 
-                showStatus('Requesting location permission...', 'info');
+                console.log('🔍 Starting location detection...');
+                console.log('User agent:', navigator.userAgent);
+                console.log('Geolocation available:', !!navigator.geolocation);
+                console.log('HTTPS context:', location.protocol === 'https:');
+                
+                showStatus('📍 Requesting location permission... (check browser for popup)', 'info');
+                
+                // iPad Safari-optimized geolocation options
+                const options = {
+                    enableHighAccuracy: false, // More reliable on iPad
+                    timeout: 15000, // Longer timeout for iPad
+                    maximumAge: 600000 // 10 minutes cache
+                };
+                
+                console.log('Geolocation options:', options);
                 
                 const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 300000 // 5 minutes
-                    });
+                    console.log('📱 Calling getCurrentPosition...');
+                    
+                    const successCallback = (pos) => {
+                        console.log('✅ Location success:', pos);
+                        resolve(pos);
+                    };
+                    
+                    const errorCallback = (err) => {
+                        console.error('❌ Location error:', err);
+                        console.error('Error code:', err.code);
+                        console.error('Error message:', err.message);
+                        reject(err);
+                    };
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        successCallback,
+                        errorCallback,
+                        options
+                    );
                 });
                 
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
                 
-                console.log('Location detected:', { lat, lon });
-                showStatus('Location detected! Getting address details...', 'info');
+                console.log('📍 Location detected:', { lat, lon, accuracy });
+                showStatus(`Location detected! (±${Math.round(accuracy)}m accuracy) Getting address...`, 'info');
                 
                 // Use reverse geocoding to get city/state
                 const locationData = await reverseGeocode(lat, lon);
@@ -588,17 +621,33 @@
                 saveConfiguration();
                 
             } catch (error) {
-                console.error('Location detection failed:', error);
-                let errorMessage = 'Location detection failed: ';
+                console.error('🚫 Location detection failed:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                let errorMessage = '';
                 
                 if (error.code === 1) {
-                    errorMessage += 'Permission denied. Please allow location access.';
+                    errorMessage = `🚫 Permission denied. On iPad Safari:
+                    1. Go to Settings > Safari > Location Services
+                    2. Enable "While Using App" for your site
+                    3. Refresh page and try again`;
                 } else if (error.code === 2) {
-                    errorMessage += 'Location unavailable. Please try again.';
+                    errorMessage = `📍 Location unavailable. Try:
+                    1. Enable Location Services in iPad Settings
+                    2. Make sure WiFi/Cellular is connected  
+                    3. Try again in a few moments`;
                 } else if (error.code === 3) {
-                    errorMessage += 'Request timeout. Please try again.';
+                    errorMessage = `⏱️ Location request timed out. Try:
+                    1. Move closer to a window
+                    2. Ensure strong internet connection
+                    3. Try again`;
                 } else {
-                    errorMessage += error.message;
+                    errorMessage = `❌ Location error: ${error.message}
+                    Check browser console for details`;
                 }
                 
                 showStatus(errorMessage, 'error');
@@ -782,9 +831,65 @@
             }
         }
         
+        // iPad Safari geolocation debugging
+        function debugGeolocation() {
+            const debugInfo = {
+                userAgent: navigator.userAgent,
+                geolocationSupported: !!navigator.geolocation,
+                httpsContext: location.protocol === 'https:',
+                permissions: navigator.permissions ? 'Available' : 'Not Available',
+                language: navigator.language,
+                platform: navigator.platform,
+                cookiesEnabled: navigator.cookieEnabled
+            };
+            
+            console.log('🔍 Geolocation Debug Info:', debugInfo);
+            
+            let debugMessage = `🔍 Geolocation Debug:\n\n`;
+            debugMessage += `Browser: ${debugInfo.userAgent.includes('Safari') ? 'Safari' : 'Other'}\n`;
+            debugMessage += `Geolocation API: ${debugInfo.geolocationSupported ? '✅ Available' : '❌ Not Available'}\n`;
+            debugMessage += `HTTPS: ${debugInfo.httpsContext ? '✅ Secure' : '❌ Not Secure'}\n`;
+            debugMessage += `Permissions API: ${debugInfo.permissions}\n`;
+            debugMessage += `Language: ${debugInfo.language}\n`;
+            debugMessage += `Platform: ${debugInfo.platform}\n\n`;
+            
+            if (!debugInfo.httpsContext) {
+                debugMessage += `⚠️ Location requires HTTPS. Use https:// instead of http://\n\n`;
+            }
+            
+            if (navigator.permissions) {
+                // Check permissions if available
+                navigator.permissions.query({ name: 'geolocation' })
+                    .then(permission => {
+                        debugMessage += `Permission State: ${permission.state}\n`;
+                        debugMessage += permission.state === 'denied' 
+                            ? `❌ Location blocked. Reset in Safari Settings > Privacy & Security > Location Services`
+                            : permission.state === 'granted' 
+                                ? `✅ Location allowed. Try detection again.`
+                                : `❓ Location prompt pending. Try detection to trigger prompt.`;
+                        
+                        showStatus(debugMessage, 'info');
+                        console.log('📍 Permission state:', permission.state);
+                    })
+                    .catch(err => {
+                        debugMessage += `Permissions check failed: ${err.message}`;
+                        showStatus(debugMessage, 'info');
+                    });
+            } else {
+                debugMessage += `iPad Safari Tips:\n`;
+                debugMessage += `1. Settings > Safari > Location Services\n`;
+                debugMessage += `2. Enable "While Using App" for this site\n`;
+                debugMessage += `3. Make sure Location Services is enabled globally\n`;
+                debugMessage += `4. Try refreshing the page after enabling`;
+                
+                showStatus(debugMessage, 'info');
+            }
+        }
+
         // Make debugging functions available globally
         window.clearAllAuthData = clearAllAuthData;
         window.updateGoogleAccountStatus = updateGoogleAccountStatus;
+        window.debugGeolocation = debugGeolocation;
     </script>
 </body>
 </html>
