@@ -151,6 +151,12 @@
             color: #721c24;
         }
         
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
         .current-config {
             background: #e8f5e8;
             border: 1px solid #c3e6c3;
@@ -209,8 +215,6 @@
     <div class="container">
         <h1>📊 Dashboard Setup</h1>
         <p class="subtitle">Configure your API keys to enable all dashboard features</p>
-        
-        <div id="status" class="status"></div>
         
         <div class="current-config">
             <h4>Current Configuration Status</h4>
@@ -294,6 +298,9 @@
             <button class="button button-secondary" onclick="clearConfiguration()">Clear All</button>
         </div>
         
+        <!-- Status message moved here for better visibility -->
+        <div id="status" class="status"></div>
+        
         <div style="text-align: center; margin-top: 20px;">
             <button class="button" onclick="goToDashboard()" id="dashboard-btn" disabled>Go to Dashboard</button>
         </div>
@@ -357,29 +364,48 @@
         
         function saveConfiguration() {
             const config = window.dashboardConfig;
+            const saveBtn = document.querySelector('button[onclick="saveConfiguration()"]');
+            const originalText = saveBtn.textContent;
             
-            // Get values from form
-            const weatherKey = document.getElementById('weather-key').value.trim();
-            const googleClientId = document.getElementById('google-client-id').value.trim();
-            const lat = parseFloat(document.getElementById('location-lat').value);
-            const lon = parseFloat(document.getElementById('location-lon').value);
-            const city = document.getElementById('location-city').value.trim();
-            const state = document.getElementById('location-state').value.trim();
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.textContent = '💾 Saving...';
+            showStatus('Saving configuration...', 'info');
             
-            console.log('Saving configuration:', { weatherKey: !!weatherKey, googleClientId: !!googleClientId, lat, lon, city, state });
-            
-            // Save configuration
-            if (weatherKey) config.set('openweather_api_key', weatherKey);
-            if (googleClientId) config.set('google_client_id', googleClientId);
-            
-            // Save location if values are provided
-            if (!isNaN(lat)) config.set('location.lat', lat);
-            if (!isNaN(lon)) config.set('location.lon', lon);
-            if (city) config.set('location.city', city);
-            if (state) config.set('location.state', state);
-            
-            updateConfigStatus();
-            showStatus('Configuration saved successfully!', 'success');
+            try {
+                // Get values from form
+                const weatherKey = document.getElementById('weather-key').value.trim();
+                const googleClientId = document.getElementById('google-client-id').value.trim();
+                const lat = parseFloat(document.getElementById('location-lat').value);
+                const lon = parseFloat(document.getElementById('location-lon').value);
+                const city = document.getElementById('location-city').value.trim();
+                const state = document.getElementById('location-state').value.trim();
+                
+                console.log('Saving configuration:', { weatherKey: !!weatherKey, googleClientId: !!googleClientId, lat, lon, city, state });
+                
+                // Save configuration
+                if (weatherKey) config.set('openweather_api_key', weatherKey);
+                if (googleClientId) config.set('google_client_id', googleClientId);
+                
+                // Save location if values are provided
+                if (!isNaN(lat)) config.set('location.lat', lat);
+                if (!isNaN(lon)) config.set('location.lon', lon);
+                if (city) config.set('location.city', city);
+                if (state) config.set('location.state', state);
+                
+                updateConfigStatus();
+                showStatus('✅ Configuration saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                showStatus('❌ Failed to save configuration. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                setTimeout(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                }, 1000);
+            }
         }
         
         async function testConfiguration() {
