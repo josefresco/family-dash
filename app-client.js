@@ -600,30 +600,30 @@ class DashboardApp {
             <div style="
                 background: ${colors.primary};
                 color: ${colors.primaryText};
-                border-radius: 20px;
-                padding: 25px;
-                margin-bottom: 15px;
+                border-radius: 15px;
+                padding: 15px;
+                margin-bottom: 10px;
                 text-align: center;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             ">
-                <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
                     🏠 RIGHT NOW
                 </div>
-                <div style="font-size: 80px; margin: 15px 0;">${mainIcon}</div>
-                <div style="font-size: 64px; font-weight: 300; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                <div style="font-size: 60px; margin: 8px 0;">${mainIcon}</div>
+                <div style="font-size: 48px; font-weight: 300; margin: 5px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                     ${currentTemp}°F
                 </div>
-                <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 15px;">
+                <div style="font-size: 20px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 8px;">
                     ${condition}
                 </div>
                 
                 <!-- Today's Weather Summary -->
                 <div style="
                     background: rgba(255,255,255,0.15);
-                    border-radius: 12px;
-                    padding: 16px;
-                    font-size: 18px;
-                    line-height: 1.4;
+                    border-radius: 8px;
+                    padding: 10px;
+                    font-size: 14px;
+                    line-height: 1.3;
                     font-weight: 500;
                 ">
                     ${todayNarrative}
@@ -634,25 +634,25 @@ class DashboardApp {
             <div style="
                 background: ${colors.secondary};
                 color: ${colors.secondaryText};
-                border-radius: 15px;
-                padding: 20px;
-                margin-bottom: 10px;
+                border-radius: 10px;
+                padding: 12px;
+                margin-bottom: 8px;
             ">
-                <div style="font-size: 20px; font-weight: 700; margin-bottom: 12px; text-align: center;">
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px; text-align: center;">
                     📈 LATER TODAY
                 </div>
-                <div style="font-size: 18px; line-height: 1.4; text-align: center;">
+                <div style="font-size: 14px; line-height: 1.3; text-align: center;">
                     High <strong>${data.daily_summary.high_temp}°F</strong> • 
                     Low <strong>${data.daily_summary.low_temp}°F</strong>
                 </div>
                 ${data.precipitation && data.precipitation.expected ? 
                     `<div style="
                         background: rgba(255,255,255,0.2);
-                        border-radius: 10px;
-                        padding: 12px;
-                        margin-top: 12px;
+                        border-radius: 6px;
+                        padding: 8px;
+                        margin-top: 8px;
                         text-align: center;
-                        font-size: 16px;
+                        font-size: 12px;
                         font-weight: 600;
                     ">
                         🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected
@@ -671,38 +671,38 @@ class DashboardApp {
             <div style="
                 background: ${colors.primary};
                 color: ${colors.primaryText};
-                border-radius: 20px;
-                padding: 30px;
+                border-radius: 15px;
+                padding: 18px;
                 text-align: center;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             ">
-                <div style="font-size: 28px; font-weight: 700; margin-bottom: 15px;">
+                <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
                     🌅 TOMORROW
                 </div>
-                <div style="font-size: 100px; margin: 20px 0;">${mainIcon}</div>
+                <div style="font-size: 70px; margin: 10px 0;">${mainIcon}</div>
                 <div style="
-                    font-size: 48px; 
+                    font-size: 36px; 
                     font-weight: 300; 
-                    margin: 15px 0; 
+                    margin: 8px 0; 
                     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
                 ">
                     ${data.daily_summary.low_temp}° - ${data.daily_summary.high_temp}°F
                 </div>
                 <div style="
-                    font-size: 24px; 
+                    font-size: 18px; 
                     font-weight: 500; 
                     text-transform: capitalize; 
                     opacity: 0.95;
-                    margin-bottom: 20px;
+                    margin-bottom: 10px;
                 ">
                     ${data.daily_summary.description}
                 </div>
                 <div style="
                     background: rgba(255,255,255,0.15);
-                    border-radius: 15px;
-                    padding: 20px;
-                    font-size: 22px;
-                    line-height: 1.5;
+                    border-radius: 10px;
+                    padding: 12px;
+                    font-size: 16px;
+                    line-height: 1.4;
                     font-weight: 500;
                 ">
                     ${narrative}
@@ -968,19 +968,19 @@ class DashboardApp {
                 <div style="
                     background: ${colors.primary};
                     color: ${colors.primaryText};
-                    border-radius: 20px;
-                    padding: 25px;
+                    border-radius: 15px;
+                    padding: 15px;
                     text-align: center;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
                 ">
-                    <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
                         🏠 RIGHT NOW
                     </div>
-                    <div style="font-size: 80px; margin: 15px 0;">${weatherIcon}</div>
-                    <div style="font-size: 64px; font-weight: 300; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    <div style="font-size: 60px; margin: 8px 0;">${weatherIcon}</div>
+                    <div style="font-size: 48px; font-weight: 300; margin: 5px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                         ${data.temperature || 'N/A'}°F
                     </div>
-                    <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
+                    <div style="font-size: 20px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
                         ${data.description || 'Current conditions'}
                     </div>
                 </div>
@@ -988,12 +988,12 @@ class DashboardApp {
                 <div style="
                     background: ${colors.secondary};
                     color: ${colors.secondaryText};
-                    border-radius: 15px;
-                    padding: 20px;
-                    margin-top: 15px;
+                    border-radius: 10px;
+                    padding: 12px;
+                    margin-top: 8px;
                     text-align: center;
                 ">
-                    <div style="font-size: 18px; font-weight: 600;">
+                    <div style="font-size: 14px; font-weight: 600;">
                         Humidity: ${data.humidity || 'N/A'}% • Wind: ${data.windSpeed || 'N/A'} mph
                     </div>
                 </div>
@@ -1003,27 +1003,27 @@ class DashboardApp {
                 <div style="
                     background: ${colors.primary};
                     color: ${colors.primaryText};
-                    border-radius: 20px;
-                    padding: 30px;
+                    border-radius: 15px;
+                    padding: 18px;
                     text-align: center;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
                 ">
-                    <div style="font-size: 28px; font-weight: 700; margin-bottom: 15px;">
+                    <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
                         🌅 TOMORROW
                     </div>
-                    <div style="font-size: 100px; margin: 20px 0;">${weatherIcon}</div>
-                    <div style="font-size: 48px; font-weight: 300; margin: 15px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    <div style="font-size: 70px; margin: 10px 0;">${weatherIcon}</div>
+                    <div style="font-size: 36px; font-weight: 300; margin: 8px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                         ${data.temperature || 'N/A'}°F
                     </div>
-                    <div style="font-size: 24px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 20px;">
+                    <div style="font-size: 18px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 10px;">
                         ${data.description || 'Tomorrow\'s forecast'}
                     </div>
                     <div style="
                         background: rgba(255,255,255,0.15);
-                        border-radius: 15px;
-                        padding: 20px;
-                        font-size: 20px;
-                        line-height: 1.5;
+                        border-radius: 10px;
+                        padding: 12px;
+                        font-size: 16px;
+                        line-height: 1.4;
                         font-weight: 500;
                     ">
                         Check back later for a detailed forecast! 🌟
