@@ -782,6 +782,12 @@
     <script src="app-client.js"></script>
 
     <script>
+        // IMMEDIATE DEBUG - This should show up right away
+        console.log('=== DASHBOARD.HTML SCRIPT LOADED ===');
+        console.log('window.dashboardConfig:', window.dashboardConfig);
+        console.log('window.APIClient:', window.APIClient);
+        console.log('DashboardApp class:', typeof DashboardApp);
+        
         // Prevent any scrolling on mobile
         document.addEventListener('touchmove', function(e) {
             e.preventDefault();

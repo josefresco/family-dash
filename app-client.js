@@ -1,5 +1,5 @@
 // Enhanced Dashboard Application with Modern JavaScript (ES2015+) and Weather-Responsive UI
-// Minimum iOS 15.7.3 Support - No Legacy Code Required
+// Version 3.1 - GitHub Pages Edition
 // ENHANCED: Weather Forecasting with Hourly Breakdown and Narratives
 
 class DashboardApp {
