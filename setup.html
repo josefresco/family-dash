@@ -230,6 +230,10 @@
                 <span>Location:</span>
                 <span id="location-status" class="config-status configured">New York, NY</span>
             </div>
+            <div class="config-item">
+                <span>Google Account:</span>
+                <span id="google-account-status" class="config-status missing">Not Connected</span>
+            </div>
         </div>
         
         <div class="setup-section">
@@ -254,6 +258,27 @@
                     Create a project, enable Calendar API, create OAuth2 credentials, and copy the Client ID.
                     <br><strong>Important:</strong> Add your domain to authorized origins in Google Cloud Console.
                 </div>
+            </div>
+        </div>
+        
+        <div class="setup-section">
+            <h3>Google Account Management</h3>
+            <div id="google-account-info" style="margin-bottom: 15px;">
+                <div id="account-status-message" style="padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 14px; color: #6c757d;">
+                    No Google account connected. Connect an account to enable calendar features.
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="button" onclick="connectGoogleAccount()" id="connect-google-btn">
+                    🔗 Connect Google Account
+                </button>
+                <button class="button button-secondary" onclick="disconnectGoogleAccount()" id="disconnect-google-btn" style="display: none;">
+                    🔓 Disconnect Google Account
+                </button>
+            </div>
+            <div class="help-text">
+                Connect your Google account to access calendar events in the dashboard. 
+                You can disconnect anytime to test authentication or switch accounts.
             </div>
         </div>
         
@@ -312,6 +337,7 @@
         // Load current configuration on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentConfig();
+            updateGoogleAccountStatus();
         });
         
         async function loadCurrentConfig() {
@@ -394,6 +420,7 @@
                 if (state) config.set('location.state', state);
                 
                 updateConfigStatus();
+                updateGoogleAccountStatus();
                 showStatus('✅ Configuration saved successfully!', 'success');
                 
             } catch (error) {
@@ -645,6 +672,116 @@
             
             showStatus('Manual location entry enabled. You can now edit the fields.', 'info');
         }
+        
+        // Google Account Management Functions
+        function updateGoogleAccountStatus() {
+            try {
+                // Check for stored Google tokens
+                const savedTokens = localStorage.getItem('dashboard-google-tokens');
+                const googleAccountStatus = document.getElementById('google-account-status');
+                const accountStatusMessage = document.getElementById('account-status-message');
+                const connectBtn = document.getElementById('connect-google-btn');
+                const disconnectBtn = document.getElementById('disconnect-google-btn');
+                
+                if (savedTokens) {
+                    const tokenData = JSON.parse(savedTokens);
+                    const isExpired = !tokenData.expires_at || Date.now() > tokenData.expires_at;
+                    
+                    if (isExpired) {
+                        googleAccountStatus.textContent = 'Token Expired';
+                        googleAccountStatus.className = 'config-status missing';
+                        accountStatusMessage.innerHTML = '⚠️ Google account token has expired. Please reconnect to restore calendar access.';
+                        accountStatusMessage.style.background = '#fff3cd';
+                        accountStatusMessage.style.color = '#856404';
+                        connectBtn.style.display = 'inline-block';
+                        disconnectBtn.style.display = 'inline-block';
+                    } else {
+                        const expiresDate = new Date(tokenData.expires_at);
+                        googleAccountStatus.textContent = 'Connected';
+                        googleAccountStatus.className = 'config-status configured';
+                        accountStatusMessage.innerHTML = `✅ Google account connected successfully!<br><small>Token expires: ${expiresDate.toLocaleString()}</small>`;
+                        accountStatusMessage.style.background = '#d4edda';
+                        accountStatusMessage.style.color = '#155724';
+                        connectBtn.style.display = 'none';
+                        disconnectBtn.style.display = 'inline-block';
+                    }
+                } else {
+                    googleAccountStatus.textContent = 'Not Connected';
+                    googleAccountStatus.className = 'config-status missing';
+                    accountStatusMessage.innerHTML = 'No Google account connected. Connect an account to enable calendar features.';
+                    accountStatusMessage.style.background = '#f8f9fa';
+                    accountStatusMessage.style.color = '#6c757d';
+                    connectBtn.style.display = 'inline-block';
+                    disconnectBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking Google account status:', error);
+            }
+        }
+        
+        async function connectGoogleAccount() {
+            const config = window.dashboardConfig;
+            const googleClientId = config.get('google_client_id');
+            
+            if (!googleClientId) {
+                showStatus('❌ Please configure Google Client ID first before connecting your account.', 'error');
+                return;
+            }
+            
+            const connectBtn = document.getElementById('connect-google-btn');
+            const originalText = connectBtn.textContent;
+            
+            try {
+                connectBtn.disabled = true;
+                connectBtn.textContent = '🔄 Connecting...';
+                showStatus('Opening Google authentication window...', 'info');
+                
+                // Redirect to dashboard for Google authentication
+                const dashboardUrl = 'dashboard.html?connect_google=1&t=' + Date.now();
+                showStatus('Redirecting to dashboard for Google authentication...', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = dashboardUrl;
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error connecting Google account:', error);
+                showStatus('❌ Failed to connect Google account: ' + error.message, 'error');
+                connectBtn.disabled = false;
+                connectBtn.textContent = originalText;
+            }
+        }
+        
+        function disconnectGoogleAccount() {
+            if (confirm('Are you sure you want to disconnect your Google account? This will remove calendar access until you reconnect.')) {
+                try {
+                    // Clear Google tokens
+                    localStorage.removeItem('dashboard-google-tokens');
+                    
+                    // Update UI
+                    updateGoogleAccountStatus();
+                    
+                    showStatus('✅ Google account disconnected successfully. Calendar access has been removed.', 'success');
+                    
+                } catch (error) {
+                    console.error('Error disconnecting Google account:', error);
+                    showStatus('❌ Failed to disconnect Google account: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        // Helper function to clear all authentication data (for debugging)
+        function clearAllAuthData() {
+            if (confirm('This will clear ALL authentication data including Google tokens. Continue?')) {
+                localStorage.removeItem('dashboard-google-tokens');
+                showStatus('🧹 All authentication data cleared.', 'info');
+                updateGoogleAccountStatus();
+            }
+        }
+        
+        // Make debugging functions available globally
+        window.clearAllAuthData = clearAllAuthData;
+        window.updateGoogleAccountStatus = updateGoogleAccountStatus;
     </script>
 </body>
 </html>
