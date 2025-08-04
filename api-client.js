@@ -479,7 +479,7 @@ class APIClient {
             };
         }
         
-        return await authClient.getCalendarEvents(date_param);
+        return await authClient.getCalendarData(date_param);
     }
 }
 

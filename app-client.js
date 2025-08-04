@@ -1396,37 +1396,8 @@ class DashboardApp {
     }
 }
 
-// Initialize the app using modern async/await patterns
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const app = new DashboardApp();
-        window.dashboardApp = app;
-        
-        // Add debug method to global scope for testing
-        window.debugTimezone = () => app.debugTimezone();
-        
-        await app.init();
-        
-        // Debug timezone on load
-        console.log('Dashboard initialized. Type debugTimezone() in console to check timezone handling.');
-    } catch (error) {
-        console.error('Critical error during app initialization:', error);
-        
-        // Show error in both panels using modern selectors
-        const panels = ['#calendar-content', '#current-weather'];
-        const errorHtml = `
-            <div style="background: #ffebee; color: #c62828; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 20px; font-weight: 600;">
-                <h4>Critical Error</h4>
-                <p>${error.message}</p>
-            </div>
-        `;
-        
-        panels.forEach(selector => {
-            const element = document.querySelector(selector);
-            if (element) element.innerHTML = errorHtml;
-        });
-    }
-});
+// Dashboard initialization is now handled in dashboard.html to ensure proper timing
+// This avoids race conditions with API client initialization
 
 // Service Worker Registration with modern error handling
 if ('serviceWorker' in navigator) {

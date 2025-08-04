@@ -1,11 +1,14 @@
-const CACHE_NAME = 'dashboard-v1';
+const CACHE_NAME = 'dashboard-v3.1';
 const urlsToCache = [
   '/',
-  '/index.php',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/family-dash/',
+  '/family-dash/index.html',
+  '/family-dash/dashboard.html',
+  '/family-dash/setup.html',
+  '/family-dash/app-client.js',
+  '/family-dash/api-client.js',
+  '/family-dash/auth-client.js',
+  '/family-dash/config.js'
 ];
 
 // Install event
