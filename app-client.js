@@ -558,353 +558,352 @@ class DashboardApp {
         }
     }
 
-    // ENHANCED: New weather rendering with forecasts
+    // OVERHAULED: Simplified, room-readable weather display
     renderWeatherData(data) {
         const currentWeatherDiv = document.getElementById('current-weather');
         
         if (!data.daily_summary) {
-            // Fallback to current weather display if old API format
             this.renderLegacyWeatherData(data);
             return;
         }
         
         const timeContext = this.displayMode === 'tomorrow' ? 'Tomorrow' : 'Today';
-        const summary = data.daily_summary;
+        const isToday = this.displayMode === 'today';
         
-        // Get weather-responsive color scheme based on dominant condition
-        const weatherScheme = this.getWeatherColorScheme({
-            description: summary.description,
-            icon: summary.icon,
-            temperature: summary.high_temp
-        });
-        const colors = weatherScheme.colors;
+        // Get improved high-contrast colors
+        const colors = this.getImprovedWeatherColors(data);
+        const mainIcon = this.getWeatherIcon(data.daily_summary.icon);
         
-        currentWeatherDiv.innerHTML = `
-            <!-- Weather Context Header -->
-            <div class="weather-context-header" style="
-                background: ${colors.background}; 
-                border: 2px solid ${colors.border}; 
-                border-radius: 12px; 
-                padding: 10px; 
-                margin-bottom: 12px; 
-                text-align: center; 
-                color: ${colors.text}; 
-                font-size: 16px; 
-                font-weight: 700;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            ">
-                <strong>📅 ${timeContext}'s Weather Forecast</strong>
-                <div style="font-size: 11px; margin-top: 3px; opacity: 0.9;">
-                    ${summary.description} • ${summary.low_temp}°F - ${summary.high_temp}°F
-                </div>
-            </div>
-            
-            <!-- Weather Narrative -->
-            <div class="weather-narrative" style="
-                background: ${colors.cardBg};
-                border: 1px solid ${colors.border};
-                border-radius: 10px;
-                padding: 10px;
-                margin-bottom: 10px;
-                font-size: 40px;
-                line-height: 1.3;
-                color: ${colors.text};
-                text-align: center;
-                font-weight: 500;
-            ">
-                ${data.narrative}
-            </div>
-            
-            <!-- Temperature Range Display -->
-            <div class="temp-range" style="
-                background: ${colors.cardBg};
-                border: 1px solid ${colors.border};
-                border-radius: 10px;
-                padding: 8px;
-                margin-bottom: 10px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            ">
-                <div style="text-align: center; flex: 1;">
-                    <div style="font-size: 8px; color: ${colors.text}; opacity: 0.8; margin-bottom: 2px;">LOW</div>
-                    <div style="font-size: 20px; font-weight: 700; color: ${colors.primary};">${summary.low_temp}°F</div>
-                </div>
-                <div style="text-align: center; flex: 1;">
-                    <div class="weather-icon" style="
-                        font-size: 28px;
-                        background: ${colors.primary};
-                        border-radius: 50%;
-                        width: 40px;
-                        height: 40px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin: 0 auto;
-                        border: 2px solid ${colors.accent};
-                    ">${this.getWeatherIcon(summary.icon)}</div>
-                </div>
-                <div style="text-align: center; flex: 1;">
-                    <div style="font-size: 8px; color: ${colors.text}; opacity: 0.8; margin-bottom: 2px;">HIGH</div>
-                    <div style="font-size: 20px; font-weight: 700; color: ${colors.primary};">${summary.high_temp}°F</div>
-                </div>
-            </div>
-            
-            <!-- Hourly Forecast -->
-            ${this.renderHourlyForecast(data.hourly_forecast, colors)}
-            
-            <!-- Additional Details -->
-            <div class="weather-details" style="
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 6px;
-                margin-top: 8px;
-            ">
-                <div style="
-                    background: ${colors.cardBg};
-                    border: 1px solid ${colors.border};
-                    border-radius: 6px;
-                    padding: 6px;
-                    text-align: center;
-                ">
-                    <div style="font-size: 8px; color: ${colors.text}; opacity: 0.8; margin-bottom: 2px;">HUMIDITY</div>
-                    <div style="font-size: 12px; font-weight: 600; color: ${colors.primary};">
-                        ${data.details.humidity_range.min}-${data.details.humidity_range.max}%
-                    </div>
-                </div>
-                <div style="
-                    background: ${colors.cardBg};
-                    border: 1px solid ${colors.border};
-                    border-radius: 6px;
-                    padding: 6px;
-                    text-align: center;
-                ">
-                    <div style="font-size: 8px; color: ${colors.text}; opacity: 0.8; margin-bottom: 2px;">WIND</div>
-                    <div style="font-size: 11px; font-weight: 600; color: ${colors.primary};">
-                        ${data.details.wind_summary}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Precipitation Alert (if any) -->
-            ${data.precipitation.expected ? this.renderPrecipitationAlert(data.precipitation, colors) : ''}
-        `;
-        
-        // Update favicon based on weather
-        this.updateFavicon(this.getWeatherIcon(summary.icon));
-    }
-
-    renderHourlyForecast(hourlyData, colors) {
-        if (!hourlyData || hourlyData.length === 0) {
-            return '';
-        }
-        
-        // Limit to 4 key hours to fit in the space
-        const keyHours = this.selectKeyHours(hourlyData);
-        
-        const hourlyHtml = keyHours.map(hour => `
-            <div style="
-                text-align: center;
-                padding: 4px;
-                background: ${colors.cardBg};
-                border: 1px solid ${colors.border};
-                border-radius: 6px;
-                min-width: 0;
-            ">
-                <div style="font-size: 8px; color: ${colors.text}; opacity: 0.8; margin-bottom: 1px;">
-                    ${hour.time}
-                </div>
-                <div style="font-size: 14px; margin: 1px 0;">
-                    ${this.getWeatherIcon(hour.icon)}
-                </div>
-                <div style="font-size: 10px; font-weight: 600; color: ${colors.primary};">
-                    ${hour.temperature}°F
-                </div>
-                ${hour.precipitation > 0 ? 
-                    `<div style="font-size: 7px; color: ${colors.accent};">💧${Math.round(hour.precipitation * 10) / 10}"</div>` : 
-                    ''
-                }
-            </div>
-        `).join('');
-        
-        return `
-            <div class="hourly-forecast" style="
-                display: grid;
-                grid-template-columns: repeat(${keyHours.length}, 1fr);
-                gap: 4px;
-                margin: 8px 0;
-            ">
-                ${hourlyHtml}
-            </div>
-        `;
-    }
-
-    selectKeyHours(hourlyData) {
-        // Select up to 4 representative hours throughout the day
-        if (hourlyData.length <= 4) {
-            return hourlyData;
-        }
-        
-        const keyHours = [];
-        const totalHours = hourlyData.length;
-        
-        // Always include first hour (morning)
-        keyHours.push(hourlyData[0]);
-        
-        // Add midday if available
-        const middayIndex = Math.floor(totalHours / 2);
-        if (middayIndex > 0 && middayIndex !== totalHours - 1) {
-            keyHours.push(hourlyData[middayIndex]);
-        }
-        
-        // Add late afternoon/evening
-        const eveningIndex = Math.floor(totalHours * 0.75);
-        if (eveningIndex > middayIndex && eveningIndex !== totalHours - 1) {
-            keyHours.push(hourlyData[eveningIndex]);
-        }
-        
-        // Always include last hour (evening)
-        if (totalHours > 1) {
-            keyHours.push(hourlyData[totalHours - 1]);
-        }
-        
-        return keyHours;
-    }
-
-    renderPrecipitationAlert(precipitation, colors) {
-        if (!precipitation.expected || precipitation.hours.length === 0) {
-            return '';
-        }
-        
-        const precipType = precipitation.hours[0].type;
-        const precipIcon = precipType === 'rain' ? '🌧️' : '❄️';
-        const totalHours = precipitation.total_hours;
-        
-        let alertText = '';
-        if (totalHours === 1) {
-            alertText = `${precipIcon} ${precipType} expected around ${precipitation.hours[0].time}`;
+        if (isToday) {
+            // TODAY: Current conditions + Later today forecast
+            currentWeatherDiv.innerHTML = this.renderTodayWeather(data, colors, mainIcon);
         } else {
-            const times = precipitation.hours.map(h => h.time).slice(0, 2); // Show first 2 times
-            if (precipitation.hours.length > 2) {
-                alertText = `${precipIcon} ${precipType} expected ${times.join(', ')} and ${precipitation.hours.length - 2} more periods`;
-            } else {
-                alertText = `${precipIcon} ${precipType} expected ${times.join(' and ')}`;
-            }
+            // TOMORROW: Narrative-focused overview
+            currentWeatherDiv.innerHTML = this.renderTomorrowWeather(data, colors, mainIcon);
         }
         
+        // Update favicon
+        this.updateFavicon(mainIcon);
+    }
+    
+    renderTodayWeather(data, colors, mainIcon) {
+        const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
+        const condition = data.description || data.daily_summary.description;
+        
         return `
-            <div class="precipitation-alert" style="
-                background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(41, 128, 185, 0.2) 100%);
-                border: 2px solid #3498db;
-                border-radius: 8px;
-                padding: 6px;
-                margin-top: 8px;
+            <!-- Today's Main Display -->
+            <div style="
+                background: ${colors.primary};
+                color: ${colors.primaryText};
+                border-radius: 20px;
+                padding: 25px;
+                margin-bottom: 15px;
                 text-align: center;
-                font-size: 10px;
-                font-weight: 600;
-                color: #2c3e50;
-                animation: precipitation-pulse 3s ease-in-out infinite;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             ">
-                ${alertText}
+                <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                    🏠 RIGHT NOW
+                </div>
+                <div style="font-size: 80px; margin: 15px 0;">${mainIcon}</div>
+                <div style="font-size: 64px; font-weight: 300; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    ${currentTemp}°F
+                </div>
+                <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
+                    ${condition}
+                </div>
             </div>
-            <style>
-                @keyframes precipitation-pulse {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.8; }
+            
+            <!-- Later Today Forecast -->
+            <div style="
+                background: ${colors.secondary};
+                color: ${colors.secondaryText};
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 10px;
+            ">
+                <div style="font-size: 20px; font-weight: 700; margin-bottom: 12px; text-align: center;">
+                    📈 LATER TODAY
+                </div>
+                <div style="font-size: 18px; line-height: 1.4; text-align: center;">
+                    High <strong>${data.daily_summary.high_temp}°F</strong> • 
+                    Low <strong>${data.daily_summary.low_temp}°F</strong>
+                </div>
+                ${data.precipitation && data.precipitation.expected ? 
+                    `<div style="
+                        background: rgba(255,255,255,0.2);
+                        border-radius: 10px;
+                        padding: 12px;
+                        margin-top: 12px;
+                        text-align: center;
+                        font-size: 16px;
+                        font-weight: 600;
+                    ">
+                        🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected
+                    </div>` : ''
                 }
-            </style>
+            </div>
         `;
     }
+    
+    renderTomorrowWeather(data, colors, mainIcon) {
+        // Create a compelling narrative for tomorrow
+        const narrative = this.createWeatherNarrative(data);
+        
+        return `
+            <!-- Tomorrow's Main Display -->
+            <div style="
+                background: ${colors.primary};
+                color: ${colors.primaryText};
+                border-radius: 20px;
+                padding: 30px;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            ">
+                <div style="font-size: 28px; font-weight: 700; margin-bottom: 15px;">
+                    🌅 TOMORROW
+                </div>
+                <div style="font-size: 100px; margin: 20px 0;">${mainIcon}</div>
+                <div style="
+                    font-size: 48px; 
+                    font-weight: 300; 
+                    margin: 15px 0; 
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                ">
+                    ${data.daily_summary.low_temp}° - ${data.daily_summary.high_temp}°F
+                </div>
+                <div style="
+                    font-size: 24px; 
+                    font-weight: 500; 
+                    text-transform: capitalize; 
+                    opacity: 0.95;
+                    margin-bottom: 20px;
+                ">
+                    ${data.daily_summary.description}
+                </div>
+                <div style="
+                    background: rgba(255,255,255,0.15);
+                    border-radius: 15px;
+                    padding: 20px;
+                    font-size: 22px;
+                    line-height: 1.5;
+                    font-weight: 500;
+                ">
+                    ${narrative}
+                </div>
+            </div>
+        `;
+    }
+    
+    createWeatherNarrative(data) {
+        const summary = data.daily_summary;
+        const temp = summary.high_temp;
+        const condition = summary.description.toLowerCase();
+        const precipitation = data.precipitation;
+        
+        let narrative = '';
+        
+        // Temperature-based opening
+        if (temp >= 80) {
+            narrative = "🔥 It's going to be a hot one! ";
+        } else if (temp >= 70) {
+            narrative = "☀️ Perfect weather ahead! ";
+        } else if (temp >= 60) {
+            narrative = "🌤️ Pleasant temperatures expected! ";
+        } else if (temp >= 40) {
+            narrative = "🧥 Pack a jacket - it'll be cool! ";
+        } else {
+            narrative = "❄️ Bundle up - it's going to be chilly! ";
+        }
+        
+        // Add condition-specific details
+        if (condition.includes('rain') || condition.includes('shower')) {
+            narrative += "Keep an umbrella handy. ";
+        } else if (condition.includes('snow')) {
+            narrative += "Snow is in the forecast! ";
+        } else if (condition.includes('clear') || condition.includes('sunny')) {
+            narrative += "Clear skies all day! ";
+        } else if (condition.includes('cloud')) {
+            narrative += "Cloudy but dry conditions. ";
+        }
+        
+        // Add precipitation details if present
+        if (precipitation && precipitation.expected) {
+            const precipType = precipitation.hours[0]?.type || 'precipitation';
+            const hours = precipitation.total_hours;
+            narrative += `Expect ${hours}h of ${precipType}. `;
+        }
+        
+        // Add encouraging closing
+        const closings = [
+            "Make it a great day! 🌟",
+            "Perfect for outdoor plans! 🚀",
+            "Enjoy the weather! 🎉",
+            "Have a wonderful day! ✨",
+            "Great day to be outside! 🌳"
+        ];
+        
+        if (temp >= 60 && !precipitation?.expected) {
+            narrative += closings[Math.floor(Math.random() * closings.length)];
+        } else {
+            narrative += "Stay cozy! 🏠";
+        }
+        
+        return narrative;
+    }
+    
+    getImprovedWeatherColors(data) {
+        const condition = data.daily_summary.description.toLowerCase();
+        const temp = data.daily_summary.high_temp;
+        const icon = data.daily_summary.icon;
+        
+        // High-contrast color schemes optimized for room readability
+        if (condition.includes('rain') || condition.includes('shower') || condition.includes('storm')) {
+            return {
+                primary: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                primaryText: '#ffffff',
+                secondary: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                secondaryText: '#003d5c',
+                accent: '#00d4ff'
+            };
+        } else if (condition.includes('snow')) {
+            return {
+                primary: 'linear-gradient(135deg, #e6f3ff 0%, #b3daff 100%)',
+                primaryText: '#1a365d',
+                secondary: 'linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%)',
+                secondaryText: '#2d3748',
+                accent: '#3182ce'
+            };
+        } else if (condition.includes('clear') || condition.includes('sunny')) {
+            return {
+                primary: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+                primaryText: '#ffffff',
+                secondary: 'linear-gradient(135deg, #fff7ad 0%, #ffa502 100%)',
+                secondaryText: '#744210',
+                accent: '#f39801'
+            };
+        } else if (temp >= 80) {
+            return {
+                primary: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                primaryText: '#ffffff',
+                secondary: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
+                secondaryText: '#8b4513',
+                accent: '#ff4757'
+            };
+        } else if (temp <= 40) {
+            return {
+                primary: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+                primaryText: '#ffffff',
+                secondary: 'linear-gradient(135deg, #a8e6cf 0%, #dcedc8 100%)',
+                secondaryText: '#2d3436',
+                accent: '#00b894'
+            };
+        } else {
+            // Default pleasant weather
+            return {
+                primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                primaryText: '#ffffff',
+                secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                secondaryText: '#2d3436',
+                accent: '#6c5ce7'
+            };
+        }
+    }
 
-    // Enhanced legacy fallback for current weather format
+    // Removed old complex hourly forecast and precipitation rendering
+    // New design focuses on daily overview with clear narrative
+
+    // Simplified legacy fallback matching new design
     renderLegacyWeatherData(data) {
         const currentWeatherDiv = document.getElementById('current-weather');
         
         const weatherIcon = this.getWeatherIcon(data.icon || '01d');
         const timeContext = this.displayMode === 'tomorrow' ? 'tomorrow' : 'today';
-        const timeContextTitle = timeContext.charAt(0).toUpperCase() + timeContext.slice(1);
+        const isToday = this.displayMode === 'today';
         
-        // Get weather-responsive color scheme
-        const weatherScheme = this.getWeatherColorScheme(data);
-        const colors = weatherScheme.colors;
+        // Create simplified data structure for legacy compatibility
+        const legacyData = {
+            daily_summary: {
+                high_temp: data.temperature || 70,
+                low_temp: Math.round((data.temperature || 70) - 10),
+                description: data.description || 'clear sky',
+                icon: data.icon || '01d'
+            },
+            temperature: data.temperature,
+            description: data.description,
+            precipitation: { expected: false }
+        };
         
-        currentWeatherDiv.innerHTML = `
-            <div class="weather-context-header" style="
-                background: ${colors.background}; 
-                border: 2px solid ${colors.border}; 
-                border-radius: 12px; 
-                padding: 10px; 
-                margin-bottom: 12px; 
-                text-align: center; 
-                color: ${colors.text}; 
-                font-size: 30px; 
-                font-weight: 700;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            ">
-                <strong>🌤️ Weather for ${timeContextTitle}</strong>
-                <div style="font-size: 11px; margin-top: 3px; opacity: 0.8;">
-                    CURRENT CONDITIONS
-                </div>
-            </div>
-            
-            <div class="current-weather" style="
-                background: ${colors.cardBg};
-                border: 1px solid ${colors.border};
-                border-radius: 10px;
-                padding: 12px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            ">
-                <div class="weather-main">
-                    <div class="weather-icon" style="
-                        background: ${colors.primary};
-                        border-radius: 50%;
-                        width: 45px;
-                        height: 45px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-right: 12px;
-                        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-                        border: 2px solid ${colors.accent};
-                    ">${weatherIcon}</div>
-                    <div class="temperature" style="color: ${colors.primary}; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+        // Use the same color system as the new design
+        const colors = this.getImprovedWeatherColors(legacyData);
+        
+        if (isToday) {
+            currentWeatherDiv.innerHTML = `
+                <div style="
+                    background: ${colors.primary};
+                    color: ${colors.primaryText};
+                    border-radius: 20px;
+                    padding: 25px;
+                    text-align: center;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                ">
+                    <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                        🏠 RIGHT NOW
+                    </div>
+                    <div style="font-size: 80px; margin: 15px 0;">${weatherIcon}</div>
+                    <div style="font-size: 64px; font-weight: 300; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                         ${data.temperature || 'N/A'}°F
                     </div>
-                </div>
-                <div class="weather-details">
-                    <div class="weather-description" style="color: ${colors.text}; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                        ${data.description || 'N/A'}
+                    <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
+                        ${data.description || 'Current conditions'}
                     </div>
                 </div>
-            </div>
-            
-            <div class="weather-stats" style="margin-top: 12px;">
-                <div class="weather-stat" style="
-                    background: ${colors.cardBg};
-                    border: 1px solid ${colors.border};
-                    border-radius: 8px;
-                    padding: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                
+                <div style="
+                    background: ${colors.secondary};
+                    color: ${colors.secondaryText};
+                    border-radius: 15px;
+                    padding: 20px;
+                    margin-top: 15px;
+                    text-align: center;
                 ">
-                    <div class="weather-stat-label" style="color: ${colors.text};">Humidity</div>
-                    <div class="weather-stat-value" style="color: ${colors.primary};">
-                        ${data.humidity || 'N/A'}%
+                    <div style="font-size: 18px; font-weight: 600;">
+                        Humidity: ${data.humidity || 'N/A'}% • Wind: ${data.windSpeed || 'N/A'} mph
                     </div>
                 </div>
-                <div class="weather-stat" style="
-                    background: ${colors.cardBg};
-                    border: 1px solid ${colors.border};
-                    border-radius: 8px;
-                    padding: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            `;
+        } else {
+            currentWeatherDiv.innerHTML = `
+                <div style="
+                    background: ${colors.primary};
+                    color: ${colors.primaryText};
+                    border-radius: 20px;
+                    padding: 30px;
+                    text-align: center;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
                 ">
-                    <div class="weather-stat-label" style="color: ${colors.text};">Wind</div>
-                    <div class="weather-stat-value" style="color: ${colors.primary};">
-                        ${data.windSpeed || 'N/A'} mph
+                    <div style="font-size: 28px; font-weight: 700; margin-bottom: 15px;">
+                        🌅 TOMORROW
+                    </div>
+                    <div style="font-size: 100px; margin: 20px 0;">${weatherIcon}</div>
+                    <div style="font-size: 48px; font-weight: 300; margin: 15px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                        ${data.temperature || 'N/A'}°F
+                    </div>
+                    <div style="font-size: 24px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 20px;">
+                        ${data.description || 'Tomorrow\'s forecast'}
+                    </div>
+                    <div style="
+                        background: rgba(255,255,255,0.15);
+                        border-radius: 15px;
+                        padding: 20px;
+                        font-size: 20px;
+                        line-height: 1.5;
+                        font-weight: 500;
+                    ">
+                        Check back later for a detailed forecast! 🌟
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
         
         // Update favicon
         this.updateFavicon(weatherIcon);
@@ -941,175 +940,7 @@ class DashboardApp {
         }
     }
 
-    getWeatherColorScheme(weatherData) {
-        const description = (weatherData.description || '').toLowerCase();
-        const icon = weatherData.icon || '01d';
-        const temp = parseInt(weatherData.temperature) || 70;
-        
-        // Define vibrant color schemes based on weather conditions
-        const colorSchemes = {
-            // Clear/Sunny conditions
-            clear_day: {
-                primary: '#FFD700',      // Bright gold
-                secondary: '#FFA500',    // Orange
-                accent: '#FF6B35',       // Coral
-                background: 'linear-gradient(135deg, #FFE066 0%, #FF9A56 100%)',
-                text: '#8B4513',         // Saddle brown
-                cardBg: 'rgba(255, 248, 220, 0.95)', // Cornsilk
-                border: '#DAA520'        // Goldenrod
-            },
-            clear_night: {
-                primary: '#4169E1',      // Royal blue
-                secondary: '#6495ED',    // Cornflower blue
-                accent: '#87CEEB',       // Sky blue
-                background: 'linear-gradient(135deg, #2C3E50 0%, #4A6741 100%)',
-                text: '#F0F8FF',         // Alice blue
-                cardBg: 'rgba(25, 25, 112, 0.95)', // Midnight blue
-                border: '#4682B4'        // Steel blue
-            },
-            // Cloudy conditions
-            cloudy: {
-                primary: '#778899',      // Light slate gray
-                secondary: '#696969',    // Dim gray
-                accent: '#A9A9A9',       // Dark gray
-                background: 'linear-gradient(135deg, #B0C4DE 0%, #708090 100%)',
-                text: '#2F4F4F',         // Dark slate gray
-                cardBg: 'rgba(248, 248, 255, 0.95)', // Ghost white
-                border: '#708090'        // Slate gray
-            },
-            partly_cloudy: {
-                primary: '#87CEEB',      // Sky blue
-                secondary: '#98D8E8',    // Light blue
-                accent: '#F0E68C',       // Khaki (sun peek)
-                background: 'linear-gradient(135deg, #87CEEB 0%, #F0E68C 100%)',
-                text: '#2F4F4F',         // Dark slate gray
-                cardBg: 'rgba(240, 248, 255, 0.95)', // Alice blue
-                border: '#4682B4'        // Steel blue
-            },
-            // Rainy conditions
-            rainy: {
-                primary: '#4682B4',      // Steel blue
-                secondary: '#5F9EA0',    // Cadet blue
-                accent: '#008B8B',       // Dark cyan
-                background: 'linear-gradient(135deg, #4682B4 0%, #2F4F4F 100%)',
-                text: '#F0F8FF',         // Alice blue
-                cardBg: 'rgba(72, 130, 180, 0.95)', // Steel blue
-                border: '#1E90FF'        // Dodger blue
-            },
-            drizzle: {
-                primary: '#87CEEB',      // Sky blue
-                secondary: '#B0E0E6',    // Powder blue
-                accent: '#ADD8E6',       // Light blue
-                background: 'linear-gradient(135deg, #B0E0E6 0%, #87CEEB 100%)',
-                text: '#2F4F4F',         // Dark slate gray
-                cardBg: 'rgba(176, 224, 230, 0.95)', // Powder blue
-                border: '#87CEEB'        // Sky blue
-            },
-            // Stormy conditions
-            thunderstorm: {
-                primary: '#4B0082',      // Indigo
-                secondary: '#8A2BE2',    // Blue violet
-                accent: '#FFD700',       // Gold (lightning)
-                background: 'linear-gradient(135deg, #2F4F4F 0%, #4B0082 100%)',
-                text: '#F0F8FF',         // Alice blue
-                cardBg: 'rgba(75, 0, 130, 0.95)', // Indigo
-                border: '#FFD700'        // Gold
-            },
-            // Snow conditions
-            snow: {
-                primary: '#F0F8FF',      // Alice blue
-                secondary: '#E6E6FA',    // Lavender
-                accent: '#B0E0E6',       // Powder blue
-                background: 'linear-gradient(135deg, #F0F8FF 0%, #E6E6FA 100%)',
-                text: '#2F4F4F',         // Dark slate gray
-                cardBg: 'rgba(240, 248, 255, 0.98)', // Alice blue
-                border: '#87CEEB'        // Sky blue
-            },
-            // Fog/Mist conditions
-            fog: {
-                primary: '#D3D3D3',      // Light gray
-                secondary: '#C0C0C0',    // Silver
-                accent: '#A9A9A9',       // Dark gray
-                background: 'linear-gradient(135deg, #F5F5F5 0%, #DCDCDC 100%)',
-                text: '#2F4F4F',         // Dark slate gray
-                cardBg: 'rgba(245, 245, 245, 0.95)', // White smoke
-                border: '#C0C0C0'        // Silver
-            },
-            // Hot weather
-            hot: {
-                primary: '#FF4500',      // Orange red
-                secondary: '#FF6347',    // Tomato
-                accent: '#FFD700',       // Gold
-                background: 'linear-gradient(135deg, #FF6347 0%, #FF4500 100%)',
-                text: '#8B0000',         // Dark red
-                cardBg: 'rgba(255, 228, 196, 0.95)', // Bisque
-                border: '#FF4500'        // Orange red
-            },
-            // Cold weather
-            cold: {
-                primary: '#00CED1',      // Dark turquoise
-                secondary: '#20B2AA',    // Light sea green
-                accent: '#E0FFFF',       // Light cyan
-                background: 'linear-gradient(135deg, #00CED1 0%, #4682B4 100%)',
-                text: '#F0F8FF',         // Alice blue
-                cardBg: 'rgba(0, 206, 209, 0.95)', // Dark turquoise
-                border: '#00BFFF'        // Deep sky blue
-            }
-        };
-        
-        // Determine weather condition
-        let condition = 'clear_day'; // default
-        
-        // Check for specific weather conditions
-        if (description.includes('thunder') || description.includes('storm')) {
-            condition = 'thunderstorm';
-        } else if (description.includes('snow') || description.includes('blizzard')) {
-            condition = 'snow';
-        } else if (description.includes('rain') || description.includes('shower')) {
-            condition = 'rainy';
-        } else if (description.includes('drizzle') || description.includes('mist')) {
-            condition = 'drizzle';
-        } else if (description.includes('fog') || description.includes('haze')) {
-            condition = 'fog';
-        } else if (description.includes('cloud')) {
-            if (description.includes('few') || description.includes('scattered') || description.includes('partly')) {
-                condition = 'partly_cloudy';
-            } else {
-                condition = 'cloudy';
-            }
-        } else if (description.includes('clear') || description.includes('sunny')) {
-            condition = icon.includes('n') ? 'clear_night' : 'clear_day';
-        }
-        
-        // Temperature-based overrides
-        if (temp >= 85) {
-            condition = 'hot';
-        } else if (temp <= 32) {
-            condition = 'cold';
-        }
-        
-        // Icon-based fallbacks
-        if (!colorSchemes[condition]) {
-            const iconCode = icon.substring(0, 2);
-            switch (iconCode) {
-                case '01': condition = icon.includes('n') ? 'clear_night' : 'clear_day'; break;
-                case '02': condition = 'partly_cloudy'; break;
-                case '03':
-                case '04': condition = 'cloudy'; break;
-                case '09': condition = 'drizzle'; break;
-                case '10': condition = 'rainy'; break;
-                case '11': condition = 'thunderstorm'; break;
-                case '13': condition = 'snow'; break;
-                case '50': condition = 'fog'; break;
-                default: condition = 'clear_day';
-            }
-        }
-        
-        return {
-            condition,
-            colors: colorSchemes[condition]
-        };
-    }
+    // Removed old complex color scheme function - replaced with getImprovedWeatherColors()
 
     updateFavicon(weatherIcon) {
         try {
