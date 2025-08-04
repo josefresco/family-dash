@@ -852,6 +852,11 @@
             console.log('Creating dashboard app...');
             const dashboard = new DashboardApp();
             window.dashboard = dashboard; // Make globally available for button clicks
+            
+            // Add debug methods to global scope
+            window.debugAuth = () => window.googleAuthClient?.debugAuthState();
+            window.clearAuthTokens = () => window.googleAuthClient?.clearTokenData();
+            
             dashboard.init();
         });
     </script>

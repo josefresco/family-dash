@@ -134,10 +134,23 @@ class GoogleAuthClient {
         return !!this.accessToken && !this.isTokenExpired();
     }
     
-    isTokenExpired() {
-        const savedData = this.loadSavedToken();
-        if (!savedData || !savedData.expires_at) return true;
-        return Date.now() > savedData.expires_at;
+    isTokenExpired(tokenData = null) {
+        // If tokenData is provided, use it directly (avoiding circular dependency)
+        const data = tokenData || this.getSavedTokenData();
+        if (!data || !data.expires_at) return true;
+        return Date.now() > data.expires_at;
+    }
+    
+    getSavedTokenData() {
+        try {
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (error) {
+            console.error('Failed to parse saved token data:', error);
+        }
+        return null;
     }
     
     saveTokenData(tokenResponse) {
@@ -153,13 +166,10 @@ class GoogleAuthClient {
     
     loadSavedToken() {
         try {
-            const saved = localStorage.getItem(this.storageKey);
-            if (saved) {
-                const tokenData = JSON.parse(saved);
-                if (!this.isTokenExpired()) {
-                    this.accessToken = tokenData.access_token;
-                    return tokenData;
-                }
+            const tokenData = this.getSavedTokenData();
+            if (tokenData && !this.isTokenExpired(tokenData)) {
+                this.accessToken = tokenData.access_token;
+                return tokenData;
             }
         } catch (error) {
             console.error('Failed to load saved token:', error);
@@ -173,9 +183,34 @@ class GoogleAuthClient {
         console.log('User signed out');
     }
     
+    clearTokenData() {
+        this.accessToken = null;
+        localStorage.removeItem(this.storageKey);
+        console.log('Token data cleared');
+    }
+    
+    debugAuthState() {
+        console.log('=== AUTH DEBUG INFO ===');
+        console.log('isInitialized:', this.isInitialized);
+        console.log('accessToken exists:', !!this.accessToken);
+        const savedData = this.getSavedTokenData();
+        console.log('saved token data:', savedData);
+        if (savedData) {
+            console.log('token expired:', this.isTokenExpired(savedData));
+            console.log('expires at:', new Date(savedData.expires_at));
+            console.log('current time:', new Date());
+        }
+        console.log('isSignedIn():', this.isSignedIn());
+        console.log('========================');
+    }
+    
     // Simple calendar data fetch - returns no_accounts_connected for now
     async getCalendarData(date_param = 'today') {
-        console.log('getCalendarData called, isSignedIn:', this.isSignedIn());
+        console.log('=== CALENDAR DATA REQUEST ===');
+        console.log('getCalendarData called, date_param:', date_param);
+        console.log('isSignedIn:', this.isSignedIn());
+        console.log('accessToken exists:', !!this.accessToken);
+        console.log('saved token data:', this.getSavedTokenData());
         
         if (!this.isSignedIn()) {
             console.log('Not signed in, returning no_accounts_connected');
