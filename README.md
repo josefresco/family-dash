@@ -1,6 +1,6 @@
-# Daily Dashboard - New York, NY
+# Daily Dashboard - v3.7
 
-A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information for New York, New York. Built with modern HTML5, JavaScript, and CSS for GitHub Pages deployment. Designed for room-readable display with large text and optimized for modern iPad viewing.
+A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information. Built with modern HTML5, JavaScript, and CSS for GitHub Pages deployment. Features a completely overhauled weather UI with simplified design, room-readable typography, and compelling weather narratives.
 
 ## Features
 
@@ -11,30 +11,29 @@ A responsive personal dashboard application that displays calendar events, weath
 - Room-readable event display with large fonts
 - Time-based switching between today and tomorrow's events
 
-### 🌤️ Enhanced Weather Forecasting
-- Current weather conditions with **weather-responsive UI**
-- Comprehensive hourly forecasts with detailed narratives
-- Temperature, humidity, wind speed, pressure, and visibility
-- **Dynamic color schemes** that adapt to weather conditions
-- **Animated weather effects** for immersive experience
+### 🌤️ Overhauled Weather UI (v3.2-3.7)
+- **Simplified, room-readable design** with large typography (64px+ temps)
+- **High-contrast color schemes** optimized for all weather conditions
+- **Weather narratives** - compelling summaries from API data
+- **Today vs Tomorrow focus** - current conditions vs daily overview
+- **API-generated summaries** with temperature ranges and forecasts
+- **Fun icons and colors** with weather-responsive gradients
 - **Dynamic favicon** updates based on current weather
+- **Compact layout** - sunrise, sunset, and tides on single line
 
-### 🌊 Intelligent Tide Information
-- High and low tide times and heights for East Coast area
-- Data from multiple NOAA stations with automatic failover
+### 🌊🌅 Compact Sun & Tide Display
+- **Single horizontal line layout** - sunrise, sunset, high/low tides
+- High and low tide times from multiple NOAA stations
 - **Smart fallback estimation** when NOAA APIs are unavailable
-- Real-time tide station testing and monitoring
-- Configurable for different coastal locations
-
-### 🌅 Solar Information
-- Daily sunrise and sunset times
 - Automatic Eastern Time timezone handling
-- Integration with weather-responsive UI themes
+- **Responsive grid** - prevents text wrapping (10:45 AM displays properly)
+- Configurable for different coastal locations
 
 ### 🕐 Smart Time-Based Display
 - Shows today's schedule before 5 PM Eastern Time
 - Automatically switches to tomorrow's schedule after 5 PM
-- Large, room-readable text optimized for iPad wall mounting
+- **Two-line calendar titles** - prevents date cutoff ("Today's Schedule" / "Monday, August 5th")
+- Large, room-readable text optimized for 1024x768 displays
 - Responsive grid layout for multiple display sizes
 
 ### 🔧 Comprehensive Administrative Tools
@@ -120,39 +119,57 @@ This dashboard is built with modern HTML5, JavaScript, and CSS - **perfect for G
 ## File Structure
 
 ```
-dashboard/
+family-dash/
 ├── index.html                  # Smart entry point with config detection
-├── dashboard.html              # Main dashboard interface
-├── setup.html                  # API configuration interface
-├── config.js                   # Configuration management
-├── api-client.js              # Direct API calls to external services
-├── auth-client.js             # Browser-based Google OAuth
-├── app-client.js              # Main application logic
-├── manifest.json              # PWA manifest
-├── .gitignore                 # Git ignore rules
-└── README.md                  # Documentation
+├── dashboard.html              # Main dashboard interface (v3.7)
+├── setup.html                  # API configuration interface with location detection
+├── add-account.html           # Google account management interface
+├── config.js                   # Configuration management with LocalStorage
+├── api-client.js              # Direct API calls with weather narratives
+├── auth-client.js             # Browser-based Google OAuth with multi-account
+├── app-client.js              # Main application logic (overhauled weather UI)
+├── favicon.svg                # Dynamic dashboard chart favicon
+├── manifest.json              # PWA manifest for mobile installation
+├── sw.js                      # Service worker for offline functionality
+├── tokens/                    # Google OAuth token storage directory
+└── README.md                  # Documentation (updated v3.7)
 ```
 
-## New in Version 3.0 - GitHub Pages Edition
+## Recent Updates
 
-### Major Changes
-- **Converted from PHP to pure HTML/JavaScript** for GitHub Pages compatibility
-- **Client-side API integration** with direct calls to external services
+### Version 3.7 - Calendar Title Fix
+- **Two-line calendar titles** prevent date cutoff issues
+- Better typography with improved font sizes and line height
+
+### Version 3.6 - Text Wrap Fix  
+- **No-wrap styling** prevents AM/PM from breaking to new lines
+- Ensures clean time display for 4-digit times like "10:45 AM"
+
+### Version 3.5 - Layout Fix
+- **Tighter spacing** in sun/tide grid (100px minimum, 6px gaps)
+- All 4 cards (sunrise, sunset, high/low tide) fit on single line
+
+### Version 3.4 - Compact Layout
+- **Single horizontal line** for all sun/tide information
+- Responsive grid with auto-fit columns for optimal spacing
+
+### Version 3.3 - Weather Narratives
+- **API-generated weather summaries** with temperature ranges
+- **Smart narratives** for today's conditions and tomorrow's forecast
+- Enhanced daily summary structure with high/low temps
+
+### Version 3.2 - Weather UI Overhaul
+- **Simplified design** - removed complex multi-box layout
+- **Room-readable typography** - 64px+ temperatures, 28px+ text
+- **High-contrast colors** optimized for all weather conditions  
+- **Weather narratives** - compelling daily overviews
+- **Today/Tomorrow focus** - current + later vs narrative overview
+
+### Version 3.0 - GitHub Pages Edition
+- **Converted from PHP to pure HTML/JavaScript** for GitHub Pages
+- **Client-side API integration** with direct external service calls
 - **Browser-based Google OAuth** using Google's JavaScript library
 - **LocalStorage configuration** replacing server-side config files
-
-### New Features
-- **GitHub Pages deployment ready** - no server required
-- **User-friendly setup interface** for API configuration
-- **Smart configuration detection** with automatic redirects
-- **Enhanced error handling** for API failures
-- **Modern ES2015+ JavaScript** with async/await patterns
-
-### Security & Storage
-- **No server-side credential storage** - all config in browser
-- **Secure token management** with automatic refresh
-- **CORS-compliant API calls** to external services
-- **Git-safe repository** with no hard-coded secrets
 
 ## External API Integration
 
