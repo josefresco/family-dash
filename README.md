@@ -122,8 +122,7 @@ This dashboard is built with modern HTML5, JavaScript, and CSS - **perfect for G
 family-dash/
 ├── index.html                  # Smart entry point with config detection
 ├── dashboard.html              # Main dashboard interface (v3.7)
-├── setup.html                  # API configuration interface with location detection
-├── add-account.html           # Google account management interface
+├── setup.html                  # API configuration & Google account management
 ├── config.js                   # Configuration management with LocalStorage
 ├── api-client.js              # Direct API calls with weather narratives
 ├── auth-client.js             # Browser-based Google OAuth with multi-account
