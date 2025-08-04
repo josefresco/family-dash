@@ -1099,27 +1099,28 @@ class DashboardApp {
     renderSunTideData() {
         const sunTideDiv = document.getElementById('sun-tide-info');
         
-        // Use modern array methods for tide rendering
+        // Create compact tide data for single line display
         const tideHtml = this.tideData?.length > 0
             ? this.tideData.map(tide => `
-                <div class="tide-time">
-                    <strong>${tide.type}</strong>
-                    <div style="font-size: 12px; color: #0277bd; font-weight: 600; margin: 2px 0;">${tide.time}</div>
-                    <div style="font-size: 8px; color: #0288d1;">${tide.height}</div>
+                <div class="info-card">
+                    <div class="info-card-title">${tide.type} Tide</div>
+                    <div class="info-card-value">🌊 ${tide.time}</div>
                 </div>
             `).join('')
-            : '<div class="tide-time"><strong>No tide data available</strong></div>';
+            : `<div class="info-card">
+                <div class="info-card-title">Tides</div>
+                <div class="info-card-value">🌊 No data</div>
+               </div>`;
 
         const stationInfo = this.tideStation 
             ? `<small style="color: #6c757d; font-style: italic; margin-top: 6px; display: block; font-size: 8px; text-align: center;">${this.tideStation}</small>` 
             : '';
         
-        const timeContext = this.displayMode === 'tomorrow' ? 'Tomorrow' : 'Today';
         const sunrise = this.sunData?.sunrise || 'N/A';
         const sunset = this.sunData?.sunset || 'N/A';
 
         sunTideDiv.innerHTML = `
-            <div class="sun-tide-grid">
+            <div class="sun-tide-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
                 <div class="info-card">
                     <div class="info-card-title">Sunrise</div>
                     <div class="info-card-value">🌅 ${sunrise}</div>
@@ -1128,14 +1129,9 @@ class DashboardApp {
                     <div class="info-card-title">Sunset</div>
                     <div class="info-card-value">🌇 ${sunset}</div>
                 </div>
+                ${tideHtml}
             </div>
-            <div style="margin-top: 12px;">
-                <div class="tides-title">${timeContext}'s Tides</div>
-                <div class="tide-times">
-                    ${tideHtml}
-                </div>
-                ${stationInfo}
-            </div>
+            ${stationInfo}
         `;
     }
 
