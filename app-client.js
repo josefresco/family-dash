@@ -279,7 +279,9 @@ class DashboardApp {
             
             console.log('Calendar API response:', data);
             
-            if (data.error === 'no_accounts_connected') {
+            if (data.error === 'no_accounts_connected' || 
+                data.source === 'no_authentication' || 
+                (data.connected_users && data.connected_users.length === 0)) {
                 console.log('No accounts connected, showing connect button');
                 this.renderAddAccountPrompt();
                 return;
