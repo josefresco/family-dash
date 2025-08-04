@@ -590,6 +590,9 @@ class DashboardApp {
         const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
         const condition = data.description || data.daily_summary.description;
         
+        // Create today's narrative using available data
+        const todayNarrative = this.createTodayNarrative(data);
+        
         return `
             <!-- Today's Main Display -->
             <div style="
@@ -608,8 +611,20 @@ class DashboardApp {
                 <div style="font-size: 64px; font-weight: 300; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                     ${currentTemp}°F
                 </div>
-                <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
+                <div style="font-size: 28px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 15px;">
                     ${condition}
+                </div>
+                
+                <!-- Today's Weather Summary -->
+                <div style="
+                    background: rgba(255,255,255,0.15);
+                    border-radius: 12px;
+                    padding: 16px;
+                    font-size: 18px;
+                    line-height: 1.4;
+                    font-weight: 500;
+                ">
+                    ${todayNarrative}
                 </div>
             </div>
             
@@ -694,8 +709,118 @@ class DashboardApp {
         `;
     }
     
+    createTodayNarrative(data) {
+        // Use API-generated summary if available
+        if (data.daily_summary?.summary) {
+            const apiSummary = data.daily_summary.summary;
+            
+            // Add time-based encouragement to API summary
+            const now = new Date();
+            const hour = now.getHours();
+            
+            let timeEncouragement = '';
+            if (hour < 12) {
+                timeEncouragement = " Great morning to get outside! ☀️";
+            } else if (hour < 17) {
+                timeEncouragement = " Perfect afternoon weather! 🌞";
+            } else {
+                timeEncouragement = " Nice evening conditions! 🌅";
+            }
+            
+            return apiSummary + timeEncouragement;
+        }
+        
+        // Fallback to custom narrative if no API summary
+        const temp = data.temperature || data.daily_summary?.current_temp || data.daily_summary?.high_temp || 70;
+        const condition = (data.description || data.daily_summary?.description || 'partly cloudy').toLowerCase();
+        const humidity = data.humidity || 50;
+        const windSpeed = data.windSpeed || 0;
+        
+        let narrative = '';
+        
+        // Current condition assessment
+        if (temp >= 80) {
+            narrative = "🔥 It's hot out there! ";
+        } else if (temp >= 70) {
+            narrative = "☀️ Beautiful weather right now! ";
+        } else if (temp >= 60) {
+            narrative = "🌤️ Pleasant conditions today! ";
+        } else if (temp >= 40) {
+            narrative = "🧥 A bit cool - jacket weather! ";
+        } else {
+            narrative = "❄️ Bundle up - it's chilly! ";
+        }
+        
+        // Add condition-specific details
+        if (condition.includes('rain') || condition.includes('shower')) {
+            narrative += "Rain in the area. ";
+        } else if (condition.includes('snow')) {
+            narrative += "Snow is falling! ";
+        } else if (condition.includes('clear') || condition.includes('sunny')) {
+            narrative += "Clear and bright! ";
+        } else if (condition.includes('cloud')) {
+            narrative += "Overcast skies. ";
+        }
+        
+        // Add comfort details
+        if (humidity > 70) {
+            narrative += "Feeling humid. ";
+        } else if (humidity < 30) {
+            narrative += "Nice and dry. ";
+        }
+        
+        if (windSpeed > 15) {
+            narrative += "Quite breezy today. ";
+        } else if (windSpeed > 8) {
+            narrative += "Light breeze. ";
+        }
+        
+        // Current time-based suggestion
+        const now = new Date();
+        const hour = now.getHours();
+        
+        if (hour < 12) {
+            narrative += "Great morning to get outside! ☀️";
+        } else if (hour < 17) {
+            narrative += "Perfect afternoon weather! 🌞";
+        } else {
+            narrative += "Nice evening conditions! 🌅";
+        }
+        
+        return narrative;
+    }
+
     createWeatherNarrative(data) {
         const summary = data.daily_summary;
+        
+        // Use API-generated summary if available
+        if (summary?.summary) {
+            const apiSummary = summary.summary;
+            
+            // Add encouraging closing based on conditions
+            const temp = summary.high_temp;
+            const condition = summary.description.toLowerCase();
+            const precipitation = data.precipitation;
+            
+            const closings = [
+                "Make it a great day! 🌟",
+                "Perfect for outdoor plans! 🚀",
+                "Enjoy the weather! 🎉",
+                "Have a wonderful day! ✨",
+                "Great day to be outside! 🌳"
+            ];
+            
+            let encouragement = '';
+            if (temp >= 60 && !precipitation?.expected && !condition.includes('rain') && !condition.includes('snow')) {
+                encouragement = " " + closings[Math.floor(Math.random() * closings.length)];
+            } else {
+                encouragement = " Stay cozy! 🏠";
+            }
+            
+            return apiSummary + encouragement;
+        }
+        
+        // Fallback to custom narrative if no API summary
         const temp = summary.high_temp;
         const condition = summary.description.toLowerCase();
         const precipitation = data.precipitation;

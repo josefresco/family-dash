@@ -147,6 +147,9 @@ class APIClient {
             })));
         }
         
+        // Calculate daily summary from current data and forecasts
+        const dailySummary = this.createDailySummary(currentData, forecastData, hourlyForecasts);
+
         return {
             temperature: Math.round(currentData.main.temp),
             description: currentData.weather[0].description,
@@ -157,8 +160,128 @@ class APIClient {
             icon: currentData.weather[0].icon,
             date_requested: date_param,
             hourly_forecasts: hourlyForecasts,
+            daily_summary: dailySummary,
             source: 'live_openweather_current'
         };
+    }
+    
+    createDailySummary(currentData, forecastData, hourlyForecasts) {
+        // Use current temp as baseline
+        const currentTemp = Math.round(currentData.main.temp);
+        
+        // Calculate high/low from hourly forecasts if available
+        let highTemp = currentTemp;
+        let lowTemp = currentTemp;
+        
+        if (hourlyForecasts && hourlyForecasts.length > 0) {
+            const temps = hourlyForecasts.map(h => h.temperature);
+            highTemp = Math.max(currentTemp, ...temps);
+            lowTemp = Math.min(currentTemp, ...temps);
+        } else if (forecastData?.list?.length > 0) {
+            // Use first few forecast entries as fallback
+            const todayForecasts = forecastData.list.slice(0, 8); // Next 24 hours
+            const temps = todayForecasts.map(f => Math.round(f.main.temp));
+            highTemp = Math.max(currentTemp, ...temps);
+            lowTemp = Math.min(currentTemp, ...temps);
+        }
+        
+        return {
+            current_temp: currentTemp,
+            high_temp: highTemp,
+            low_temp: lowTemp,
+            description: currentData.weather[0].description,
+            icon: currentData.weather[0].icon,
+            summary: this.generateWeatherSummary(currentData, highTemp, lowTemp)
+        };
+    }
+    
+    generateWeatherSummary(currentData, highTemp, lowTemp) {
+        const condition = currentData.weather[0].description.toLowerCase();
+        const temp = Math.round(currentData.main.temp);
+        
+        let summary = '';
+        
+        // Temperature summary
+        if (highTemp !== lowTemp) {
+            summary = `Today's temperature ranges from ${lowTemp}°F to ${highTemp}°F. `;
+        } else {
+            summary = `Current temperature is ${temp}°F. `;
+        }
+        
+        // Condition summary
+        if (condition.includes('rain')) {
+            summary += 'Expect rainy conditions. ';
+        } else if (condition.includes('snow')) {
+            summary += 'Snow is expected. ';
+        } else if (condition.includes('clear')) {
+            summary += 'Clear skies today. ';
+        } else if (condition.includes('cloud')) {
+            summary += 'Cloudy weather expected. ';
+        } else {
+            summary += `Expect ${condition}. `;
+        }
+        
+        // Wind conditions
+        const windSpeed = Math.round(currentData.wind?.speed || 0);
+        if (windSpeed > 15) {
+            summary += 'Strong winds expected. ';
+        } else if (windSpeed > 8) {
+            summary += 'Breezy conditions. ';
+        }
+        
+        return summary.trim();
+    }
+    
+    createForecastDailySummary(forecasts, firstForecast) {
+        // Calculate high/low from all forecasts
+        const temps = forecasts.map(f => Math.round(f.main.temp));
+        const highTemp = Math.max(...temps);
+        const lowTemp = Math.min(...temps);
+        const avgTemp = Math.round(temps.reduce((sum, t) => sum + t, 0) / temps.length);
+        
+        return {
+            current_temp: avgTemp,
+            high_temp: highTemp,
+            low_temp: lowTemp,
+            description: firstForecast.weather[0].description,
+            icon: firstForecast.weather[0].icon,
+            summary: this.generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast)
+        };
+    }
+    
+    generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast) {
+        const condition = firstForecast.weather[0].description.toLowerCase();
+        
+        let summary = `Tomorrow's temperature will range from ${lowTemp}°F to ${highTemp}°F. `;
+        
+        // Analyze conditions throughout the day
+        const conditions = forecasts.map(f => f.weather[0].description.toLowerCase());
+        const hasRain = conditions.some(c => c.includes('rain'));
+        const hasSnow = conditions.some(c => c.includes('snow'));
+        const hasClear = conditions.some(c => c.includes('clear'));
+        const mostlyCloudy = conditions.filter(c => c.includes('cloud')).length > conditions.length / 2;
+        
+        if (hasRain) {
+            summary += 'Rain is expected during the day. ';
+        } else if (hasSnow) {
+            summary += 'Snow is in the forecast. ';
+        } else if (hasClear && !mostlyCloudy) {
+            summary += 'Expect mostly clear skies. ';
+        } else if (mostlyCloudy) {
+            summary += 'Cloudy conditions throughout the day. ';
+        } else {
+            summary += `Expect ${condition}. `;
+        }
+        
+        // Wind analysis
+        const avgWind = forecasts.reduce((sum, f) => sum + (f.wind?.speed || 0), 0) / forecasts.length;
+        if (avgWind > 15) {
+            summary += 'Windy conditions expected. ';
+        } else if (avgWind > 8) {
+            summary += 'Light to moderate breeze. ';
+        }
+        
+        return summary.trim();
     }
 
     processWeatherForecast(data, date_param) {
@@ -199,6 +322,20 @@ class APIClient {
         const avgTemp = Math.round(forecasts.reduce((sum, f) => sum + f.main.temp, 0) / forecasts.length);
         const firstForecast = forecasts[0];
         
+        // Create hourly forecasts array
+        const hourlyForecasts = forecasts.map(f => ({
+            time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                hour12: true
+            }),
+            temperature: Math.round(f.main.temp),
+            description: f.weather[0].description,
+            icon: f.weather[0].icon
+        }));
+        
+        // Create daily summary for forecast data
+        const dailySummary = this.createForecastDailySummary(forecasts, firstForecast);
+
         return {
             temperature: avgTemp,
             description: firstForecast.weather[0].description,
@@ -208,15 +345,8 @@ class APIClient {
             visibility: Math.round((firstForecast.visibility || 10000) / 1609.34),
             icon: firstForecast.weather[0].icon,
             date_requested: date_param,
-            hourly_forecasts: forecasts.map(f => ({
-                time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    hour12: true
-                }),
-                temperature: Math.round(f.main.temp),
-                description: f.weather[0].description,
-                icon: f.weather[0].icon
-            })),
+            hourly_forecasts: hourlyForecasts,
+            daily_summary: dailySummary,
             source: 'live_openweather_forecast'
         };
     }
