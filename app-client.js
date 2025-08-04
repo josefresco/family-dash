@@ -1120,7 +1120,7 @@ class DashboardApp {
         const sunset = this.sunData?.sunset || 'N/A';
 
         sunTideDiv.innerHTML = `
-            <div class="sun-tide-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+            <div class="sun-tide-grid">
                 <div class="info-card">
                     <div class="info-card-title">Sunrise</div>
                     <div class="info-card-value">🌅 ${sunrise}</div>
