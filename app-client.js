@@ -56,6 +56,9 @@ class DashboardApp {
                 throw new Error('API Client not available. Check dashboard.html initialization.');
             }
             
+            // Check and auto-detect location if needed
+            await this.checkAndDetectLocation();
+            
             // Determine display mode based on current time
             this.updateDisplayMode();
             
@@ -77,6 +80,125 @@ class DashboardApp {
         }
     }
     
+    async checkAndDetectLocation() {
+        const currentLat = this.appConfig.get('location.lat');
+        const currentLon = this.appConfig.get('location.lon');
+        
+        // Check if location is not set or is still default NYC coordinates
+        const isDefaultLocation = (currentLat === 40.7128 && currentLon === -74.0060) || 
+                                  !currentLat || !currentLon;
+        
+        if (isDefaultLocation) {
+            console.log('Location not set or using default NYC coordinates, attempting auto-detection...');
+            try {
+                await this.autoDetectLocation();
+            } catch (error) {
+                console.warn('Auto location detection failed:', error.message);
+                // Continue with default location
+            }
+        } else {
+            console.log('Location already configured:', {
+                lat: currentLat,
+                lon: currentLon,
+                city: this.appConfig.get('location.city'),
+                state: this.appConfig.get('location.state')
+            });
+        }
+    }
+    
+    async autoDetectLocation() {
+        if (!navigator.geolocation) {
+            throw new Error('Geolocation is not supported by this browser');
+        }
+        
+        console.log('Requesting location permission...');
+        
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutes
+            });
+        });
+        
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        console.log('Location detected:', { lat, lon });
+        
+        // Use reverse geocoding to get city/state
+        const locationData = await this.reverseGeocode(lat, lon);
+        
+        // Update configuration
+        this.appConfig.set('location.lat', lat);
+        this.appConfig.set('location.lon', lon);
+        this.appConfig.set('location.city', locationData.city);
+        this.appConfig.set('location.state', locationData.state);
+        
+        // Update local config object
+        this.config.location.lat = lat;
+        this.config.location.lon = lon;
+        this.config.location.city = locationData.city;
+        this.config.location.state = locationData.state;
+        
+        console.log(`✅ Location auto-detected and saved: ${locationData.city}, ${locationData.state}`);
+        
+        // Show notification to user
+        this.showNotification(`📍 Location auto-detected: ${locationData.city}, ${locationData.state}`, 'success');
+    }
+    
+    async reverseGeocode(lat, lon) {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Reverse geocoding failed');
+            }
+            
+            const data = await response.json();
+            console.log('Reverse geocoding result:', data);
+            
+            const address = data.address || {};
+            
+            // Extract city and state from various possible fields
+            const city = address.city || address.town || address.village || address.hamlet || 
+                       address.suburb || address.neighbourhood || 'Current Location';
+                       
+            const state = address.state || address.region || address.province || 
+                        address.county || 'Auto-Detected';
+            
+            return {
+                city: city,
+                state: this.getStateAbbreviation(state)
+            };
+        } catch (error) {
+            console.warn('Reverse geocoding failed, using fallback:', error);
+            // Fallback to basic location name
+            return {
+                city: 'Current Location',
+                state: 'Auto-Detected'
+            };
+        }
+    }
+    
+    getStateAbbreviation(stateName) {
+        const stateMap = {
+            'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+            'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+            'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+            'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+            'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+            'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+            'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+            'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+            'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+            'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+        };
+        
+        return stateMap[stateName] || stateName;
+    }
+
     async initializeGoogleAuth() {
         try {
             await this.authClient.init();
