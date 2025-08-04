@@ -620,11 +620,11 @@ class DashboardApp {
                 <!-- Today's Weather Summary -->
                 <div style="
                     background: rgba(255,255,255,0.15);
-                    border-radius: 8px;
-                    padding: 10px;
-                    font-size: 14px;
-                    line-height: 1.3;
-                    font-weight: 500;
+                    border-radius: 10px;
+                    padding: 20px;
+                    font-size: 22px;
+                    line-height: 1.4;
+                    font-weight: 600;
                 ">
                     ${todayNarrative}
                 </div>
@@ -699,11 +699,11 @@ class DashboardApp {
                 </div>
                 <div style="
                     background: rgba(255,255,255,0.15);
-                    border-radius: 10px;
-                    padding: 12px;
-                    font-size: 16px;
-                    line-height: 1.4;
-                    font-weight: 500;
+                    border-radius: 12px;
+                    padding: 25px;
+                    font-size: 24px;
+                    line-height: 1.5;
+                    font-weight: 600;
                 ">
                     ${narrative}
                 </div>
@@ -1020,11 +1020,11 @@ class DashboardApp {
                     </div>
                     <div style="
                         background: rgba(255,255,255,0.15);
-                        border-radius: 10px;
-                        padding: 12px;
-                        font-size: 16px;
-                        line-height: 1.4;
-                        font-weight: 500;
+                        border-radius: 12px;
+                        padding: 25px;
+                        font-size: 24px;
+                        line-height: 1.5;
+                        font-weight: 600;
                     ">
                         Check back later for a detailed forecast! 🌟
                     </div>
