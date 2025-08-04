@@ -279,7 +279,10 @@ class DashboardApp {
             const data = await this.makeApiRequest('calendar');
             if (!data) return; // Request was cancelled
             
+            console.log('Calendar API response:', data);
+            
             if (data.error === 'no_accounts_connected') {
+                console.log('No accounts connected, showing connect button');
                 this.renderAddAccountPrompt();
                 return;
             }
@@ -288,6 +291,7 @@ class DashboardApp {
                 throw new Error(data.message || data.error);
             }
             
+            console.log('Rendering calendar data...');
             this.renderMultiAccountCalendar(data);
         } catch (error) {
             console.error('Failed to load calendar events:', error);

@@ -175,7 +175,10 @@ class GoogleAuthClient {
     
     // Simple calendar data fetch - returns no_accounts_connected for now
     async getCalendarData(date_param = 'today') {
+        console.log('getCalendarData called, isSignedIn:', this.isSignedIn());
+        
         if (!this.isSignedIn()) {
+            console.log('Not signed in, returning no_accounts_connected');
             return {
                 error: 'no_accounts_connected',
                 message: 'No Google accounts connected'
@@ -184,6 +187,7 @@ class GoogleAuthClient {
         
         // For now, return a simple success response
         // In a full implementation, you'd use the access token to call Google Calendar API
+        console.log('Signed in, returning mock calendar data');
         return {
             calendars: [],
             connected_users: [{ email: 'connected' }],
