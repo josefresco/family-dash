@@ -70,8 +70,6 @@ class DashboardApp {
             // Mark as successfully initialized
             window.dashboardInstance = this;
             
-            // Clear any previous error messages from old cached versions
-            console.clear();
             console.log('✅ Dashboard loaded successfully!');
         } catch (error) {
             console.error('Failed to initialize app:', error);
