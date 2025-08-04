@@ -4,6 +4,12 @@
 
 class DashboardApp {
     constructor() {
+        // Prevent multiple dashboard instances
+        if (window.dashboardInstance) {
+            console.warn('Dashboard already initialized, skipping duplicate initialization');
+            return window.dashboardInstance;
+        }
+        
         // Use the global configuration instead of hardcoded values
         this.appConfig = window.dashboardConfig;
         this.apiClient = null; // Will be set during init()
@@ -60,6 +66,13 @@ class DashboardApp {
             this.setupAutoRefresh();
             this.setupEventListeners();
             this.showLastUpdateTime();
+            
+            // Mark as successfully initialized
+            window.dashboardInstance = this;
+            
+            // Clear any previous error messages from old cached versions
+            console.clear();
+            console.log('✅ Dashboard loaded successfully!');
         } catch (error) {
             console.error('Failed to initialize app:', error);
             this.showError('Failed to load dashboard data: ' + error.message);
