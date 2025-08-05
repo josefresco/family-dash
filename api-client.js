@@ -242,28 +242,20 @@ class APIClient {
     
     generateWeatherSummary(currentData, highTemp, lowTemp) {
         const condition = currentData.weather[0].description.toLowerCase();
-        const temp = Math.round(currentData.main.temp);
         
         let summary = '';
         
-        // Temperature summary
-        if (highTemp !== lowTemp) {
-            summary = `Today's temperature ranges from ${lowTemp}°F to ${highTemp}°F. `;
-        } else {
-            summary = `Current temperature is ${temp}°F. `;
-        }
-        
-        // Condition summary
+        // Focus on weather story, not temperatures
         if (condition.includes('rain')) {
-            summary += 'Expect rainy conditions. ';
+            summary = 'Rainy conditions are in the forecast. ';
         } else if (condition.includes('snow')) {
-            summary += 'Snow is expected. ';
+            summary = 'Snow is expected today. ';
         } else if (condition.includes('clear')) {
-            summary += 'Clear skies today. ';
+            summary = 'Beautiful clear skies await you. ';
         } else if (condition.includes('cloud')) {
-            summary += 'Cloudy weather expected. ';
+            summary = 'Cloudy weather is expected. ';
         } else {
-            summary += `Expect ${condition}. `;
+            summary = `${condition.charAt(0).toUpperCase() + condition.slice(1)} conditions today. `;
         }
         
         // Wind conditions
@@ -297,9 +289,9 @@ class APIClient {
     generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast) {
         const condition = firstForecast.weather[0].description.toLowerCase();
         
-        let summary = `Tomorrow's temperature will range from ${lowTemp}°F to ${highTemp}°F. `;
+        let summary = '';
         
-        // Analyze conditions throughout the day
+        // Analyze conditions throughout the day - focus on story
         const conditions = forecasts.map(f => f.weather[0].description.toLowerCase());
         const hasRain = conditions.some(c => c.includes('rain'));
         const hasSnow = conditions.some(c => c.includes('snow'));
@@ -307,15 +299,15 @@ class APIClient {
         const mostlyCloudy = conditions.filter(c => c.includes('cloud')).length > conditions.length / 2;
         
         if (hasRain) {
-            summary += 'Rain is expected during the day. ';
+            summary = 'Tomorrow brings rain showers. ';
         } else if (hasSnow) {
-            summary += 'Snow is in the forecast. ';
+            summary = 'Snow is in tomorrow\'s forecast. ';
         } else if (hasClear && !mostlyCloudy) {
-            summary += 'Expect mostly clear skies. ';
+            summary = 'Tomorrow looks bright with clear skies. ';
         } else if (mostlyCloudy) {
-            summary += 'Cloudy conditions throughout the day. ';
+            summary = 'Expect cloudy skies tomorrow. ';
         } else {
-            summary += `Expect ${condition}. `;
+            summary = `Tomorrow will have ${condition} conditions. `;
         }
         
         // Wind analysis
