@@ -60,17 +60,62 @@ class APIClient {
     }
     
     // Weather API - Direct call to OpenWeatherMap
+    // Geocode city, state to coordinates using OpenWeatherMap Geocoding API
+    async geocodeLocation(city, state) {
+        const apiKey = this.config.get('openweather_api_key');
+        if (!apiKey) {
+            throw new Error('OpenWeatherMap API key required for geocoding');
+        }
+        
+        try {
+            // Use OpenWeatherMap's Geocoding API (more reliable than external services)
+            const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)},${encodeURIComponent(state)},US&limit=1&appid=${apiKey}`;
+            console.log('Geocoding location:', { city, state });
+            
+            const response = await this.makeRequest(geocodeUrl, {});
+            
+            if (!response || response.length === 0) {
+                throw new Error(`Location not found: ${city}, ${state}`);
+            }
+            
+            const location = response[0];
+            const coords = {
+                lat: location.lat,
+                lon: location.lon,
+                name: location.name,
+                state: location.state,
+                country: location.country
+            };
+            
+            console.log('Geocoded coordinates:', coords);
+            return coords;
+            
+        } catch (error) {
+            console.error('Geocoding error:', error);
+            throw new Error(`Failed to geocode ${city}, ${state}: ${error.message}`);
+        }
+    }
+
     async getWeatherData(date_param = 'today') {
         const apiKey = this.config.get('openweather_api_key');
-        const lat = this.config.get('location.lat');
-        const lon = this.config.get('location.lon');
-        
         if (!apiKey) {
             throw new Error('OpenWeatherMap API key not configured');
         }
         
+        // Get location from city/state, then geocode to coordinates
+        const city = this.config.get('location.city');
+        const state = this.config.get('location.state');
+        
+        if (!city || !state) {
+            throw new Error('Location city and state not configured');
+        }
+        
         try {
-            console.log('Weather API request params:', { date_param, lat, lon, hasApiKey: !!apiKey });
+            console.log('Weather API request params:', { date_param, city, state, hasApiKey: !!apiKey });
+            
+            // Geocode city/state to coordinates
+            const coords = await this.geocodeLocation(city, state);
+            const { lat, lon } = coords;
             
             if (date_param === 'today') {
                 // Use current weather API for today
@@ -356,12 +401,11 @@ class APIClient {
         // Get user's location to determine appropriate tide stations
         const userCity = this.config.get('location.city') || 'New York';
         const userState = this.config.get('location.state') || 'NY';
-        const userLat = this.config.get('location.lat') || 40.7128;
         
         let stations;
         
-        // Determine stations based on location
-        if (userCity.toLowerCase().includes('eastham') || userState === 'MA' || userLat > 41.0) {
+        // Determine stations based on location (using city/state instead of coordinates)
+        if (userCity.toLowerCase().includes('eastham') || userState === 'MA') {
             // Cape Cod / Massachusetts stations
             stations = [
                 { id: '8447930', name: 'Woods Hole, MA' },
@@ -543,8 +587,13 @@ class APIClient {
     
     // Sunrise/Sunset API
     async getSunriseSunsetData(date_param = 'today') {
-        const lat = this.config.get('location.lat');
-        const lon = this.config.get('location.lon');
+        // Get location from city/state, then geocode to coordinates
+        const city = this.config.get('location.city');
+        const state = this.config.get('location.state');
+        
+        if (!city || !state) {
+            throw new Error('Location city and state not configured');
+        }
         
         const now = new Date();
         const targetDate = date_param === 'tomorrow'
@@ -554,6 +603,10 @@ class APIClient {
         const dateStr = targetDate.toISOString().split('T')[0];
         
         try {
+            // Geocode city/state to coordinates
+            const coords = await this.geocodeLocation(city, state);
+            const { lat, lon } = coords;
+            
             const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&date=${dateStr}&formatted=0`;
             const data = await this.makeRequest(url);
             

@@ -291,35 +291,24 @@
                 <button class="button" onclick="detectLocation()" id="detect-location-btn">
                     📍 Detect My Location Automatically
                 </button>
-                <button class="button button-secondary" onclick="debugGeolocation()" style="font-size: 12px; padding: 8px 16px; margin-left: 10px;">
-                    🔍 Debug Location
-                </button>
                 <div class="help-text" style="margin-top: 10px;">
-                    <strong>📱 iPad Users:</strong> If location detection fails, try the Debug button first.
-                    <br><strong>Recommended:</strong> This provides the most accurate weather data for your area.
+                    <strong>📱 iPad Users:</strong> If location detection fails, simply enter your city and state manually below.
+                    <br><strong>Note:</strong> Weather is now based on City, State instead of exact coordinates for easier setup.
                 </div>
             </div>
             <div class="location-section">
                 <div class="form-group">
-                    <label for="location-lat">Latitude:</label>
-                    <input type="text" id="location-lat" placeholder="40.7128" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="location-lon">Longitude:</label>
-                    <input type="text" id="location-lon" placeholder="-74.0060" readonly>
-                </div>
-                <div class="form-group">
                     <label for="location-city">City:</label>
-                    <input type="text" id="location-city" placeholder="New York" readonly>
+                    <input type="text" id="location-city" placeholder="New York">
                 </div>
                 <div class="form-group">
-                    <label for="location-state">State:</label>
-                    <input type="text" id="location-state" placeholder="NY" readonly>
+                    <label for="location-state">State (2-letter code):</label>
+                    <input type="text" id="location-state" placeholder="NY" maxlength="2" style="text-transform: uppercase;">
                 </div>
             </div>
             <div class="help-text">
-                Location will be automatically detected. If you need to manually override, 
-                <a href="#" onclick="enableManualLocation()">click here to enable manual entry</a>.
+                Simply enter your city and state above. The weather system will automatically convert 
+                this to precise coordinates when needed. No need for manual latitude/longitude entry!
             </div>
         </div>
         
@@ -352,17 +341,15 @@
             // Load values into form
             document.getElementById('weather-key').value = config.get('openweather_api_key') || '';
             document.getElementById('google-client-id').value = config.get('google_client_id') || '';
-            document.getElementById('location-lat').value = config.get('location.lat') || '40.7128';
-            document.getElementById('location-lon').value = config.get('location.lon') || '-74.0060';
             document.getElementById('location-city').value = config.get('location.city') || 'New York';
             document.getElementById('location-state').value = config.get('location.state') || 'NY';
             
             updateConfigStatus();
             
             // Auto-detect location for new users (if still using defaults)
-            const currentLat = config.get('location.lat') || 40.7128;
-            const currentLon = config.get('location.lon') || -74.0060;
-            const isDefaultLocation = (currentLat == 40.7128 && currentLon == -74.0060);
+            const currentCity = config.get('location.city') || 'New York';
+            const currentState = config.get('location.state') || 'NY';
+            const isDefaultLocation = (currentCity === 'New York' && currentState === 'NY');
             
             if (isDefaultLocation) {
                 console.log('New user detected, auto-detecting location...');
@@ -408,20 +395,16 @@
                 // Get values from form
                 const weatherKey = document.getElementById('weather-key').value.trim();
                 const googleClientId = document.getElementById('google-client-id').value.trim();
-                const lat = parseFloat(document.getElementById('location-lat').value);
-                const lon = parseFloat(document.getElementById('location-lon').value);
                 const city = document.getElementById('location-city').value.trim();
-                const state = document.getElementById('location-state').value.trim();
+                const state = document.getElementById('location-state').value.trim().toUpperCase();
                 
-                console.log('Saving configuration:', { weatherKey: !!weatherKey, googleClientId: !!googleClientId, lat, lon, city, state });
+                console.log('Saving configuration:', { weatherKey: !!weatherKey, googleClientId: !!googleClientId, city, state });
                 
                 // Save configuration
                 if (weatherKey) config.set('openweather_api_key', weatherKey);
                 if (googleClientId) config.set('google_client_id', googleClientId);
                 
                 // Save location if values are provided
-                if (!isNaN(lat)) config.set('location.lat', lat);
-                if (!isNaN(lon)) config.set('location.lon', lon);
                 if (city) config.set('location.city', city);
                 if (state) config.set('location.state', state);
                 
@@ -455,17 +438,40 @@
                 console.log('=== API TEST START ===');
                 console.log('Config:', {
                     weatherKey: weatherKey ? `${weatherKey.substring(0, 8)}...` : 'missing',
-                    lat: config.get('location.lat'),
-                    lon: config.get('location.lon'),
                     city: config.get('location.city'),
                     state: config.get('location.state')
                 });
                 
-                // Test weather API (current weather - same as setup)
-                const lat = config.get('location.lat');
-                const lon = config.get('location.lon');
-                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=imperial`;
+                // Test weather API using new city/state approach
+                const city = config.get('location.city');
+                const state = config.get('location.state');
                 
+                if (!city || !state) {
+                    showStatus('Please configure location (city and state) first', 'error');
+                    return;
+                }
+                
+                // First geocode the city/state to coordinates
+                const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)},${encodeURIComponent(state)},US&limit=1&appid=${weatherKey}`;
+                console.log('Testing geocoding API:', geocodeUrl.replace(weatherKey, '[API_KEY]'));
+                
+                const geocodeResponse = await fetch(geocodeUrl);
+                if (!geocodeResponse.ok) {
+                    showStatus(`Geocoding API test failed (${geocodeResponse.status}): ${geocodeResponse.statusText}`, 'error');
+                    return;
+                }
+                
+                const geocodeData = await geocodeResponse.json();
+                if (!geocodeData || geocodeData.length === 0) {
+                    showStatus(`Location not found: ${city}, ${state}`, 'error');
+                    return;
+                }
+                
+                const { lat, lon } = geocodeData[0];
+                console.log('Geocoded coordinates:', { lat, lon });
+                
+                // Now test weather API with geocoded coordinates
+                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherKey}&units=imperial`;
                 console.log('Testing current weather API:', weatherUrl.replace(weatherKey, '[API_KEY]'));
                 
                 const response = await fetch(weatherUrl);
@@ -605,9 +611,7 @@
                 // Use reverse geocoding to get city/state
                 const locationData = await reverseGeocode(lat, lon);
                 
-                // Update form fields
-                document.getElementById('location-lat').value = lat.toFixed(6);
-                document.getElementById('location-lon').value = lon.toFixed(6);
+                // Update form fields (only city/state now)
                 document.getElementById('location-city').value = locationData.city;
                 document.getElementById('location-state').value = locationData.state;
                 
@@ -651,7 +655,6 @@
                 }
                 
                 showStatus(errorMessage, 'error');
-                enableManualLocation();
             } finally {
                 detectBtn.disabled = false;
                 detectBtn.textContent = originalText;
@@ -712,18 +715,6 @@
             return stateMap[stateName] || stateName;
         }
         
-        // Enable manual location entry
-        function enableManualLocation() {
-            const inputs = ['location-lat', 'location-lon', 'location-city', 'location-state'];
-            inputs.forEach(id => {
-                const input = document.getElementById(id);
-                input.removeAttribute('readonly');
-                input.style.backgroundColor = '#fff';
-                input.placeholder = input.placeholder.replace('Auto-Detected', '');
-            });
-            
-            showStatus('Manual location entry enabled. You can now edit the fields.', 'info');
-        }
         
         // Google Account Management Functions
         function updateGoogleAccountStatus() {
