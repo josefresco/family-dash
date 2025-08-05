@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dashboard-v3.1';
+const CACHE_NAME = 'dashboard-v3.17';
 const urlsToCache = [
   '/',
   '/family-dash/',
@@ -24,6 +24,16 @@ self.addEventListener('install', function(event) {
 
 // Fetch event
 self.addEventListener('fetch', function(event) {
+  // Only handle requests for our own origin/domain
+  // Let external API calls (OpenWeatherMap, NOAA, etc.) bypass the service worker
+  const url = new URL(event.request.url);
+  const isExternalAPI = url.hostname !== self.location.hostname;
+  
+  if (isExternalAPI) {
+    // Don't intercept external API calls - let them go directly to the network
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then(function(response) {
