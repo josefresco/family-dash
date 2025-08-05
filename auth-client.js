@@ -154,17 +154,18 @@ class GoogleAuthClient {
     }
     
     saveTokenData(tokenResponse) {
-        // Set token to expire in 30 days instead of 1 hour for permanent session
-        const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000; // 30 days
+        // Use realistic Google token expiration (typically 1 hour)
+        // We can't extend Google's server-side token expiration
+        const expiresInMs = (tokenResponse.expires_in || 3600) * 1000; // Default to 1 hour
         const tokenData = {
             access_token: tokenResponse.access_token,
-            expires_at: Date.now() + thirtyDaysInMs, // 30 days from now
+            expires_at: Date.now() + expiresInMs,
             saved_at: Date.now(),
-            original_expires_in: tokenResponse.expires_in // Keep original for reference
+            original_expires_in: tokenResponse.expires_in
         };
         
         localStorage.setItem(this.storageKey, JSON.stringify(tokenData));
-        console.log('Token data saved with 30-day expiration:', tokenData);
+        console.log('Token data saved with realistic expiration:', tokenData);
     }
     
     loadSavedToken() {

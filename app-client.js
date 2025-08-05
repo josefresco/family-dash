@@ -405,8 +405,9 @@ class DashboardApp {
             
             if (data.error === 'no_accounts_connected' || 
                 data.source === 'no_authentication' || 
+                data.source === 'authentication_error' ||
                 (data.connected_users && data.connected_users.length === 0)) {
-                console.log('No accounts connected, showing connect button');
+                console.log('No accounts connected or authentication expired, showing connect button');
                 this.renderAddAccountPrompt();
                 return;
             }
