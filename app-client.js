@@ -218,10 +218,10 @@ class DashboardApp {
             this.loadCalendarEvents();
             
             // Show success message
-            this.showStatus('Google account connected successfully!', 'success');
+            this.showNotification('Google account connected successfully!', 'success');
         } catch (error) {
             console.error('Failed to connect Google account:', error);
-            this.showStatus('Failed to connect Google account. Please try again.', 'error');
+            this.showNotification('Failed to connect Google account. Please try again.', 'error');
         }
     }
 
