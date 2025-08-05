@@ -1254,7 +1254,7 @@ class DashboardApp {
 
     setupEventListeners() {
         // Handle visibility changes with modern API
-        document.addEventListener('visibilitychange', () => {
+        document.addEventListener('visibilitychange', async () => {
             if (!document.hidden) {
                 const oldMode = this.displayMode;
                 this.updateDisplayMode();
@@ -1262,6 +1262,12 @@ class DashboardApp {
                 if (oldMode !== this.displayMode) {
                     console.log(`Display mode changed on visibility change: ${oldMode} -> ${this.displayMode}`);
                     this.showNotification(`📅 Switched to ${this.displayMode}'s schedule`, 'info');
+                }
+                
+                // Handle token renewal gracefully before loading data
+                if (window.googleAuthClient && window.googleAuthClient.handlePageVisible) {
+                    console.log('Page became visible - checking token status...');
+                    await window.googleAuthClient.handlePageVisible();
                 }
                 
                 this.loadAllData();

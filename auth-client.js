@@ -170,8 +170,12 @@ class GoogleAuthClient {
     async isSignedIn() {
         if (!this.accessToken) return false;
         
-        // If token is expired, try to refresh it automatically
+        // If token is expired, try to refresh it automatically (only if page is visible)
         if (this.isTokenExpired()) {
+            if (document.hidden) {
+                console.log('Access token expired but page is hidden - will attempt renewal when page becomes visible');
+                return false;
+            }
             console.log('Access token expired, attempting automatic refresh...');
             const refreshed = await this.refreshTokenIfNeeded();
             return refreshed;
@@ -254,17 +258,24 @@ class GoogleAuthClient {
         }
         
         // For client-side apps, we implement proactive renewal instead of refresh tokens
-        // Check if token is close to expiring (within 10 minutes)
-        const tenMinutesInMs = 10 * 60 * 1000;
-        const isExpiringSoon = tokenData.expires_at - Date.now() < tenMinutesInMs;
+        // Check if token is close to expiring (within 5 minutes, reduced from 10)
+        const fiveMinutesInMs = 5 * 60 * 1000;
+        const isExpiringSoon = tokenData.expires_at - Date.now() < fiveMinutesInMs;
         
         if (isExpiringSoon && this.tokenClient) {
+            // Only attempt popup-based renewal if page is visible to avoid popup blockers
+            if (document.hidden) {
+                console.log('Token expiring soon but page is hidden - skipping popup renewal');
+                return false;
+            }
+            
             try {
                 console.log('Token expiring soon, attempting proactive renewal...');
                 
                 // Use the token client to get a fresh token silently
                 return new Promise((resolve) => {
                     const originalCallback = this.tokenClient.callback;
+                    const originalErrorCallback = this.tokenClient.error_callback;
                     
                     // Temporarily override callback for silent renewal
                     this.tokenClient.callback = (response) => {
@@ -274,22 +285,35 @@ class GoogleAuthClient {
                             console.log('Token renewed proactively');
                             resolve(true);
                         } else {
-                            console.log('Proactive renewal failed');
+                            console.log('Proactive renewal failed - no access token in response');
                             resolve(false);
                         }
                         
-                        // Restore original callback
+                        // Restore original callbacks
                         this.tokenClient.callback = originalCallback;
+                        this.tokenClient.error_callback = originalErrorCallback;
+                    };
+                    
+                    // Override error callback to handle popup failures gracefully
+                    this.tokenClient.error_callback = (error) => {
+                        console.log('Token renewal failed (likely popup blocked):', error);
+                        resolve(false);
+                        
+                        // Restore original callbacks
+                        this.tokenClient.callback = originalCallback;
+                        this.tokenClient.error_callback = originalErrorCallback;
                     };
                     
                     // Attempt silent token renewal
                     this.tokenClient.requestAccessToken({ prompt: '' });
                     
-                    // Timeout after 5 seconds
+                    // Timeout after 3 seconds (reduced from 5) to fail faster
                     setTimeout(() => {
+                        console.log('Token renewal timeout - likely popup blocked');
                         this.tokenClient.callback = originalCallback;
+                        this.tokenClient.error_callback = originalErrorCallback;
                         resolve(false);
-                    }, 5000);
+                    }, 3000);
                 });
                 
             } catch (error) {
@@ -303,24 +327,29 @@ class GoogleAuthClient {
     
     // Start background token monitoring for proactive renewal
     startTokenMonitoring() {
-        // Check token status every 5 minutes
+        // Check token status every 30 minutes (reduced from 5 minutes)
         this.tokenCheckInterval = setInterval(async () => {
             if (this.accessToken) {
                 const tokenData = this.getSavedTokenData();
                 if (tokenData) {
                     const timeUntilExpiry = tokenData.expires_at - Date.now();
-                    const fifteenMinutesInMs = 15 * 60 * 1000;
+                    const fiveMinutesInMs = 5 * 60 * 1000; // Reduced from 15 minutes
                     
-                    // If token expires in less than 15 minutes, try to renew
-                    if (timeUntilExpiry < fifteenMinutesInMs && timeUntilExpiry > 0) {
-                        console.log('Background token check: attempting proactive renewal');
-                        await this.refreshTokenIfNeeded();
+                    // Only attempt renewal if page is visible and token expires in less than 5 minutes
+                    if (timeUntilExpiry < fiveMinutesInMs && timeUntilExpiry > 0 && !document.hidden) {
+                        console.log('Background token check: attempting proactive renewal (page visible)');
+                        const renewed = await this.refreshTokenIfNeeded();
+                        if (!renewed) {
+                            console.log('Background renewal failed - will require user interaction for next renewal');
+                        }
+                    } else if (timeUntilExpiry < fiveMinutesInMs && timeUntilExpiry > 0) {
+                        console.log('Token expiring soon but page is hidden - renewal will be attempted when user returns');
                     }
                 }
             }
-        }, 5 * 60 * 1000); // Check every 5 minutes
+        }, 30 * 60 * 1000); // Check every 30 minutes (reduced from 5 minutes)
         
-        console.log('Background token monitoring started');
+        console.log('Background token monitoring started (30 min intervals)');
     }
     
     // Stop background token monitoring
@@ -330,6 +359,81 @@ class GoogleAuthClient {
             this.tokenCheckInterval = null;
             console.log('Background token monitoring stopped');
         }
+    }
+    
+    // Handle page visibility changes for better token renewal
+    async handlePageVisible() {
+        if (!this.accessToken) return false;
+        
+        const tokenData = this.getSavedTokenData();
+        if (!tokenData) return false;
+        
+        // If token is expired or expiring soon, attempt renewal now that page is visible
+        const fiveMinutesInMs = 5 * 60 * 1000;
+        const timeUntilExpiry = tokenData.expires_at - Date.now();
+        
+        if (timeUntilExpiry <= 0 || timeUntilExpiry < fiveMinutesInMs) {
+            console.log('Page became visible - attempting token renewal for expired/expiring token');
+            const renewed = await this.refreshTokenIfNeeded();
+            if (renewed) {
+                console.log('Token successfully renewed after page became visible');
+            } else {
+                console.log('Token renewal failed after page became visible - user may need to manually re-authenticate');
+            }
+            return renewed;
+        }
+        
+        return true;
+    }
+    
+    // Check if session has been inactive for a long time and handle gracefully
+    isSessionStale() {
+        const tokenData = this.getSavedTokenData();
+        if (!tokenData || !tokenData.saved_at) return false;
+        
+        // Consider session stale if it's been more than 2 hours since last token save
+        const twoHoursInMs = 2 * 60 * 60 * 1000;
+        const timeSinceLastSave = Date.now() - tokenData.saved_at;
+        
+        return timeSinceLastSave > twoHoursInMs && this.isTokenExpired(tokenData);
+    }
+    
+    // Get user-friendly auth status for UI display
+    getAuthStatus() {
+        if (!this.accessToken) {
+            return { status: 'not_signed_in', message: 'Please sign in to Google to access calendar data' };
+        }
+        
+        const tokenData = this.getSavedTokenData();
+        if (!tokenData) {
+            return { status: 'no_token_data', message: 'Authentication data missing - please sign in again' };
+        }
+        
+        if (this.isSessionStale()) {
+            return { 
+                status: 'session_stale', 
+                message: 'Your Google session has expired due to inactivity. Please sign in again to continue.' 
+            };
+        }
+        
+        if (this.isTokenExpired(tokenData)) {
+            return { 
+                status: 'token_expired', 
+                message: 'Your Google authentication has expired. Click to refresh your connection.' 
+            };
+        }
+        
+        const timeUntilExpiry = tokenData.expires_at - Date.now();
+        const fiveMinutesInMs = 5 * 60 * 1000;
+        
+        if (timeUntilExpiry < fiveMinutesInMs) {
+            return { 
+                status: 'token_expiring', 
+                message: 'Your Google authentication is expiring soon and will be refreshed automatically.' 
+            };
+        }
+        
+        return { status: 'authenticated', message: 'Connected to Google Calendar' };
     }
     
     debugAuthState() {
@@ -354,21 +458,43 @@ class GoogleAuthClient {
         console.log('accessToken exists:', !!this.accessToken);
         console.log('saved token data:', this.getSavedTokenData());
         
-        const signedIn = await this.isSignedIn();
-        console.log('isSignedIn:', signedIn);
+        // Check auth status gracefully before attempting any renewals
+        const authStatus = this.getAuthStatus();
+        console.log('Auth status:', authStatus);
         
-        if (!signedIn) {
-            console.log('Not signed in or token refresh failed, returning no_authentication');
+        // For stale sessions, don't attempt renewal - require manual sign-in
+        if (authStatus.status === 'session_stale') {
+            console.log('Session is stale - requiring manual re-authentication');
             return {
                 calendars: [],
                 connected_users: [],
                 total_accounts: 0,
                 successful_accounts: 0,
-                failed_accounts: 0,
+                failed_accounts: 1,
                 total_events: 0,
                 date_requested: date_param,
-                source: 'no_authentication',
-                message: 'No Google accounts connected'
+                source: 'session_stale',
+                message: authStatus.message
+            };
+        }
+        
+        // For other non-authenticated states, check if we can sign in
+        const signedIn = await this.isSignedIn();
+        console.log('isSignedIn:', signedIn);
+        
+        if (!signedIn) {
+            console.log('Not signed in or token refresh failed, returning authentication error');
+            const currentStatus = this.getAuthStatus();
+            return {
+                calendars: [],
+                connected_users: [],
+                total_accounts: 0,
+                successful_accounts: 0,
+                failed_accounts: 1,
+                total_events: 0,
+                date_requested: date_param,
+                source: 'authentication_required',
+                message: currentStatus.message
             };
         }
         

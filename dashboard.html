@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
-    <title>Daily Dashboard - v3.19 Proactive Token Renewal</title>
+    <title>Daily Dashboard - v3.20 Smart Token Management</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="icon" sizes="32x32" href="favicon.svg">
@@ -790,6 +790,38 @@
     <script src="app-client.js?v=3.1"></script>
 
     <script>
+        // Global error handler to catch external script errors (like h1-check.js)
+        window.addEventListener('error', function(event) {
+            // Check if error is from external/injected scripts
+            if (event.filename && (event.filename.includes('h1-check') || 
+                                  event.filename.includes('extension') ||
+                                  !event.filename.includes(window.location.hostname))) {
+                console.warn('External script error caught and suppressed:', {
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno
+                });
+                // Prevent error from propagating and disrupting the application
+                event.preventDefault();
+                return false;
+            }
+            // Let application errors through for proper debugging
+            console.error('Application error:', event);
+        });
+
+        // Handle unhandled promise rejections from external scripts
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && typeof event.reason === 'object' && 
+                (event.reason.stack?.includes('h1-check') ||
+                 event.reason.stack?.includes('extension'))) {
+                console.warn('External script promise rejection caught and suppressed:', event.reason);
+                event.preventDefault();
+                return false;
+            }
+            console.error('Application promise rejection:', event.reason);
+        });
+
         // IMMEDIATE DEBUG - This should show up right away
         console.log('=== DASHBOARD.HTML SCRIPT LOADED ===');
         console.log('window.dashboardConfig:', window.dashboardConfig);
