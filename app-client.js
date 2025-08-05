@@ -619,12 +619,15 @@ class DashboardApp {
                 
                 <!-- Today's Weather Summary -->
                 <div style="
-                    background: rgba(255,255,255,0.15);
-                    border-radius: 10px;
-                    padding: 20px;
-                    font-size: 22px;
-                    line-height: 1.4;
-                    font-weight: 600;
+                    background: #ffffff;
+                    color: #4a148c;
+                    border-radius: 15px;
+                    padding: 35px;
+                    font-size: 32px;
+                    line-height: 1.5;
+                    font-weight: 700;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    border: 3px solid #4a148c;
                 ">
                     ${todayNarrative}
                 </div>
@@ -698,12 +701,15 @@ class DashboardApp {
                     ${data.daily_summary.description}
                 </div>
                 <div style="
-                    background: rgba(255,255,255,0.15);
-                    border-radius: 12px;
-                    padding: 25px;
-                    font-size: 24px;
+                    background: #ffffff;
+                    color: #4a148c;
+                    border-radius: 15px;
+                    padding: 40px;
+                    font-size: 36px;
                     line-height: 1.5;
-                    font-weight: 600;
+                    font-weight: 700;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    border: 3px solid #4a148c;
                 ">
                     ${narrative}
                 </div>
@@ -1019,12 +1025,15 @@ class DashboardApp {
                         ${data.description || 'Tomorrow\'s forecast'}
                     </div>
                     <div style="
-                        background: rgba(255,255,255,0.15);
-                        border-radius: 12px;
-                        padding: 25px;
-                        font-size: 24px;
+                        background: #ffffff;
+                        color: #4a148c;
+                        border-radius: 15px;
+                        padding: 40px;
+                        font-size: 36px;
                         line-height: 1.5;
-                        font-weight: 600;
+                        font-weight: 700;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                        border: 3px solid #4a148c;
                     ">
                         Check back later for a detailed forecast! 🌟
                     </div>
