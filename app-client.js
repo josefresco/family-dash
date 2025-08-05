@@ -596,15 +596,17 @@ class DashboardApp {
         const todayNarrative = this.createTodayNarrative(data);
         
         return `
-            <!-- Today's Main Display -->
+            <!-- Today's Main Display - Full Height -->
             <div style="
                 background: ${colors.primary};
                 color: ${colors.primaryText};
                 border-radius: 15px;
                 padding: 15px;
-                margin-bottom: 10px;
                 text-align: center;
                 box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                height: 100%;
+                display: flex;
+                flex-direction: column;
             ">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
                     🏠 RIGHT NOW
@@ -617,7 +619,23 @@ class DashboardApp {
                     ${condition}
                 </div>
                 
-                <!-- Today's Weather Summary -->
+                <!-- Later Today Forecast - Compact -->
+                <div style="
+                    background: ${colors.secondary};
+                    color: ${colors.secondaryText};
+                    border-radius: 10px;
+                    padding: 8px;
+                    margin-bottom: 10px;
+                    font-size: 14px;
+                    line-height: 1.2;
+                ">
+                    📈 Later: High <strong>${data.daily_summary.high_temp}°F</strong> • Low <strong>${data.daily_summary.low_temp}°F</strong>
+                    ${data.precipitation && data.precipitation.expected ? 
+                        `<br>🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected` : ''
+                    }
+                </div>
+                
+                <!-- Today's Weather Summary - Expandable -->
                 <div style="
                     background: #ffffff;
                     color: #4a148c;
@@ -628,41 +646,14 @@ class DashboardApp {
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
-                    max-height: 150px;
+                    flex: 1;
                     overflow-y: auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 ">
                     ${todayNarrative}
                 </div>
-            </div>
-            
-            <!-- Later Today Forecast -->
-            <div style="
-                background: ${colors.secondary};
-                color: ${colors.secondaryText};
-                border-radius: 10px;
-                padding: 12px;
-                margin-bottom: 8px;
-            ">
-                <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px; text-align: center;">
-                    📈 LATER TODAY
-                </div>
-                <div style="font-size: 14px; line-height: 1.3; text-align: center;">
-                    High <strong>${data.daily_summary.high_temp}°F</strong> • 
-                    Low <strong>${data.daily_summary.low_temp}°F</strong>
-                </div>
-                ${data.precipitation && data.precipitation.expected ? 
-                    `<div style="
-                        background: rgba(255,255,255,0.2);
-                        border-radius: 6px;
-                        padding: 8px;
-                        margin-top: 8px;
-                        text-align: center;
-                        font-size: 12px;
-                        font-weight: 600;
-                    ">
-                        🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected
-                    </div>` : ''
-                }
             </div>
         `;
     }
@@ -680,6 +671,9 @@ class DashboardApp {
                 padding: 18px;
                 text-align: center;
                 box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                height: 100%;
+                display: flex;
+                flex-direction: column;
             ">
                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
                     🌅 TOMORROW
@@ -712,8 +706,11 @@ class DashboardApp {
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
-                    max-height: 180px;
+                    flex: 1;
                     overflow-y: auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 ">
                     ${narrative}
                 </div>
