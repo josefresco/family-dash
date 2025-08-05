@@ -622,12 +622,14 @@ class DashboardApp {
                     background: #ffffff;
                     color: #4a148c;
                     border-radius: 15px;
-                    padding: 35px;
-                    font-size: 32px;
-                    line-height: 1.5;
+                    padding: 20px;
+                    font-size: clamp(16px, 4vw, 26px);
+                    line-height: 1.4;
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
+                    max-height: 150px;
+                    overflow-y: auto;
                 ">
                     ${todayNarrative}
                 </div>
@@ -704,12 +706,14 @@ class DashboardApp {
                     background: #ffffff;
                     color: #4a148c;
                     border-radius: 15px;
-                    padding: 40px;
-                    font-size: 36px;
-                    line-height: 1.5;
+                    padding: 25px;
+                    font-size: clamp(18px, 5vw, 28px);
+                    line-height: 1.4;
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
+                    max-height: 180px;
+                    overflow-y: auto;
                 ">
                     ${narrative}
                 </div>
@@ -1028,12 +1032,14 @@ class DashboardApp {
                         background: #ffffff;
                         color: #4a148c;
                         border-radius: 15px;
-                        padding: 40px;
-                        font-size: 36px;
-                        line-height: 1.5;
+                        padding: 25px;
+                        font-size: clamp(18px, 5vw, 28px);
+                        line-height: 1.4;
                         font-weight: 700;
                         box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                         border: 3px solid #4a148c;
+                        max-height: 180px;
+                        overflow-y: auto;
                     ">
                         Check back later for a detailed forecast! 🌟
                     </div>
