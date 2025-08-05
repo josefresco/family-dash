@@ -641,8 +641,8 @@ class DashboardApp {
                     color: #4a148c;
                     border-radius: 15px;
                     padding: 20px;
-                    font-size: clamp(16px, 4vw, 26px);
-                    line-height: 1.4;
+                    font-size: clamp(24px, 6vw, 42px);
+                    line-height: 1.3;
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
@@ -651,6 +651,7 @@ class DashboardApp {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    text-align: center;
                 ">
                     ${todayNarrative}
                 </div>
@@ -701,8 +702,8 @@ class DashboardApp {
                     color: #4a148c;
                     border-radius: 15px;
                     padding: 25px;
-                    font-size: clamp(18px, 5vw, 28px);
-                    line-height: 1.4;
+                    font-size: clamp(26px, 7vw, 46px);
+                    line-height: 1.3;
                     font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
@@ -711,6 +712,7 @@ class DashboardApp {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    text-align: center;
                 ">
                     ${narrative}
                 </div>
