@@ -12,6 +12,7 @@ export default async function handler(request) {
     // Always add CORS headers to every response
     console.log('CalDAV proxy request:', request.method, request.url);
     console.log('Origin:', request.headers.get('origin'));
+    console.log('CORS fix deployment:', new Date().toISOString());
     
     // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
