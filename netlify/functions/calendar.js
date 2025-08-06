@@ -196,7 +196,8 @@ exports.handler = async (event, context) => {
     console.log('CalDAV raw response (first 1000 chars):', xmlData.substring(0, 1000));
     
     // Parse CalDAV XML response
-    const events = parseCalDAVResponse(xmlData);
+    const parseResult = parseCalDAVResponseWithDebug(xmlData);
+    const events = parseResult.events;
     console.log('Parsed events:', events.length);
     
     // Additional debug info
@@ -289,6 +290,7 @@ exports.handler = async (event, context) => {
         contains_calendar_data: xmlData.includes('calendar-data'),
         contains_error: xmlData.toLowerCase().includes('error'),
         parsing_attempted: events !== undefined,
+        parsing_debug: parseResult.debug,
         date_range: {
           start_utc: startTimeUTC,
           end_utc: endTimeUTC,
@@ -320,6 +322,80 @@ exports.handler = async (event, context) => {
 // Helper function to format date for CalDAV
 function formatDateForCalDAV(date) {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+// Helper function to parse CalDAV XML response with debug info
+function parseCalDAVResponseWithDebug(xmlData) {
+  const events = [];
+  const debug = {
+    calendar_data_sections: 0,
+    patterns_tried: [],
+    ics_sections: [],
+    total_vevent_blocks: 0,
+    parsed_events: 0
+  };
+  
+  try {
+    console.log('🔍 Parsing CalDAV XML response...');
+    
+    // Extract calendar-data sections - try multiple regex patterns
+    const patterns = [
+      { name: 'C:calendar-data', regex: /<C:calendar-data[^>]*>([\s\S]*?)<\/C:calendar-data>/gi },
+      { name: 'calendar-data', regex: /<calendar-data[^>]*>([\s\S]*?)<\/calendar-data>/gi },
+      { name: 'cal:calendar-data', regex: /<cal:calendar-data[^>]*>([\s\S]*?)<\/cal:calendar-data>/gi }
+    ];
+    
+    let totalMatches = 0;
+    
+    for (const pattern of patterns) {
+      debug.patterns_tried.push(pattern.name);
+      let match;
+      let matchCount = 0;
+      
+      while ((match = pattern.regex.exec(xmlData)) !== null) {
+        totalMatches++;
+        matchCount++;
+        const icsData = match[1].trim();
+        
+        const sectionInfo = {
+          pattern: pattern.name,
+          length: icsData.length,
+          preview: icsData.substring(0, 200),
+          contains_vevent: icsData.includes('BEGIN:VEVENT')
+        };
+        
+        debug.ics_sections.push(sectionInfo);
+        console.log(`📄 Found calendar-data section ${totalMatches} (${pattern.name}): ${icsData.length} chars`);
+        console.log(`📄 Preview: ${icsData.substring(0, 200)}...`);
+        
+        if (icsData && icsData.includes('BEGIN:VEVENT')) {
+          console.log('✅ Found VEVENT in ICS data');
+          const parseResult = parseICSDataWithDebug(icsData);
+          console.log(`📅 Parsed ${parseResult.events.length} events from this section`);
+          events.push(...parseResult.events);
+          debug.total_vevent_blocks += parseResult.debug.vevent_blocks;
+          debug.parsed_events += parseResult.events.length;
+        } else {
+          console.log('❌ No VEVENT found in this ICS data');
+        }
+      }
+      
+      if (matchCount > 0) {
+        console.log(`✅ Pattern '${pattern.name}' found ${matchCount} matches`);
+        break; // Stop if we found matches with this pattern
+      }
+    }
+    
+    debug.calendar_data_sections = totalMatches;
+    console.log(`🔍 Total calendar-data sections found: ${totalMatches}`);
+    console.log(`📅 Total events parsed: ${events.length}`);
+    
+  } catch (error) {
+    console.error('Failed to parse CalDAV XML:', error);
+    debug.error = error.message;
+  }
+  
+  return { events, debug };
 }
 
 // Helper function to parse CalDAV XML response
@@ -366,6 +442,70 @@ function parseCalDAVResponse(xmlData) {
   }
   
   return events;
+}
+
+// Helper function to parse ICS data with debug info
+function parseICSDataWithDebug(icsData) {
+  const events = [];
+  const debug = {
+    vevent_blocks: 0,
+    processed_blocks: 0,
+    events_with_summary: 0,
+    sample_event_data: []
+  };
+  
+  try {
+    console.log('🔍 Parsing ICS data...');
+    console.log(`📄 ICS data length: ${icsData.length}`);
+    console.log(`📄 ICS preview: ${icsData.substring(0, 300)}...`);
+    
+    const eventBlocks = icsData.split('BEGIN:VEVENT');
+    debug.vevent_blocks = eventBlocks.length - 1;
+    console.log(`📅 Found ${debug.vevent_blocks} VEVENT blocks`);
+    
+    for (let i = 1; i < eventBlocks.length; i++) {
+      const block = eventBlocks[i];
+      const endIndex = block.indexOf('END:VEVENT');
+      
+      console.log(`🔍 Processing VEVENT block ${i}:`);
+      console.log(`   Block length: ${block.length}`);
+      console.log(`   END:VEVENT found at: ${endIndex}`);
+      
+      if (endIndex === -1) {
+        console.log(`❌ Block ${i}: No END:VEVENT found`);
+        continue;
+      }
+      
+      debug.processed_blocks++;
+      const eventData = block.substring(0, endIndex);
+      console.log(`   Event data preview: ${eventData.substring(0, 200)}...`);
+      
+      if (debug.sample_event_data.length < 2) {
+        debug.sample_event_data.push({
+          block_index: i,
+          length: eventData.length,
+          preview: eventData.substring(0, 300)
+        });
+      }
+      
+      const event = parseICSEvent(eventData);
+      console.log(`   Parsed event:`, event);
+      
+      if (event && event.summary) {
+        debug.events_with_summary++;
+        console.log(`✅ Adding event: "${event.summary}"`);
+        events.push(event);
+      } else {
+        console.log(`❌ Skipping event (no summary):`, event);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to parse ICS data:', error);
+    debug.error = error.message;
+  }
+  
+  console.log(`📅 Total events parsed from ICS: ${events.length}`);
+  return { events, debug };
 }
 
 // Helper function to parse ICS data
