@@ -342,7 +342,15 @@ function parseCalDAVResponseWithDebug(xmlData) {
     const patterns = [
       { name: 'C:calendar-data', regex: /<C:calendar-data[^>]*>([\s\S]*?)<\/C:calendar-data>/gi },
       { name: 'calendar-data', regex: /<calendar-data[^>]*>([\s\S]*?)<\/calendar-data>/gi },
-      { name: 'cal:calendar-data', regex: /<cal:calendar-data[^>]*>([\s\S]*?)<\/cal:calendar-data>/gi }
+      { name: 'cal:calendar-data', regex: /<cal:calendar-data[^>]*>([\s\S]*?)<\/cal:calendar-data>/gi },
+      // Add more flexible patterns for any namespace
+      { name: 'any:calendar-data', regex: /<[^:]*:?calendar-data[^>]*>([\s\S]*?)<\/[^:]*:?calendar-data>/gi },
+      // Try looking for CDATA sections that might contain ICS data
+      { name: 'CDATA', regex: /<!\[CDATA\[([\s\S]*?)\]\]>/gi },
+      // Try looking for the actual VEVENT content directly in response elements
+      { name: 'response-with-vevent', regex: /<response[^>]*>([\s\S]*?BEGIN:VEVENT[\s\S]*?END:VEVENT[\s\S]*?)<\/response>/gi },
+      // Look for any element containing BEGIN:VEVENT
+      { name: 'any-vevent', regex: />([\s\S]*?BEGIN:VEVENT[\s\S]*?END:VEVENT[\s\S]*?)</gi }
     ];
     
     let totalMatches = 0;
