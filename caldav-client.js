@@ -337,7 +337,7 @@ class CalDAVClient {
         // For development, you can test with local Vercel dev server
         const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'  // Local development
-            : 'https://family-dash-api.vercel.app';  // Production Vercel deployment
+            : 'https://family-dash-git-main-josiah-coles-projects.vercel.app';  // Production Vercel deployment
             
         return `${baseUrl}/api/calendar`;
     }
