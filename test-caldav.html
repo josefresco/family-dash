@@ -24,7 +24,8 @@
     
     <div class="form-group">
         <label for="email">Google Email:</label>
-        <input type="email" id="email" placeholder="your.email@gmail.com">
+        <input type="email" id="email" placeholder="your.email@gmail.com or workspace@company.com">
+        <small>Works with both Gmail accounts and Google Workspace accounts</small>
     </div>
     
     <div class="form-group">
@@ -117,7 +118,13 @@
             
             log('🔍 Testing Direct CalDAV Connection...', 'info');
             
-            const caldavUrl = `https://apidata.googleusercontent.com/caldav/v2/${email}/events/`;
+            // Determine correct endpoint based on account type
+            const isWorkspaceAccount = !email.endsWith('@gmail.com') && !email.endsWith('@googlemail.com');
+            const caldavUrl = isWorkspaceAccount 
+                ? `https://calendar.google.com/calendar/dav/${email}/events/`
+                : `https://apidata.googleusercontent.com/caldav/v2/${email}/events/`;
+                
+            log(`Account type: ${isWorkspaceAccount ? 'Google Workspace' : 'Gmail'}`, 'info');
             log(`CalDAV URL: ${caldavUrl}`, 'info');
             
             const authHeader = 'Basic ' + btoa(`${email}:${appPassword}`);
@@ -172,9 +179,14 @@
             // Test 3: Try alternative Google CalDAV endpoints
             log('Test 3: Testing alternative endpoints...', 'info');
             
-            const alternativeEndpoints = [
+            const alternativeEndpoints = isWorkspaceAccount ? [
+                `https://calendar.google.com/calendar/dav/${email}/events/`,
+                `https://calendar.google.com/calendar/dav/${email}/user/`,
+                `https://apidata.googleusercontent.com/caldav/v2/${email}/events/`,
+                `https://www.google.com/calendar/dav/${email}/events/`
+            ] : [
+                `https://apidata.googleusercontent.com/caldav/v2/${email}/events/`,
                 `https://apidata.googleusercontent.com/caldav/v2/${email}/user/`,
-                `https://apidata.googleusercontent.com/caldav/v2/${email}/`,
                 `https://calendar.google.com/calendar/dav/${email}/events/`,
                 `https://www.google.com/calendar/dav/${email}/events/`
             ];
@@ -213,10 +225,15 @@
             log('🔐 Testing Credentials Format...', 'info');
             
             // Validate email format
-            if (!email.includes('@gmail.com') && !email.includes('@googlemail.com')) {
-                log('⚠️ Email should be a Gmail address (@gmail.com)', 'error');
+            const isGmail = email.endsWith('@gmail.com') || email.endsWith('@googlemail.com');
+            const isWorkspace = email.includes('@') && !isGmail;
+            
+            if (isGmail) {
+                log('✅ Gmail account detected - will use standard endpoint', 'success');
+            } else if (isWorkspace) {
+                log('✅ Google Workspace account detected - will use workspace endpoint', 'success');
             } else {
-                log('✅ Email format looks correct', 'success');
+                log('⚠️ Invalid email format - must be a valid Google account', 'error');
             }
             
             // Validate app password format

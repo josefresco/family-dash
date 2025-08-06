@@ -13,7 +13,8 @@ class CalDAVClient {
             google: {
                 name: 'Google Calendar',
                 endpoint: 'https://apidata.googleusercontent.com/caldav/v2/',
-                instructions: 'Use your Google email and an App Password (not your regular password)'
+                workspaceEndpoint: 'https://calendar.google.com/calendar/dav/',
+                instructions: 'Use your Google email and an App Password. For Workspace accounts, use your full email address.'
             },
             apple: {
                 name: 'Apple iCloud',
@@ -102,7 +103,14 @@ class CalDAVClient {
         // Build provider-specific URLs
         switch (this.credentials.provider) {
             case 'google':
-                url += `${this.credentials.username}/events/`;
+                // Detect Google Workspace vs Gmail accounts
+                const isWorkspaceAccount = !this.credentials.username.endsWith('@gmail.com') && !this.credentials.username.endsWith('@googlemail.com');
+                
+                if (isWorkspaceAccount) {
+                    url = provider.workspaceEndpoint + `${this.credentials.username}/events/`;
+                } else {
+                    url += `${this.credentials.username}/events/`;
+                }
                 break;
             case 'apple':
                 const appleUser = this.credentials.username.split('@')[0];

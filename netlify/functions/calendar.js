@@ -41,7 +41,8 @@ exports.handler = async (event, context) => {
     const providers = {
       google: {
         name: 'Google Calendar',
-        endpoint: 'https://apidata.googleusercontent.com/caldav/v2/'
+        endpoint: 'https://apidata.googleusercontent.com/caldav/v2/',
+        workspaceEndpoint: 'https://calendar.google.com/calendar/dav/'
       },
       apple: {
         name: 'Apple iCloud',
@@ -66,7 +67,16 @@ exports.handler = async (event, context) => {
     let caldavUrl = providerConfig.endpoint;
     switch (provider) {
       case 'google':
-        caldavUrl += `${username}/events/`;
+        // Detect Google Workspace vs Gmail accounts
+        const isWorkspaceAccount = !username.endsWith('@gmail.com') && !username.endsWith('@googlemail.com');
+        
+        if (isWorkspaceAccount) {
+          console.log('Detected Google Workspace account, using workspace endpoint');
+          caldavUrl = providerConfig.workspaceEndpoint + `${username}/events/`;
+        } else {
+          console.log('Detected Gmail account, using standard endpoint');
+          caldavUrl += `${username}/events/`;
+        }
         break;
       case 'apple':
         const appleUser = username.split('@')[0];
