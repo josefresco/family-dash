@@ -484,6 +484,16 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         
         try {
             const timeContext = this.displayMode === 'tomorrow' ? 'tomorrow\'s' : 'today\'s';
+            console.log(`🔍 Loading calendar events for: ${timeContext} (displayMode: ${this.displayMode})`);
+            
+            // Debug the date we're requesting
+            const now = new Date();
+            const targetDate = this.displayMode === 'tomorrow' 
+                ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
+                : now;
+            console.log(`📅 Target date: ${targetDate.toLocaleDateString()} ${targetDate.toLocaleTimeString()}`);
+            console.log(`📅 Current time: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`);
+            
             calendarContent.innerHTML = this.getLoadingHTML(`Loading ${timeContext} calendar events...`);
             
             const data = await this.makeApiRequest('calendar');
