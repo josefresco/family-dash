@@ -1,16 +1,26 @@
 // Serverless CalDAV proxy for Family Dashboard
 // Handles CalDAV requests server-side to avoid CORS issues
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Max-Age': '86400',
+};
+
 export default async function handler(request) {
+    // Always add CORS headers to every response
+    console.log('CalDAV proxy request:', request.method, request.url);
+    console.log('Origin:', request.headers.get('origin'));
+    
     // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
+        console.log('Handling OPTIONS preflight request');
         return new Response(null, {
             status: 200,
             headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-                'Access-Control-Max-Age': '86400',
+                ...corsHeaders,
+                'Content-Type': 'text/plain',
             },
         });
     }
@@ -22,9 +32,7 @@ export default async function handler(request) {
             return new Response(JSON.stringify({ error: 'Method not allowed' }), {
                 status: 405,
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    ...corsHeaders,
                     'Content-Type': 'application/json',
                 },
             });
@@ -39,9 +47,7 @@ export default async function handler(request) {
             }), {
                 status: 400,
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    ...corsHeaders,
                     'Content-Type': 'application/json',
                 },
             });
@@ -69,9 +75,7 @@ export default async function handler(request) {
         return new Response(JSON.stringify(calendarData), {
             status: 200,
             headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                ...corsHeaders,
                 'Content-Type': 'application/json',
             },
         });
@@ -85,9 +89,7 @@ export default async function handler(request) {
         }), {
             status: 500,
             headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                ...corsHeaders,
                 'Content-Type': 'application/json',
             },
         });
