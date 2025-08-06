@@ -331,11 +331,11 @@ class CalDAVClient {
         }
     }
     
-    // Get the proxy URL - using reliable CORS proxy service
+    // Get the Netlify function URL
     getProxyUrl() {
-        // Use a public CORS proxy that works reliably
-        // Alternative: Set up our own simple proxy on a different service
-        return 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://family-dash-git-main-josiah-coles-projects.vercel.app/api/calendar');
+        // Use Netlify functions for reliable CalDAV proxy
+        // This will work once you deploy to Netlify
+        return window.location.origin + '/api/calendar';
     }
     
     // Alternative: Use direct CalDAV with a working CORS proxy

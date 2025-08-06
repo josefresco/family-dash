@@ -201,24 +201,13 @@ class DashboardApp {
 
     async initializeCalDAV() {
         try {
-            // Initialize both calendar clients
+            // Initialize CalDAV client
             window.caldavClient = new CalDAVClient(this.appConfig);
-            window.simpleCalendarClient = new SimpleCalendarClient(this.appConfig);
-            console.log('✅ Calendar clients initialized');
+            console.log('✅ CalDAV client initialized');
             
-            // Determine which calendar client to use
-            if (window.simpleCalendarClient.isConfigured) {
-                console.log('📅 Using Simple Calendar client');
-                const testResult = await window.simpleCalendarClient.testConnection();
-                if (testResult.success) {
-                    console.log('✅ Simple Calendar connection verified:', testResult.message);
-                    this.activeCalendarClient = window.simpleCalendarClient;
-                    this.calendarType = 'simple';
-                } else {
-                    console.warn('⚠️ Simple Calendar connection issue:', testResult.error);
-                }
-            } else if (window.caldavClient.isConfigured) {
-                console.log('📅 Using CalDAV client');
+            // Check if CalDAV is configured
+            if (window.caldavClient.isConfigured) {
+                console.log('📅 Using CalDAV client with Netlify functions');
                 const testResult = await window.caldavClient.testConnection();
                 if (testResult.success) {
                     console.log('✅ CalDAV connection verified:', testResult.message);
@@ -228,7 +217,7 @@ class DashboardApp {
                     console.warn('⚠️ CalDAV connection issue:', testResult.error);
                 }
             } else {
-                console.log('📅 No calendar configured - calendar will show setup option');
+                console.log('📅 CalDAV not configured - calendar will show setup option');
                 this.activeCalendarClient = null;
                 this.calendarType = null;
             }

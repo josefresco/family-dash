@@ -226,8 +226,8 @@
                 <span id="weather-status" class="config-status missing">Not Configured</span>
             </div>
             <div class="config-item">
-                <span>Calendar:</span>
-                <span id="calendar-connection-status" class="config-status missing">Not Configured</span>
+                <span>Calendar (CalDAV):</span>
+                <span id="caldav-connection-status" class="config-status missing">Not Configured</span>
             </div>
             <div class="config-item">
                 <span>Location:</span>
@@ -248,104 +248,55 @@
         </div>
         
         <div class="setup-section">
-            <h3>📅 Calendar Setup</h3>
+            <h3>📅 Calendar Setup (CalDAV)</h3>
             <div class="help-text" style="margin-bottom: 20px;">
-                <strong>Choose your calendar integration method:</strong><br>
-                <strong>Simple Calendar:</strong> Works with public calendar feeds (ICS URLs) - easiest setup!<br>
-                <strong>CalDAV:</strong> Advanced integration with username/password authentication.
+                <strong>Netlify CalDAV Integration:</strong> No token refresh issues - perfect for always-on dashboards!<br>
+                Works with Google Calendar, Apple iCloud, Microsoft Outlook, and any CalDAV server.<br>
+                Uses secure server-side authentication to avoid browser CORS limitations.
             </div>
             
             <div class="form-group">
-                <label for="calendar-method">Calendar Method:</label>
-                <select id="calendar-method" onchange="updateCalendarMethod()">
-                    <option value="">Select integration method</option>
-                    <option value="simple">Simple Calendar (ICS Feed URL)</option>
-                    <option value="caldav">CalDAV (Advanced)</option>
+                <label for="caldav-provider">Calendar Provider:</label>
+                <select id="caldav-provider" onchange="updateCalDAVFields()">
+                    <option value="">Select your calendar provider</option>
+                    <option value="google">Google Calendar</option>
+                    <option value="apple">Apple iCloud Calendar</option>
+                    <option value="outlook">Microsoft Outlook</option>
+                    <option value="generic">Other CalDAV Server</option>
                 </select>
             </div>
             
-            <!-- Simple Calendar Fields -->
-            <div id="simple-calendar-fields" style="display: none;">
-                <div class="help-text" style="margin-bottom: 15px;">
-                    Enter the public calendar URL from your provider:<br>
-                    • <strong>Google:</strong> Go to calendar settings → Integrate → Public URL to this calendar<br>
-                    • <strong>Outlook:</strong> Calendar settings → Shared calendars → ICS link<br>
-                    • <strong>Apple:</strong> iCloud.com → Calendar → Share calendar → Public link
+            <div id="caldav-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="caldav-username">Username/Email:</label>
+                    <input type="text" id="caldav-username" placeholder="your.email@gmail.com">
                 </div>
                 
                 <div class="form-group">
-                    <label for="simple-calendar-url">Calendar URL (.ics):</label>
-                    <input type="url" id="simple-calendar-url" placeholder="https://calendar.google.com/calendar/ical/...">
+                    <label for="caldav-password">Password:</label>
+                    <input type="password" id="caldav-password" placeholder="App Password or Account Password">
+                    <div id="password-help" class="help-text"></div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="simple-calendar-name">Calendar Name:</label>
-                    <input type="text" id="simple-calendar-name" placeholder="My Calendar" value="My Calendar">
+                <div class="form-group" id="custom-endpoint-group" style="display: none;">
+                    <label for="caldav-endpoint">CalDAV Server URL:</label>
+                    <input type="url" id="caldav-endpoint" placeholder="https://caldav.example.com/dav/">
                 </div>
                 
                 <div style="text-align: center; margin-top: 20px;">
-                    <button class="button" onclick="testSimpleCalendar()">
-                        🔍 Test Calendar
+                    <button class="button" onclick="testCalDAVConnection()">
+                        🔍 Test Connection
                     </button>
-                    <button class="button" onclick="saveSimpleCalendar()">
+                    <button class="button" onclick="saveCalDAVConfig()">
                         💾 Save Configuration
                     </button>
-                    <button class="button button-secondary" onclick="clearSimpleCalendar()">
+                    <button class="button button-secondary" onclick="clearCalDAVConfig()">
                         🗑️ Clear Configuration
                     </button>
                 </div>
             </div>
             
-            <!-- CalDAV Fields -->
-            <div id="caldav-fields" style="display: none;">
-                <div class="help-text" style="margin-bottom: 15px;">
-                    <strong>CalDAV Integration:</strong> No token refresh issues - perfect for always-on dashboards!<br>
-                    Works with Google Calendar, Apple iCloud, Microsoft Outlook, and any CalDAV server.
-                </div>
-                
-                <div class="form-group">
-                    <label for="caldav-provider">Calendar Provider:</label>
-                    <select id="caldav-provider" onchange="updateCalDAVFields()">
-                        <option value="">Select your calendar provider</option>
-                        <option value="google">Google Calendar</option>
-                        <option value="apple">Apple iCloud Calendar</option>
-                        <option value="outlook">Microsoft Outlook</option>
-                        <option value="generic">Other CalDAV Server</option>
-                    </select>
-                </div>
-                
-                <div id="caldav-provider-fields" style="display: none;">
-                    <div class="form-group">
-                        <label for="caldav-username">Username/Email:</label>
-                        <input type="text" id="caldav-username" placeholder="your.email@gmail.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="caldav-password">Password:</label>
-                        <input type="password" id="caldav-password" placeholder="App Password or Account Password">
-                        <div id="password-help" class="help-text"></div>
-                    </div>
-                    
-                    <div class="form-group" id="custom-endpoint-group" style="display: none;">
-                        <label for="caldav-endpoint">CalDAV Server URL:</label>
-                        <input type="url" id="caldav-endpoint" placeholder="https://caldav.example.com/dav/">
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button class="button" onclick="testCalDAVConnection()">
-                            🔍 Test Connection
-                        </button>
-                        <button class="button" onclick="saveCalDAVConfig()">
-                            💾 Save Configuration
-                        </button>
-                        <button class="button button-secondary" onclick="clearCalDAVConfig()">
-                            🗑️ Clear Configuration
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="calendar-status" style="margin-top: 15px; display: none;"></div>
+            <div id="caldav-status" style="margin-top: 15px; display: none;"></div>
         </div>
         
         <div class="setup-section">
@@ -392,12 +343,11 @@
     <script src="config.js"></script>
     <script src="api-client.js"></script>
     <script src="caldav-client.js"></script>
-    <script src="simple-calendar.js"></script>
     <script>
         // Load current configuration on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentConfig();
-            loadCalendarConfig();
+            loadCalDAVConfig();
         });
         
         async function loadCurrentConfig() {
@@ -936,39 +886,21 @@
             }
         }
 
-        // Calendar Configuration Functions
+        // CalDAV Configuration Functions
         let caldavClient = null;
-        let simpleCalendarClient = null;
-        
-        function updateCalendarMethod() {
-            const method = document.getElementById('calendar-method').value;
-            const simpleFields = document.getElementById('simple-calendar-fields');
-            const caldavFields = document.getElementById('caldav-fields');
-            
-            // Hide both sections first
-            simpleFields.style.display = 'none';
-            caldavFields.style.display = 'none';
-            
-            // Show the selected method
-            if (method === 'simple') {
-                simpleFields.style.display = 'block';
-            } else if (method === 'caldav') {
-                caldavFields.style.display = 'block';
-            }
-        }
         
         function updateCalDAVFields() {
             const provider = document.getElementById('caldav-provider').value;
-            const providerFields = document.getElementById('caldav-provider-fields');
+            const fieldsDiv = document.getElementById('caldav-fields');
             const endpointGroup = document.getElementById('custom-endpoint-group');
             const passwordHelp = document.getElementById('password-help');
             
             if (!provider) {
-                providerFields.style.display = 'none';
+                fieldsDiv.style.display = 'none';
                 return;
             }
             
-            providerFields.style.display = 'block';
+            fieldsDiv.style.display = 'block';
             endpointGroup.style.display = provider === 'generic' ? 'block' : 'none';
             
             // Update password help text based on provider
@@ -1077,99 +1009,11 @@
         }
         
         function showCalDAVStatus(message, type) {
-            const statusDiv = document.getElementById('calendar-status');
+            const statusDiv = document.getElementById('caldav-status');
             statusDiv.style.display = 'block';
-            statusDiv.innerHTML = `<div class="config-status ${type}" style="padding: 10px; border-radius: 6px; margin-top: 10px;">CalDAV: ${message}</div>`;
+            statusDiv.innerHTML = `<div class="config-status ${type}" style="padding: 10px; border-radius: 6px; margin-top: 10px;">${message}</div>`;
         }
         
-        // Simple Calendar Functions
-        function testSimpleCalendar() {
-            const calendarUrl = document.getElementById('simple-calendar-url').value.trim();
-            const calendarName = document.getElementById('simple-calendar-name').value.trim() || 'My Calendar';
-            
-            if (!calendarUrl) {
-                showSimpleCalendarStatus('Please enter a calendar URL.', 'error');
-                return;
-            }
-            
-            showSimpleCalendarStatus('Testing calendar connection...', 'info');
-            
-            try {
-                if (!simpleCalendarClient) {
-                    simpleCalendarClient = new SimpleCalendarClient(window.dashboardConfig);
-                }
-                
-                // Save temporarily for testing
-                const saved = simpleCalendarClient.saveSettings(calendarUrl, calendarName);
-                if (!saved) {
-                    throw new Error('Failed to save settings for testing');
-                }
-                
-                // Test the connection
-                simpleCalendarClient.testConnection().then(result => {
-                    if (result.success) {
-                        showSimpleCalendarStatus(result.message + ' ✅', 'success');
-                    } else {
-                        showSimpleCalendarStatus('Connection failed: ' + result.error, 'error');
-                    }
-                }).catch(error => {
-                    showSimpleCalendarStatus('Connection test failed: ' + error.message, 'error');
-                });
-                
-            } catch (error) {
-                showSimpleCalendarStatus('Configuration error: ' + error.message, 'error');
-            }
-        }
-        
-        function saveSimpleCalendar() {
-            const calendarUrl = document.getElementById('simple-calendar-url').value.trim();
-            const calendarName = document.getElementById('simple-calendar-name').value.trim() || 'My Calendar';
-            
-            if (!calendarUrl) {
-                showSimpleCalendarStatus('Please enter a calendar URL.', 'error');
-                return;
-            }
-            
-            try {
-                if (!simpleCalendarClient) {
-                    simpleCalendarClient = new SimpleCalendarClient(window.dashboardConfig);
-                }
-                
-                const saved = simpleCalendarClient.saveSettings(calendarUrl, calendarName);
-                if (saved) {
-                    showSimpleCalendarStatus('Simple calendar configuration saved successfully! ✅', 'success');
-                    updateCalendarStatus();
-                } else {
-                    showSimpleCalendarStatus('Failed to save calendar configuration.', 'error');
-                }
-                
-            } catch (error) {
-                showSimpleCalendarStatus('Save error: ' + error.message, 'error');
-            }
-        }
-        
-        function clearSimpleCalendar() {
-            if (confirm('Are you sure you want to clear the calendar configuration?')) {
-                if (!simpleCalendarClient) {
-                    simpleCalendarClient = new SimpleCalendarClient(window.dashboardConfig);
-                }
-                
-                simpleCalendarClient.clearSettings();
-                showSimpleCalendarStatus('Calendar configuration cleared.', 'info');
-                
-                // Clear form fields
-                document.getElementById('simple-calendar-url').value = '';
-                document.getElementById('simple-calendar-name').value = 'My Calendar';
-                
-                updateCalendarStatus();
-            }
-        }
-        
-        function showSimpleCalendarStatus(message, type) {
-            const statusDiv = document.getElementById('calendar-status');
-            statusDiv.style.display = 'block';
-            statusDiv.innerHTML = `<div class="config-status ${type}" style="padding: 10px; border-radius: 6px; margin-top: 10px;">Simple Calendar: ${message}</div>`;
-        }
         
         function loadCalDAVConfig() {
             try {
@@ -1179,70 +1023,32 @@
                 
                 const status = caldavClient.getConfigStatus();
                 
+                const statusElement = document.getElementById('caldav-connection-status');
+                
                 if (status.configured) {
                     showCalDAVStatus(`Currently configured: ${status.message}`, 'success');
+                    statusElement.textContent = status.message;
+                    statusElement.className = 'config-status configured';
+                } else {
+                    statusElement.textContent = 'Not Configured';
+                    statusElement.className = 'config-status missing';
                 }
                 
             } catch (error) {
                 console.warn('Could not load CalDAV config:', error);
-            }
-        }
-        
-        function loadSimpleCalendarConfig() {
-            try {
-                if (!simpleCalendarClient) {
-                    simpleCalendarClient = new SimpleCalendarClient(window.dashboardConfig);
-                }
-                
-                const status = simpleCalendarClient.getConfigStatus();
-                
-                if (status.configured) {
-                    showSimpleCalendarStatus(`Currently configured: ${status.message}`, 'success');
-                }
-                
-            } catch (error) {
-                console.warn('Could not load Simple Calendar config:', error);
+                const statusElement = document.getElementById('caldav-connection-status');
+                statusElement.textContent = 'Error Loading';
+                statusElement.className = 'config-status missing';
             }
         }
         
         function loadCalendarConfig() {
-            // Load both calendar configurations
             loadCalDAVConfig();
-            loadSimpleCalendarConfig();
-            updateCalendarStatus();
-        }
-        
-        function updateCalendarStatus() {
-            const statusElement = document.getElementById('calendar-connection-status');
-            
-            // Check Simple Calendar first
-            if (simpleCalendarClient && simpleCalendarClient.isConfigured) {
-                const status = simpleCalendarClient.getConfigStatus();
-                statusElement.textContent = `Simple: ${status.calendarName}`;
-                statusElement.className = 'config-status configured';
-                return;
-            }
-            
-            // Check CalDAV
-            if (caldavClient && caldavClient.isConfigured) {
-                const status = caldavClient.getConfigStatus();
-                statusElement.textContent = `CalDAV: ${status.provider}`;
-                statusElement.className = 'config-status configured';
-                return;
-            }
-            
-            // No calendar configured
-            statusElement.textContent = 'Not Configured';
-            statusElement.className = 'config-status missing';
         }
 
         // Make debugging functions available globally
         window.clearAllAuthData = clearAllAuthData;
         window.debugGeolocation = debugGeolocation;
-        window.updateCalendarMethod = updateCalendarMethod;
-        window.testSimpleCalendar = testSimpleCalendar;
-        window.saveSimpleCalendar = saveSimpleCalendar;
-        window.clearSimpleCalendar = clearSimpleCalendar;
         window.testCalDAVConnection = testCalDAVConnection;
         window.saveCalDAVConfig = saveCalDAVConfig;
         window.clearCalDAVConfig = clearCalDAVConfig;
