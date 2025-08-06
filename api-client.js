@@ -638,9 +638,9 @@ class APIClient {
     
     // Calendar API will be handled by Google OAuth in auth-client.js
     async getCalendarData(date_param = 'today') {
-        // This will be implemented with Google Calendar API
-        const authClient = window.googleAuthClient;
-        if (!authClient?.isSignedIn()) {
+        // Use CalDAV client instead of Google OAuth
+        const caldavClient = window.caldavClient;
+        if (!caldavClient) {
             return {
                 calendars: [],
                 connected_users: [],
@@ -649,12 +649,12 @@ class APIClient {
                 failed_accounts: 0,
                 total_events: 0,
                 date_requested: date_param,
-                source: 'no_authentication',
-                message: 'No Google accounts connected'
+                source: 'no_caldav_client',
+                message: 'CalDAV client not available'
             };
         }
-        
-        return await authClient.getCalendarData(date_param);
+
+        return await caldavClient.getCalendarEvents(date_param);
     }
 }
 

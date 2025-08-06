@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
-    <title>Daily Dashboard - v3.20 Smart Token Management</title>
+    <title>Daily Dashboard - v3.21 CalDAV Integration</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="icon" sizes="32x32" href="favicon.svg">
@@ -784,9 +784,7 @@
     <!-- Load configuration and API clients -->
     <script src="config.js?v=3.1"></script>
     <script src="api-client.js?v=3.1"></script>
-    <script src="auth-client.js?v=3.1"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="caldav-client.js?v=3.1"></script>
     <script src="app-client.js?v=3.1"></script>
 
     <script>
@@ -879,10 +877,9 @@
             // Initialize API clients
             try {
                 window.apiClient = new APIClient(config);
-                window.googleAuthClient = new GoogleAuthClient(config);
+                // CalDAV client will be initialized by the dashboard app
                 console.log('API clients created successfully');
                 console.log('window.apiClient:', window.apiClient);
-                console.log('window.googleAuthClient:', window.googleAuthClient);
             } catch (error) {
                 console.error('Failed to create API clients:', error);
                 return;
@@ -894,8 +891,8 @@
             window.dashboard = dashboard; // Make globally available for button clicks
             
             // Add debug methods to global scope
-            window.debugAuth = () => window.googleAuthClient?.debugAuthState();
-            window.clearAuthTokens = () => window.googleAuthClient?.clearTokenData();
+            window.debugCalDAV = () => window.caldavClient?.getConfigStatus();
+            window.clearCalDAV = () => window.caldavClient?.clearConfig();
             window.debugTimezone = () => dashboard.debugTimezone();
             window.dashboardApp = dashboard; // For compatibility
             

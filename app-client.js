@@ -62,8 +62,8 @@ class DashboardApp {
             // Determine display mode based on current time
             this.updateDisplayMode();
             
-            // Initialize Google Auth
-            await this.initializeGoogleAuth();
+            // Initialize CalDAV client
+            await this.initializeCalDAV();
             
             await this.loadAllData();
             this.setupAutoRefresh();
@@ -199,29 +199,56 @@ class DashboardApp {
         return stateMap[stateName] || stateName;
     }
 
-    async initializeGoogleAuth() {
+    async initializeCalDAV() {
         try {
-            await this.authClient.init();
-            console.log('Google Auth initialized successfully');
+            window.caldavClient = new CalDAVClient(this.appConfig);
+            console.log('✅ CalDAV client initialized');
+            
+            // Test connection if configured
+            if (window.caldavClient.isConfigured) {
+                const testResult = await window.caldavClient.testConnection();
+                if (testResult.success) {
+                    console.log('✅ CalDAV connection verified:', testResult.message);
+                } else {
+                    console.warn('⚠️ CalDAV connection issue:', testResult.error);
+                }
+            } else {
+                console.log('📅 CalDAV not configured - calendar will show setup option');
+            }
         } catch (error) {
-            console.warn('Google Auth initialization failed:', error);
-            // Continue without Google Auth - calendar will show setup message
+            console.error('CalDAV initialization failed:', error);
+            // Continue without CalDAV - calendar will show setup message
         }
     }
     
-    async connectGoogleAccount() {
+    async connectCalendarAccount() {
         try {
-            const userData = await this.authClient.signIn();
-            console.log('Google account connected:', userData);
-            
-            // Reload calendar data
-            this.loadCalendarEvents();
-            
-            // Show success message
-            this.showNotification('Google account connected successfully!', 'success');
+            // Open CalDAV configuration modal or redirect to setup
+            this.showCalDAVSetupModal();
         } catch (error) {
-            console.error('Failed to connect Google account:', error);
-            this.showNotification('Failed to connect Google account. Please try again.', 'error');
+            console.error('Failed to open calendar setup:', error);
+            this.showNotification('Failed to open calendar setup. Please try again.', 'error');
+        }
+    }
+    
+    showCalDAVSetupModal() {
+        // For now, redirect to setup page - we'll implement modal later
+        const message = `To set up your calendar:
+        
+1. Go to setup.html
+2. Configure CalDAV connection
+3. Return to dashboard
+
+CalDAV works with:
+• Google Calendar (with app password)
+• Apple iCloud Calendar
+• Microsoft Outlook
+• Any CalDAV server
+
+This eliminates token refresh issues and works perfectly for always-on dashboards!`;
+        
+        if (confirm(message + '\n\nGo to setup page now?')) {
+            window.location.href = 'setup.html';
         }
     }
 

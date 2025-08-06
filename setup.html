@@ -226,16 +226,12 @@
                 <span id="weather-status" class="config-status missing">Not Configured</span>
             </div>
             <div class="config-item">
-                <span>Google Client ID:</span>
-                <span id="google-status" class="config-status missing">Not Configured</span>
+                <span>Calendar (CalDAV):</span>
+                <span id="caldav-connection-status" class="config-status missing">Not Configured</span>
             </div>
             <div class="config-item">
                 <span>Location:</span>
                 <span id="location-status" class="config-status configured">New York, NY</span>
-            </div>
-            <div class="config-item">
-                <span>Google Account:</span>
-                <span id="google-account-status" class="config-status missing">Not Connected</span>
             </div>
         </div>
         
@@ -252,37 +248,54 @@
         </div>
         
         <div class="setup-section">
-            <h3>Google Calendar API</h3>
+            <h3>📅 Calendar Setup (CalDAV)</h3>
+            <div class="help-text" style="margin-bottom: 20px;">
+                <strong>New CalDAV Integration!</strong> No more token refresh issues - perfect for always-on dashboards!<br>
+                Works with Google Calendar, Apple iCloud, Microsoft Outlook, and any CalDAV server.
+            </div>
+            
             <div class="form-group">
-                <label for="google-client-id">Client ID:</label>
-                <input type="text" id="google-client-id" placeholder="Enter your Google Client ID">
-                <div class="help-text">
-                    Get your credentials from <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a>. 
-                    Create a project, enable Calendar API, create OAuth2 credentials, and copy the Client ID.
-                    <br><strong>Important:</strong> Add your domain to authorized origins in Google Cloud Console.
+                <label for="caldav-provider">Calendar Provider:</label>
+                <select id="caldav-provider" onchange="updateCalDAVFields()">
+                    <option value="">Select your calendar provider</option>
+                    <option value="google">Google Calendar</option>
+                    <option value="apple">Apple iCloud Calendar</option>
+                    <option value="outlook">Microsoft Outlook</option>
+                    <option value="generic">Other CalDAV Server</option>
+                </select>
+            </div>
+            
+            <div id="caldav-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="caldav-username">Username/Email:</label>
+                    <input type="text" id="caldav-username" placeholder="your.email@gmail.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="caldav-password">Password:</label>
+                    <input type="password" id="caldav-password" placeholder="App Password or Account Password">
+                    <div id="password-help" class="help-text"></div>
+                </div>
+                
+                <div class="form-group" id="custom-endpoint-group" style="display: none;">
+                    <label for="caldav-endpoint">CalDAV Server URL:</label>
+                    <input type="url" id="caldav-endpoint" placeholder="https://caldav.example.com/dav/">
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="button" onclick="testCalDAVConnection()">
+                        🔍 Test Connection
+                    </button>
+                    <button class="button" onclick="saveCalDAVConfig()">
+                        💾 Save Configuration
+                    </button>
+                    <button class="button button-secondary" onclick="clearCalDAVConfig()">
+                        🗑️ Clear Configuration
+                    </button>
                 </div>
             </div>
-        </div>
-        
-        <div class="setup-section">
-            <h3>Google Account Management</h3>
-            <div id="google-account-info" style="margin-bottom: 15px;">
-                <div id="account-status-message" style="padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 14px; color: #6c757d;">
-                    No Google account connected. Connect an account to enable calendar features.
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <button class="button" onclick="connectGoogleAccount()" id="connect-google-btn">
-                    🔗 Connect Google Account
-                </button>
-                <button class="button button-secondary" onclick="disconnectGoogleAccount()" id="disconnect-google-btn" style="display: none;">
-                    🔓 Disconnect Google Account
-                </button>
-            </div>
-            <div class="help-text">
-                Connect your Google account to access calendar events in the dashboard. 
-                You can disconnect anytime to test authentication or switch accounts.
-            </div>
+            
+            <div id="caldav-status" style="margin-top: 15px; display: none;"></div>
         </div>
         
         <div class="setup-section">
@@ -328,10 +341,12 @@
     
     <script src="config.js"></script>
     <script src="api-client.js"></script>
+    <script src="caldav-client.js"></script>
     <script>
         // Load current configuration on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentConfig();
+            loadCalDAVConfig();
             updateGoogleAccountStatus();
         });
         
@@ -877,10 +892,168 @@
             }
         }
 
+        // CalDAV Configuration Functions
+        let caldavClient = null;
+        
+        function updateCalDAVFields() {
+            const provider = document.getElementById('caldav-provider').value;
+            const fieldsDiv = document.getElementById('caldav-fields');
+            const endpointGroup = document.getElementById('custom-endpoint-group');
+            const passwordHelp = document.getElementById('password-help');
+            
+            if (!provider) {
+                fieldsDiv.style.display = 'none';
+                return;
+            }
+            
+            fieldsDiv.style.display = 'block';
+            endpointGroup.style.display = provider === 'generic' ? 'block' : 'none';
+            
+            // Update password help text based on provider
+            const helpTexts = {
+                google: 'Use an <a href="https://support.google.com/accounts/answer/185833" target="_blank">App Password</a>, not your regular Gmail password. Go to Google Account settings > Security > App passwords.',
+                apple: 'Use an <a href="https://support.apple.com/en-us/102654" target="_blank">app-specific password</a>. Go to Apple ID settings > Security > App-Specific Passwords.',
+                outlook: 'Use your regular Microsoft account password or an app password if you have 2FA enabled.',
+                generic: 'Enter the password for your CalDAV server account.'
+            };
+            
+            passwordHelp.innerHTML = helpTexts[provider] || '';
+        }
+        
+        function testCalDAVConnection() {
+            const provider = document.getElementById('caldav-provider').value;
+            const username = document.getElementById('caldav-username').value;
+            const password = document.getElementById('caldav-password').value;
+            const customEndpoint = document.getElementById('caldav-endpoint').value;
+            
+            if (!provider || !username || !password) {
+                showCalDAVStatus('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            if (provider === 'generic' && !customEndpoint) {
+                showCalDAVStatus('Please enter the CalDAV server URL.', 'error');
+                return;
+            }
+            
+            showCalDAVStatus('Testing connection...', 'info');
+            
+            try {
+                if (!caldavClient) {
+                    caldavClient = new CalDAVClient(window.dashboardConfig);
+                }
+                
+                // Save temporarily for testing
+                const saved = caldavClient.saveConfig(provider, username, password, customEndpoint);
+                if (!saved) {
+                    throw new Error('Failed to save configuration for testing');
+                }
+                
+                // Test the connection
+                caldavClient.testConnection().then(result => {
+                    if (result.success) {
+                        showCalDAVStatus(result.message + ' ✅', 'success');
+                    } else {
+                        showCalDAVStatus('Connection failed: ' + result.error, 'error');
+                    }
+                }).catch(error => {
+                    showCalDAVStatus('Connection test failed: ' + error.message, 'error');
+                });
+                
+            } catch (error) {
+                showCalDAVStatus('Configuration error: ' + error.message, 'error');
+            }
+        }
+        
+        function saveCalDAVConfig() {
+            const provider = document.getElementById('caldav-provider').value;
+            const username = document.getElementById('caldav-username').value;
+            const password = document.getElementById('caldav-password').value;
+            const customEndpoint = document.getElementById('caldav-endpoint').value;
+            
+            if (!provider || !username || !password) {
+                showCalDAVStatus('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            try {
+                if (!caldavClient) {
+                    caldavClient = new CalDAVClient(window.dashboardConfig);
+                }
+                
+                const saved = caldavClient.saveConfig(provider, username, password, customEndpoint);
+                if (saved) {
+                    showCalDAVStatus('CalDAV configuration saved successfully! ✅', 'success');
+                    updateDashboardButton();
+                } else {
+                    showCalDAVStatus('Failed to save CalDAV configuration.', 'error');
+                }
+                
+            } catch (error) {
+                showCalDAVStatus('Save error: ' + error.message, 'error');
+            }
+        }
+        
+        function clearCalDAVConfig() {
+            if (confirm('Are you sure you want to clear the CalDAV configuration?')) {
+                if (!caldavClient) {
+                    caldavClient = new CalDAVClient(window.dashboardConfig);
+                }
+                
+                caldavClient.clearConfig();
+                showCalDAVStatus('CalDAV configuration cleared.', 'info');
+                
+                // Clear form fields
+                document.getElementById('caldav-provider').value = '';
+                document.getElementById('caldav-username').value = '';
+                document.getElementById('caldav-password').value = '';
+                document.getElementById('caldav-endpoint').value = '';
+                document.getElementById('caldav-fields').style.display = 'none';
+                
+                updateDashboardButton();
+            }
+        }
+        
+        function showCalDAVStatus(message, type) {
+            const statusDiv = document.getElementById('caldav-status');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `<div class="config-status ${type}" style="padding: 10px; border-radius: 6px; margin-top: 10px;">${message}</div>`;
+        }
+        
+        function loadCalDAVConfig() {
+            try {
+                if (!caldavClient) {
+                    caldavClient = new CalDAVClient(window.dashboardConfig);
+                }
+                
+                const status = caldavClient.getConfigStatus();
+                const statusElement = document.getElementById('caldav-connection-status');
+                
+                if (status.configured) {
+                    showCalDAVStatus(`Currently configured: ${status.message}`, 'success');
+                    statusElement.textContent = status.message;
+                    statusElement.className = 'config-status configured';
+                } else {
+                    statusElement.textContent = 'Not Configured';
+                    statusElement.className = 'config-status missing';
+                }
+                
+            } catch (error) {
+                console.warn('Could not load CalDAV config:', error);
+                const statusElement = document.getElementById('caldav-connection-status');
+                statusElement.textContent = 'Error Loading';
+                statusElement.className = 'config-status missing';
+            }
+        }
+
         // Make debugging functions available globally
         window.clearAllAuthData = clearAllAuthData;
         window.updateGoogleAccountStatus = updateGoogleAccountStatus;
         window.debugGeolocation = debugGeolocation;
+        window.testCalDAVConnection = testCalDAVConnection;
+        window.saveCalDAVConfig = saveCalDAVConfig;
+        window.clearCalDAVConfig = clearCalDAVConfig;
+        window.updateCalDAVFields = updateCalDAVFields;
     </script>
 </body>
 </html>
