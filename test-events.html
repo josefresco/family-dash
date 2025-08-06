@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalDAV Events Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #005a87; }
+        .results { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .success { background: #e8f5e8; border-left: 4px solid #4caf50; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+        .test-section { border: 1px solid #ddd; margin: 15px 0; padding: 15px; border-radius: 5px; }
+        .test-section h3 { margin-top: 0; }
+        .date-info { background: #f9f9f9; padding: 10px; margin: 10px 0; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>CalDAV Events Debug Test</h1>
+    <p>This test will help identify why your calendar events aren't showing up.</p>
+    
+    <div class="form-group">
+        <label for="email">Google Email:</label>
+        <input type="email" id="email" placeholder="your.workspace@company.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="appPassword">Google App Password:</label>
+        <input type="password" id="appPassword" placeholder="16-character app password">
+    </div>
+    
+    <div class="form-group">
+        <label for="dateTest">Date to test:</label>
+        <select id="dateTest">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="custom">Custom Date</option>
+        </select>
+    </div>
+    
+    <div class="form-group" id="customDateGroup" style="display:none;">
+        <label for="customDate">Custom Date:</label>
+        <input type="date" id="customDate">
+    </div>
+    
+    <div class="form-group">
+        <button onclick="runEventsTest()">🔍 Debug Events</button>
+        <button onclick="testRawCalDAV()">🔧 Raw CalDAV Response</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('dateTest').addEventListener('change', function() {
+            const customGroup = document.getElementById('customDateGroup');
+            if (this.value === 'custom') {
+                customGroup.style.display = 'block';
+                document.getElementById('customDate').value = new Date().toISOString().split('T')[0];
+            } else {
+                customGroup.style.display = 'none';
+            }
+        });
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `results ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function getTestDate() {
+            const dateTest = document.getElementById('dateTest').value;
+            const now = new Date();
+            
+            switch(dateTest) {
+                case 'today':
+                    return { date: now, param: 'today' };
+                case 'tomorrow':
+                    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                    return { date: tomorrow, param: 'tomorrow' };
+                case 'yesterday':
+                    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    return { date: yesterday, param: 'yesterday' };
+                case 'custom':
+                    const customDateStr = document.getElementById('customDate').value;
+                    const customDate = new Date(customDateStr + 'T12:00:00');
+                    return { date: customDate, param: customDateStr };
+                default:
+                    return { date: now, param: 'today' };
+            }
+        }
+
+        async function runEventsTest() {
+            const email = document.getElementById('email').value;
+            const appPassword = document.getElementById('appPassword').value;
+            
+            if (!email || !appPassword) {
+                log('Please enter both email and app password', 'error');
+                return;
+            }
+            
+            clearResults();
+            log('🚀 Starting CalDAV Events Debug Test...', 'info');
+            
+            const testDate = getTestDate();
+            
+            // Show date information
+            log(`<div class="date-info">
+                <strong>Test Parameters:</strong><br>
+                📅 Date: ${testDate.date.toLocaleDateString()}<br>
+                🕐 Time: ${testDate.date.toLocaleTimeString()}<br>
+                📍 Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}<br>
+                🎯 Parameter: ${testDate.param}
+            </div>`, 'info');
+            
+            // Test 1: Check saved CalDAV config
+            log('🔍 Test 1: Checking saved CalDAV configuration...', 'info');
+            const savedConfig = localStorage.getItem('dashboard-caldav-config');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    log(`✅ Found saved config for provider: ${config.provider}`, 'success');
+                    log(`📧 Username: ${config.username}`, 'info');
+                    log(`🔒 Password: ${config.password ? '[ENCODED - LENGTH: ' + config.password.length + ']' : '[MISSING]'}`, 'info');
+                } catch (error) {
+                    log(`❌ Error parsing saved config: ${error.message}`, 'error');
+                }
+            } else {
+                log('❌ No saved CalDAV configuration found', 'error');
+            }
+            
+            // Test 2: Manual CalDAV request
+            log('🔍 Test 2: Making manual CalDAV request...', 'info');
+            
+            try {
+                const response = await fetch('/api/calendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider: 'google',
+                        username: email,
+                        password: appPassword,
+                        dateParam: testDate.param
+                    })
+                });
+                
+                log(`Response Status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                const responseData = await response.json();
+                log(`<strong>Full Response:</strong><pre>${JSON.stringify(responseData, null, 2)}</pre>`, 
+                    response.ok ? 'success' : 'error');
+                
+                // Analyze the response
+                if (response.ok && responseData) {
+                    log('🔍 Test 3: Analyzing response data...', 'info');
+                    
+                    log(`📊 Total Accounts: ${responseData.total_accounts || 0}`, 'info');
+                    log(`✅ Successful Accounts: ${responseData.successful_accounts || 0}`, 'info');
+                    log(`❌ Failed Accounts: ${responseData.failed_accounts || 0}`, 'info');
+                    log(`📅 Total Events Found: ${responseData.total_events || 0}`, 'info');
+                    
+                    if (responseData.calendars && responseData.calendars.length > 0) {
+                        log(`📚 Number of Calendars: ${responseData.calendars.length}`, 'success');
+                        
+                        responseData.calendars.forEach((calendar, index) => {
+                            log(`📖 Calendar ${index + 1}: "${calendar.name}" (${calendar.events ? calendar.events.length : 0} events)`, 'info');
+                            
+                            if (calendar.events && calendar.events.length > 0) {
+                                log(`<strong>Events in "${calendar.name}":</strong>`, 'success');
+                                calendar.events.forEach((event, eventIndex) => {
+                                    log(`📝 Event ${eventIndex + 1}:<br>
+                                        • <strong>${event.summary || '[No Title]'}</strong><br>
+                                        • Start: ${event.start || '[No Start Time]'}<br>
+                                        • End: ${event.end || '[No End Time]'}<br>
+                                        • All Day: ${event.all_day ? 'Yes' : 'No'}<br>
+                                        • Location: ${event.location || '[No Location]'}<br>
+                                        • Description: ${event.description || '[No Description]'}`, 'success');
+                                });
+                            } else {
+                                log(`⚠️ Calendar "${calendar.name}" has no events for ${testDate.param}`, 'warning');
+                            }
+                        });
+                    } else {
+                        log('⚠️ No calendars found in response', 'warning');
+                    }
+                    
+                    if (responseData.message) {
+                        log(`💬 Server Message: ${responseData.message}`, 'info');
+                    }
+                    
+                } else {
+                    log('❌ Failed to get valid response from CalDAV server', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Network Error: ${error.message}`, 'error');
+            }
+            
+            log('🏁 Events debug test completed!', 'info');
+        }
+
+        async function testRawCalDAV() {
+            const email = document.getElementById('email').value;
+            const appPassword = document.getElementById('appPassword').value;
+            
+            if (!email || !appPassword) {
+                log('Please enter both email and app password', 'error');
+                return;
+            }
+            
+            log('🔧 Testing Raw CalDAV Response...', 'info');
+            
+            const testDate = getTestDate();
+            
+            try {
+                // Get raw response from Netlify function but with more debugging
+                const response = await fetch('/api/calendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider: 'google',
+                        username: email,
+                        password: appPassword,
+                        dateParam: testDate.param,
+                        debug: true // Request debug info
+                    })
+                });
+                
+                const responseText = await response.text();
+                
+                log(`<strong>Raw HTTP Response:</strong><pre>${responseText}</pre>`, 
+                    response.ok ? 'success' : 'error');
+                    
+                // Try to parse as JSON for better formatting
+                try {
+                    const parsedResponse = JSON.parse(responseText);
+                    if (parsedResponse.debug) {
+                        log(`<strong>Debug Information:</strong><pre>${JSON.stringify(parsedResponse.debug, null, 2)}</pre>`, 'info');
+                    }
+                } catch {
+                    // Not JSON, that's fine
+                }
+                
+            } catch (error) {
+                log(`❌ Error getting raw response: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-fill from saved config if available
+        window.addEventListener('load', function() {
+            const savedConfig = localStorage.getItem('dashboard-caldav-config');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    if (config.username) {
+                        document.getElementById('email').value = config.username;
+                    }
+                } catch (error) {
+                    console.log('Could not auto-fill from saved config:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
