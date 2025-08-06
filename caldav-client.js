@@ -331,15 +331,16 @@ class CalDAVClient {
         }
     }
     
-    // Get the Vercel proxy URL
+    // Get the proxy URL - using reliable CORS proxy service
     getProxyUrl() {
-        // In production, this will be your Vercel deployment URL
-        // For development, you can test with local Vercel dev server
-        const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000'  // Local development
-            : 'https://family-dash-git-main-josiah-coles-projects.vercel.app';  // Production Vercel deployment
-            
-        return `${baseUrl}/api/calendar`;
+        // Use a public CORS proxy that works reliably
+        // Alternative: Set up our own simple proxy on a different service
+        return 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://family-dash-git-main-josiah-coles-projects.vercel.app/api/calendar');
+    }
+    
+    // Alternative: Use direct CalDAV with a working CORS proxy
+    getCalDAVProxyUrl() {
+        return 'https://cors-anywhere.herokuapp.com/';
     }
     
     // Format date for CalDAV time-range queries

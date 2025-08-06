@@ -201,23 +201,40 @@ class DashboardApp {
 
     async initializeCalDAV() {
         try {
+            // Initialize both calendar clients
             window.caldavClient = new CalDAVClient(this.appConfig);
-            console.log('✅ CalDAV client initialized');
+            window.simpleCalendarClient = new SimpleCalendarClient(this.appConfig);
+            console.log('✅ Calendar clients initialized');
             
-            // Test connection if configured
-            if (window.caldavClient.isConfigured) {
+            // Determine which calendar client to use
+            if (window.simpleCalendarClient.isConfigured) {
+                console.log('📅 Using Simple Calendar client');
+                const testResult = await window.simpleCalendarClient.testConnection();
+                if (testResult.success) {
+                    console.log('✅ Simple Calendar connection verified:', testResult.message);
+                    this.activeCalendarClient = window.simpleCalendarClient;
+                    this.calendarType = 'simple';
+                } else {
+                    console.warn('⚠️ Simple Calendar connection issue:', testResult.error);
+                }
+            } else if (window.caldavClient.isConfigured) {
+                console.log('📅 Using CalDAV client');
                 const testResult = await window.caldavClient.testConnection();
                 if (testResult.success) {
                     console.log('✅ CalDAV connection verified:', testResult.message);
+                    this.activeCalendarClient = window.caldavClient;
+                    this.calendarType = 'caldav';
                 } else {
                     console.warn('⚠️ CalDAV connection issue:', testResult.error);
                 }
             } else {
-                console.log('📅 CalDAV not configured - calendar will show setup option');
+                console.log('📅 No calendar configured - calendar will show setup option');
+                this.activeCalendarClient = null;
+                this.calendarType = null;
             }
         } catch (error) {
-            console.error('CalDAV initialization failed:', error);
-            // Continue without CalDAV - calendar will show setup message
+            console.error('Calendar initialization failed:', error);
+            // Continue without calendar - will show setup message
         }
     }
     
@@ -396,7 +413,22 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             
             switch (endpoint) {
                 case 'calendar':
-                    data = await this.apiClient.getCalendarData(dateParam);
+                    if (this.activeCalendarClient) {
+                        data = await this.activeCalendarClient.getCalendarEvents(dateParam);
+                    } else {
+                        // Return empty calendar data if no client is configured
+                        data = {
+                            calendars: [],
+                            connected_users: [],
+                            total_accounts: 0,
+                            successful_accounts: 0,
+                            failed_accounts: 0,
+                            total_events: 0,
+                            date_requested: dateParam,
+                            source: 'no_calendar_configured',
+                            message: 'No calendar configured. Please set up your calendar connection.'
+                        };
+                    }
                     break;
                 case 'weather':
                     data = await this.apiClient.getWeatherData(dateParam);
