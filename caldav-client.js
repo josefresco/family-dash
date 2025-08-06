@@ -346,7 +346,7 @@ class CalDAVClient {
     getProxyUrl() {
         // Use Netlify functions for reliable CalDAV proxy
         // This will work once you deploy to Netlify
-        return window.location.origin + '/api/calendar';
+        return window.location.origin + '/.netlify/functions/calendar';
     }
     
     // Alternative: Use direct CalDAV with a working CORS proxy

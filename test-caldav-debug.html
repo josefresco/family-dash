@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalDAV Debug Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0088ff;
+        }
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .result {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CalDAV Debug Test</h1>
+        <p>Test the Netlify CalDAV function to see what's happening with calendar data.</p>
+        
+        <div class="test-section">
+            <h3>📅 Calendar Connection Test</h3>
+            <button class="button" onclick="testCalDAVToday()">Test Today's Events</button>
+            <button class="button" onclick="testCalDAVTomorrow()">Test Tomorrow's Events</button>
+            <button class="button" onclick="testCalDAVWeek()">Test This Week</button>
+            <div id="calendar-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚙️ Configuration Status</h3>
+            <button class="button" onclick="showConfig()">Show CalDAV Config</button>
+            <div id="config-result" class="result"></div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="caldav-client.js"></script>
+    <script>
+        let caldavClient = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTest();
+        });
+
+        function initializeTest() {
+            if (window.dashboardConfig && window.CalDAVClient) {
+                caldavClient = new CalDAVClient(window.dashboardConfig);
+                console.log('CalDAV client initialized:', caldavClient.isConfigured);
+            } else {
+                console.error('Required scripts not loaded');
+            }
+        }
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearResult(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testCalDAVToday() {
+            clearResult('calendar-result');
+            log('calendar-result', '🔍 Testing TODAY\'s events via Netlify function...', 'info');
+            
+            if (!caldavClient || !caldavClient.isConfigured) {
+                log('calendar-result', '❌ CalDAV not configured', 'error');
+                return;
+            }
+
+            try {
+                // Test the actual Netlify function directly
+                const response = await fetch('/.netlify/functions/calendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider: caldavClient.credentials.provider,
+                        username: caldavClient.credentials.username,
+                        password: caldavClient.credentials.password,
+                        dateParam: 'today'
+                    })
+                });
+
+                log('calendar-result', `📡 Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('calendar-result', `❌ Error Response: ${errorText}`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+                log('calendar-result', `📊 Response Data:`, 'info');
+                log('calendar-result', JSON.stringify(data, null, 2), 'info');
+
+                if (data.debug) {
+                    log('calendar-result', `🔍 Debug Info:`, 'warning');
+                    log('calendar-result', JSON.stringify(data.debug, null, 2), 'warning');
+                }
+
+                if (data.total_events > 0) {
+                    log('calendar-result', `✅ Found ${data.total_events} events for today!`, 'success');
+                    data.calendars.forEach((calendar, i) => {
+                        calendar.events.forEach((event, j) => {
+                            log('calendar-result', `  📅 ${event.summary} (${event.start} - ${event.end})`, 'success');
+                        });
+                    });
+                } else {
+                    log('calendar-result', '⚠️ No events found for today', 'warning');
+                }
+
+            } catch (error) {
+                log('calendar-result', `❌ Test failed: ${error.message}`, 'error');
+                console.error('CalDAV test error:', error);
+            }
+        }
+
+        async function testCalDAVTomorrow() {
+            clearResult('calendar-result');
+            log('calendar-result', '🔍 Testing TOMORROW\'s events via Netlify function...', 'info');
+            
+            if (!caldavClient || !caldavClient.isConfigured) {
+                log('calendar-result', '❌ CalDAV not configured', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/calendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider: caldavClient.credentials.provider,
+                        username: caldavClient.credentials.username,
+                        password: caldavClient.credentials.password,
+                        dateParam: 'tomorrow'
+                    })
+                });
+
+                log('calendar-result', `📡 Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('calendar-result', `❌ Error Response: ${errorText}`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+                log('calendar-result', `📊 Response Data:`, 'info');
+                log('calendar-result', JSON.stringify(data, null, 2), 'info');
+
+                if (data.debug) {
+                    log('calendar-result', `🔍 Debug Info:`, 'warning');
+                    log('calendar-result', JSON.stringify(data.debug, null, 2), 'warning');
+                }
+
+                if (data.total_events > 0) {
+                    log('calendar-result', `✅ Found ${data.total_events} events for tomorrow!`, 'success');
+                    data.calendars.forEach((calendar, i) => {
+                        calendar.events.forEach((event, j) => {
+                            log('calendar-result', `  📅 ${event.summary} (${event.start} - ${event.end})`, 'success');
+                        });
+                    });
+                } else {
+                    log('calendar-result', '⚠️ No events found for tomorrow', 'warning');
+                }
+
+            } catch (error) {
+                log('calendar-result', `❌ Test failed: ${error.message}`, 'error');
+                console.error('CalDAV test error:', error);
+            }
+        }
+
+        async function testCalDAVWeek() {
+            clearResult('calendar-result');
+            log('calendar-result', '🔍 Testing broader date range (this function will use the 7-day fallback)...', 'info');
+            
+            if (!caldavClient || !caldavClient.isConfigured) {
+                log('calendar-result', '❌ CalDAV not configured', 'error');
+                return;
+            }
+
+            try {
+                // Test with today first, which should trigger the 7-day fallback in the Netlify function
+                const response = await fetch('/.netlify/functions/calendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider: caldavClient.credentials.provider,
+                        username: caldavClient.credentials.username,
+                        password: caldavClient.credentials.password,
+                        dateParam: 'today'
+                    })
+                });
+
+                const data = await response.json();
+                log('calendar-result', 'This will show the 7-day fallback debugging info from Netlify function logs.', 'info');
+                log('calendar-result', 'Check browser Network tab or Netlify function logs for detailed output.', 'warning');
+                
+                if (data.debug) {
+                    log('calendar-result', `🔍 Debug Info (includes 7-day test):`, 'warning');
+                    log('calendar-result', JSON.stringify(data.debug, null, 2), 'warning');
+                }
+
+            } catch (error) {
+                log('calendar-result', `❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function showConfig() {
+            clearResult('config-result');
+            log('config-result', '⚙️ CalDAV Configuration Status:', 'info');
+            
+            if (!caldavClient) {
+                log('config-result', '❌ CalDAV client not initialized', 'error');
+                return;
+            }
+
+            const status = caldavClient.getConfigStatus();
+            log('config-result', `Configured: ${status.configured}`, status.configured ? 'success' : 'warning');
+            
+            if (status.configured) {
+                log('config-result', `Provider: ${status.provider}`, 'info');
+                log('config-result', `Username: ${status.username}`, 'info');
+                log('config-result', `Message: ${status.message}`, 'info');
+
+                // Show the CalDAV URL being used
+                const url = caldavClient.getCalDAVUrl();
+                if (url) {
+                    log('config-result', `CalDAV URL: ${url.replace(caldavClient.credentials.username, '[username]')}`, 'info');
+                }
+
+                // Show proxy URL
+                log('config-result', `Proxy URL: ${caldavClient.getProxyUrl()}`, 'info');
+            } else {
+                log('config-result', `Message: ${status.message}`, 'warning');
+            }
+
+            // Test basic connectivity
+            log('config-result', '\n🔗 Testing connection...', 'info');
+            testConnection();
+        }
+
+        async function testConnection() {
+            try {
+                const result = await caldavClient.testConnection();
+                log('config-result', `Connection test: ${result.success ? '✅ SUCCESS' : '❌ FAILED'}`, result.success ? 'success' : 'error');
+                log('config-result', `Message: ${result.message || result.error}`, result.success ? 'success' : 'error');
+            } catch (error) {
+                log('config-result', `Connection test failed: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

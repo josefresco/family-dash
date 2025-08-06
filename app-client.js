@@ -439,6 +439,46 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
     }
 
+    async makeApiRequestWithDate(endpoint, dateParam) {
+        console.log(`Making ${endpoint} API request with explicit dateParam: ${dateParam}`);
+        
+        if (!this.apiClient) {
+            throw new Error(`API Client not available for ${endpoint} request. Check initialization.`);
+        }
+        
+        try {
+            let data;
+            
+            switch (endpoint) {
+                case 'calendar':
+                    if (this.activeCalendarClient) {
+                        data = await this.activeCalendarClient.getCalendarEvents(dateParam);
+                    } else {
+                        // Return empty calendar data if no client is configured
+                        data = {
+                            calendars: [],
+                            connected_users: [],
+                            total_accounts: 0,
+                            successful_accounts: 0,
+                            failed_accounts: 0,
+                            total_events: 0,
+                            date_requested: dateParam,
+                            source: 'no_calendar_configured',
+                            message: 'No calendar configured. Please set up your calendar connection.'
+                        };
+                    }
+                    break;
+                default:
+                    throw new Error(`Unknown endpoint: ${endpoint}`);
+            }
+            
+            return data;
+        } catch (error) {
+            console.error(`API request failed for ${endpoint} with date ${dateParam}:`, error);
+            throw error;
+        }
+    }
+
     async loadCalendarEvents() {
         const calendarContent = document.getElementById('calendar-content');
         
@@ -462,6 +502,31 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             
             if (data.error) {
                 throw new Error(data.message || data.error);
+            }
+            
+            // If showing tomorrow and no events found, also try today as fallback
+            if (this.displayMode === 'tomorrow' && (!data.calendars || data.calendars.length === 0 || data.total_events === 0)) {
+                console.log('No tomorrow events found, trying today as fallback...');
+                calendarContent.innerHTML = this.getLoadingHTML(`No events tomorrow, checking today's calendar...`);
+                
+                try {
+                    // Temporarily request today's events
+                    const todayData = await this.makeApiRequestWithDate('calendar', 'today');
+                    console.log('Today fallback calendar response:', todayData);
+                    
+                    if (todayData && todayData.calendars && todayData.calendars.length > 0 && todayData.total_events > 0) {
+                        // Show today's events with a note
+                        const modifiedData = {
+                            ...todayData,
+                            message: "No events tomorrow - showing today's remaining events"
+                        };
+                        console.log('Rendering today\'s events as fallback');
+                        this.renderMultiAccountCalendar(modifiedData);
+                        return;
+                    }
+                } catch (fallbackError) {
+                    console.warn('Fallback to today failed:', fallbackError);
+                }
             }
             
             console.log('Rendering calendar data...');
