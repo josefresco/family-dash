@@ -1,5 +1,6 @@
-// Main API handler for CalDAV proxy
-export default function handler(req, res) {
+// Main API handler for CalDAV proxy - CommonJS format
+module.exports = (req, res) => {
+    console.log('Index API called:', req.method, req.url);
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
