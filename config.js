@@ -6,7 +6,6 @@ class AppConfig {
         this.defaultConfig = {
             // API Keys (will be set by user)
             openweather_api_key: '',
-            google_client_id: '',
             
             // Location settings
             location: {
@@ -63,7 +62,7 @@ class AppConfig {
     }
     
     isConfigured() {
-        return !!(this.config.openweather_api_key && this.config.google_client_id);
+        return !!(this.config.openweather_api_key);
     }
     
     getConfigPrompt() {
@@ -71,8 +70,7 @@ class AppConfig {
             return {
                 needsConfig: true,
                 missing: [
-                    !this.config.openweather_api_key && 'OpenWeatherMap API key',
-                    !this.config.google_client_id && 'Google Client ID'
+                    !this.config.openweather_api_key && 'OpenWeatherMap API key'
                 ].filter(Boolean)
             };
         }
