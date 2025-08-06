@@ -636,9 +636,9 @@ class APIClient {
         }
     }
     
-    // Calendar API will be handled by Google OAuth in auth-client.js
+    // Calendar API handled by CalDAV client
     async getCalendarData(date_param = 'today') {
-        // Use CalDAV client instead of Google OAuth
+        // Use CalDAV client for calendar data
         const caldavClient = window.caldavClient;
         if (!caldavClient) {
             return {

@@ -172,7 +172,7 @@ class CalDAVClient {
         }
     }
     
-    // Test CalDAV connection via Vercel proxy
+    // Test CalDAV connection via Netlify function
     async testConnection() {
         if (!this.credentials) {
             return { success: false, error: 'No CalDAV configuration found' };
@@ -181,7 +181,7 @@ class CalDAVClient {
         try {
             console.log('Testing CalDAV connection via proxy...');
             
-            // Use the proxy to test connection
+            // Use the Netlify function to test connection
             const proxyUrl = this.getProxyUrl();
             const response = await fetch(proxyUrl, {
                 method: 'POST',
@@ -257,7 +257,7 @@ class CalDAVClient {
                 end: endOfDay.toISOString()
             });
             
-            // Fetch events via Vercel proxy
+            // Fetch events via Netlify function
             const proxyUrl = this.getProxyUrl();
             const response = await fetch(proxyUrl, {
                 method: 'POST',
@@ -299,7 +299,7 @@ class CalDAVClient {
         }
     }
     
-    // Fetch events for a specific date range using Vercel proxy
+    // Fetch events for a specific date range using Netlify function
     async fetchEventsForDateRange(startDate, endDate) {
         if (!this.credentials) {
             throw new Error('CalDAV credentials not configured');
@@ -308,9 +308,9 @@ class CalDAVClient {
         const dateParam = startDate.toDateString() === new Date().toDateString() ? 'today' : 'tomorrow';
         
         try {
-            console.log('Using Vercel CalDAV proxy for:', this.credentials.provider);
+            console.log('Using Netlify CalDAV function for:', this.credentials.provider);
             
-            // Use Vercel serverless function to avoid CORS issues
+            // Use Netlify serverless function to avoid CORS issues
             const proxyUrl = this.getProxyUrl();
             const response = await fetch(proxyUrl, {
                 method: 'POST',

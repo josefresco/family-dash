@@ -7,7 +7,7 @@ A responsive personal dashboard application that displays calendar events, weath
 ### 📅 Multi-Account Calendar Integration
 - Connect multiple Google accounts (personal, work, family)
 - Display events from all connected calendars in one unified view
-- Automatic OAuth2 token refresh and management
+- CalDAV integration for secure calendar access
 - Room-readable event display with large fonts
 - Time-based switching between today and tomorrow's events
 
@@ -38,7 +38,7 @@ A responsive personal dashboard application that displays calendar events, weath
 
 ### 🔧 Comprehensive Administrative Tools
 - **Real-time admin control panel** with live system monitoring
-- **Token diagnostic tools** with detailed OAuth2 analysis
+- **CalDAV diagnostic tools** with connection testing
 - **Tide station testing suite** with all Cape Cod stations
 - **API testing interface** with comprehensive endpoint coverage
 - **Cache management tools** for iOS Safari compatibility
@@ -85,7 +85,7 @@ A responsive personal dashboard application that displays calendar events, weath
    - Go to [Google Cloud Console](https://console.cloud.google.com/)
    - Create a new project or select existing
    - Enable Google Calendar API
-   - Create OAuth2 credentials (Web application)
+   - Generate App Password for CalDAV access
    - Add your GitHub Pages domain to authorized origins
    
    **OpenWeatherMap API:**
@@ -106,7 +106,7 @@ This dashboard is built with modern HTML5, JavaScript, and CSS - **perfect for G
 ### Deployment Options
 - **GitHub Pages**: Free hosting with automatic HTTPS
 - **Netlify**: Free tier with form handling and custom domains
-- **Vercel**: Free deployment with global CDN
+- **Netlify**: Free deployment with global CDN and serverless functions
 - **Any static hosting service**
 
 ### GitHub Pages Setup
@@ -125,12 +125,11 @@ family-dash/
 ├── setup.html                  # API configuration & Google account management
 ├── config.js                   # Configuration management with LocalStorage
 ├── api-client.js              # Direct API calls with weather narratives
-├── auth-client.js             # Browser-based Google OAuth with multi-account
+├── caldav-client.js           # CalDAV client for calendar access
 ├── app-client.js              # Main application logic (overhauled weather UI)
 ├── favicon.svg                # Dynamic dashboard chart favicon
 ├── manifest.json              # PWA manifest for mobile installation
 ├── sw.js                      # Service worker for offline functionality
-├── tokens/                    # Google OAuth token storage directory
 └── README.md                  # Documentation (updated v3.7)
 ```
 
@@ -167,7 +166,7 @@ family-dash/
 ### Version 3.0 - GitHub Pages Edition
 - **Converted from PHP to pure HTML/JavaScript** for GitHub Pages
 - **Client-side API integration** with direct external service calls
-- **Browser-based Google OAuth** using Google's JavaScript library
+- **CalDAV integration** for Google Workspace and Gmail accounts
 - **LocalStorage configuration** replacing server-side config files
 
 ## External API Integration
@@ -177,7 +176,7 @@ The dashboard connects directly to external APIs from the browser:
 ### Google Calendar API
 - **Service**: Google Calendar API via JavaScript SDK
 - **Function**: Retrieves events from connected Google accounts
-- **Features**: Multi-account OAuth, automatic token refresh, browser-based authentication
+- **Features**: Support for Google Workspace and Gmail, App Password authentication, Netlify serverless backend
 
 ### OpenWeatherMap API
 - **Endpoint**: `https://api.openweathermap.org/data/2.5/forecast`
@@ -205,7 +204,7 @@ The application uses browser-based LocalStorage for secure configuration managem
 
 **Required:**
 - **OpenWeatherMap API Key**: Get from [OpenWeatherMap](https://openweathermap.org/api)
-- **Google Client ID**: Get from [Google Cloud Console](https://console.cloud.google.com/)
+- **Google App Password**: Generate from Google Account settings for CalDAV access
 
 **Optional:**
 - **Location coordinates**: Defaults to New York, NY (40.7128, -74.0060)
@@ -227,7 +226,7 @@ Access configuration tools:
 ## Troubleshooting
 
 ### Common Issues
-- **No calendar events**: Check Google OAuth setup and permissions in browser console
+- **No calendar events**: Check CalDAV configuration and App Password in setup interface
 - **Weather not loading**: Verify OpenWeatherMap API key in setup interface
 - **Tide data missing**: NOAA stations may be temporarily unavailable (fallback data will show)
 - **Configuration lost**: Check browser LocalStorage and re-run setup if needed
