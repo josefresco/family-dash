@@ -277,7 +277,22 @@ exports.handler = async (event, context) => {
       total_events: events.length,
       date_requested: dateParam,
       source: 'netlify_caldav',
-      message: events.length > 0 ? `Found ${events.length} events` : 'No events found for this date'
+      message: events.length > 0 ? `Found ${events.length} events` : 'No events found for this date',
+      // Add debug information to response for troubleshooting
+      debug: {
+        caldav_url: caldavUrl.replace(username, '[username]'),
+        response_length: xmlData.length,
+        response_preview: xmlData.substring(0, 500),
+        contains_vevent: xmlData.includes('BEGIN:VEVENT'),
+        contains_calendar_data: xmlData.includes('calendar-data'),
+        contains_error: xmlData.toLowerCase().includes('error'),
+        date_range: {
+          start_utc: startTimeUTC,
+          end_utc: endTimeUTC,
+          target_date: targetDate.toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+      }
     };
     
     return {
