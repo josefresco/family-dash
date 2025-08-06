@@ -161,29 +161,49 @@ class CalDAVClient {
         }
     }
     
-    // Test CalDAV connection
+    // Test CalDAV connection via Vercel proxy
     async testConnection() {
         if (!this.credentials) {
             return { success: false, error: 'No CalDAV configuration found' };
         }
         
         try {
-            const url = this.getCalDAVUrl();
-            if (!url) {
-                return { success: false, error: 'Invalid CalDAV URL configuration' };
+            console.log('Testing CalDAV connection via proxy...');
+            
+            // Use the proxy to test connection
+            const proxyUrl = this.getProxyUrl();
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: this.credentials.provider,
+                    username: this.credentials.username,
+                    password: this.credentials.password,
+                    dateParam: 'today'
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Connection test failed' }));
+                return { 
+                    success: false, 
+                    error: errorData.error || `HTTP ${response.status}: ${response.statusText}`
+                };
             }
             
-            // Try a simple OPTIONS or PROPFIND request
-            await this.makeCalDAVRequest('OPTIONS', url);
+            const data = await response.json();
             
             return { 
                 success: true, 
-                message: `Successfully connected to ${this.providers[this.credentials.provider].name}` 
+                message: `Successfully connected to ${this.providers[this.credentials.provider].name} via proxy` 
             };
+            
         } catch (error) {
             return { 
                 success: false, 
-                error: `Connection failed: ${error.message}` 
+                error: `Connection test failed: ${error.message}` 
             };
         }
     }
@@ -226,26 +246,30 @@ class CalDAVClient {
                 end: endOfDay.toISOString()
             });
             
-            const events = await this.fetchEventsForDateRange(startOfDay, endOfDay);
+            // Fetch events via Vercel proxy
+            const proxyUrl = this.getProxyUrl();
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: this.credentials.provider,
+                    username: this.credentials.username,
+                    password: this.credentials.password,
+                    dateParam: date
+                })
+            });
             
-            console.log('CalDAV events fetched:', events);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                throw new Error(`CalDAV proxy failed: ${errorData.error || response.statusText}`);
+            }
             
-            return {
-                calendars: events.length > 0 ? [{
-                    name: `${this.providers[this.credentials.provider].name}`,
-                    color: '#4285f4',
-                    events: events,
-                    event_count: events.length
-                }] : [],
-                connected_users: [{ email: this.credentials.username }],
-                total_accounts: 1,
-                successful_accounts: 1,
-                failed_accounts: 0,
-                total_events: events.length,
-                date_requested: date,
-                source: 'caldav',
-                message: events.length > 0 ? `Found ${events.length} events via CalDAV` : 'No events found for this date'
-            };
+            const calendarData = await response.json();
+            console.log('CalDAV proxy response:', calendarData);
+            
+            return calendarData;
             
         } catch (error) {
             console.error('CalDAV calendar request failed:', error);
@@ -264,36 +288,58 @@ class CalDAVClient {
         }
     }
     
-    // Fetch events for a specific date range using CalDAV
+    // Fetch events for a specific date range using Vercel proxy
     async fetchEventsForDateRange(startDate, endDate) {
-        const url = this.getCalDAVUrl();
-        if (!url) {
-            throw new Error('Invalid CalDAV URL');
+        if (!this.credentials) {
+            throw new Error('CalDAV credentials not configured');
         }
         
-        // CalDAV REPORT query to get events in date range
-        const reportQuery = `<?xml version="1.0" encoding="utf-8" ?>
-<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
-  <D:prop>
-    <D:getetag/>
-    <C:calendar-data/>
-  </D:prop>
-  <C:filter>
-    <C:comp-filter name="VCALENDAR">
-      <C:comp-filter name="VEVENT">
-        <C:time-range start="${this.formatDateForCalDAV(startDate)}" end="${this.formatDateForCalDAV(endDate)}"/>
-      </C:comp-filter>
-    </C:comp-filter>
-  </C:filter>
-</C:calendar-query>`;
+        const dateParam = startDate.toDateString() === new Date().toDateString() ? 'today' : 'tomorrow';
         
         try {
-            const response = await this.makeCalDAVRequest('REPORT', url, reportQuery);
-            return this.parseCalDAVResponse(response);
+            console.log('Using Vercel CalDAV proxy for:', this.credentials.provider);
+            
+            // Use Vercel serverless function to avoid CORS issues
+            const proxyUrl = this.getProxyUrl();
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: this.credentials.provider,
+                    username: this.credentials.username,
+                    password: this.credentials.password,
+                    dateParam: dateParam
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                throw new Error(`Proxy request failed: ${errorData.error || response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Proxy response:', data);
+            
+            // Return events from the proxy response
+            return data.calendars?.[0]?.events || [];
+            
         } catch (error) {
-            console.error('Failed to fetch CalDAV events:', error);
+            console.error('Failed to fetch CalDAV events via proxy:', error);
             throw error;
         }
+    }
+    
+    // Get the Vercel proxy URL
+    getProxyUrl() {
+        // In production, this will be your Vercel deployment URL
+        // For development, you can test with local Vercel dev server
+        const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'  // Local development
+            : 'https://family-dash-api.vercel.app';  // Production Vercel deployment
+            
+        return `${baseUrl}/api/calendar`;
     }
     
     // Format date for CalDAV time-range queries

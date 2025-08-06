@@ -347,7 +347,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentConfig();
             loadCalDAVConfig();
-            updateGoogleAccountStatus();
         });
         
         async function loadCurrentConfig() {
@@ -355,7 +354,6 @@
             
             // Load values into form
             document.getElementById('weather-key').value = config.get('openweather_api_key') || '';
-            document.getElementById('google-client-id').value = config.get('google_client_id') || '';
             document.getElementById('location-city').value = config.get('location.city') || 'New York';
             document.getElementById('location-state').value = config.get('location.state') || 'NY';
             

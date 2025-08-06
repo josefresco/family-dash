@@ -1,0 +1,10 @@
+# Files to ignore during Vercel deployment
+README.md
+.git
+.gitignore
+tokens/
+
+# Keep only essential files for the API
+!api/
+!vercel.json
+!package.json
