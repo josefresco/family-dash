@@ -288,6 +288,7 @@ exports.handler = async (event, context) => {
         contains_vevent: xmlData.includes('BEGIN:VEVENT'),
         contains_calendar_data: xmlData.includes('calendar-data'),
         contains_error: xmlData.toLowerCase().includes('error'),
+        parsing_attempted: events !== undefined,
         date_range: {
           start_utc: startTimeUTC,
           end_utc: endTimeUTC,
@@ -326,17 +327,40 @@ function parseCalDAVResponse(xmlData) {
   const events = [];
   
   try {
-    // Extract calendar-data sections
-    const calendarDataRegex = /<C:calendar-data[^>]*>([\s\S]*?)<\/C:calendar-data>/gi;
-    let match;
+    console.log('🔍 Parsing CalDAV XML response...');
     
-    while ((match = calendarDataRegex.exec(xmlData)) !== null) {
-      const icsData = match[1].trim();
-      if (icsData && icsData.includes('BEGIN:VEVENT')) {
-        const parsedEvents = parseICSData(icsData);
-        events.push(...parsedEvents);
+    // Extract calendar-data sections - try multiple regex patterns
+    const patterns = [
+      /<C:calendar-data[^>]*>([\s\S]*?)<\/C:calendar-data>/gi,
+      /<calendar-data[^>]*>([\s\S]*?)<\/calendar-data>/gi,
+      /<cal:calendar-data[^>]*>([\s\S]*?)<\/cal:calendar-data>/gi
+    ];
+    
+    let totalMatches = 0;
+    
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(xmlData)) !== null) {
+        totalMatches++;
+        const icsData = match[1].trim();
+        console.log(`📄 Found calendar-data section ${totalMatches}: ${icsData.length} chars`);
+        console.log(`📄 Preview: ${icsData.substring(0, 200)}...`);
+        
+        if (icsData && icsData.includes('BEGIN:VEVENT')) {
+          console.log('✅ Found VEVENT in ICS data');
+          const parsedEvents = parseICSData(icsData);
+          console.log(`📅 Parsed ${parsedEvents.length} events from this section`);
+          events.push(...parsedEvents);
+        } else {
+          console.log('❌ No VEVENT found in this ICS data');
+        }
       }
+      if (totalMatches > 0) break; // Stop if we found matches with this pattern
     }
+    
+    console.log(`🔍 Total calendar-data sections found: ${totalMatches}`);
+    console.log(`📅 Total events parsed: ${events.length}`);
+    
   } catch (error) {
     console.error('Failed to parse CalDAV XML:', error);
   }
@@ -349,24 +373,44 @@ function parseICSData(icsData) {
   const events = [];
   
   try {
+    console.log('🔍 Parsing ICS data...');
+    console.log(`📄 ICS data length: ${icsData.length}`);
+    console.log(`📄 ICS preview: ${icsData.substring(0, 300)}...`);
+    
     const eventBlocks = icsData.split('BEGIN:VEVENT');
+    console.log(`📅 Found ${eventBlocks.length - 1} VEVENT blocks`);
     
     for (let i = 1; i < eventBlocks.length; i++) {
       const block = eventBlocks[i];
       const endIndex = block.indexOf('END:VEVENT');
-      if (endIndex === -1) continue;
+      
+      console.log(`🔍 Processing VEVENT block ${i}:`);
+      console.log(`   Block length: ${block.length}`);
+      console.log(`   END:VEVENT found at: ${endIndex}`);
+      
+      if (endIndex === -1) {
+        console.log(`❌ Block ${i}: No END:VEVENT found`);
+        continue;
+      }
       
       const eventData = block.substring(0, endIndex);
+      console.log(`   Event data preview: ${eventData.substring(0, 200)}...`);
+      
       const event = parseICSEvent(eventData);
+      console.log(`   Parsed event:`, event);
       
       if (event && event.summary) {
+        console.log(`✅ Adding event: "${event.summary}"`);
         events.push(event);
+      } else {
+        console.log(`❌ Skipping event (no summary): ${event}`);
       }
     }
   } catch (error) {
     console.error('Failed to parse ICS data:', error);
   }
   
+  console.log(`📅 Total events parsed from ICS: ${events.length}`);
   return events;
 }
 
