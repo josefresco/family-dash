@@ -43,7 +43,10 @@ class CalDAVClient {
             if (saved) {
                 const config = JSON.parse(saved);
                 if (config.provider && config.username && config.password) {
-                    this.credentials = config;
+                    this.credentials = {
+                        ...config,
+                        password: atob(config.password) // Decode the base64 password
+                    };
                     this.isConfigured = true;
                     console.log('CalDAV configuration loaded for provider:', config.provider);
                 }
