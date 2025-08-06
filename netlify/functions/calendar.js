@@ -105,6 +105,13 @@ exports.handler = async (event, context) => {
     const startTimeUTC = formatDateForCalDAV(startOfDay);
     const endTimeUTC = formatDateForCalDAV(endOfDay);
     
+    console.log('Date range for CalDAV query:');
+    console.log('  Target date:', targetDate.toLocaleDateString());
+    console.log('  Start UTC:', startTimeUTC);
+    console.log('  End UTC:', endTimeUTC);
+    console.log('  Start local:', startOfDay.toLocaleString());
+    console.log('  End local:', endOfDay.toLocaleString());
+    
     // CalDAV REPORT request body
     const reportBody = `<?xml version="1.0" encoding="utf-8" ?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -184,10 +191,76 @@ exports.handler = async (event, context) => {
     
     const xmlData = await response.text();
     console.log('CalDAV response length:', xmlData.length);
+    console.log('CalDAV raw response (first 1000 chars):', xmlData.substring(0, 1000));
     
     // Parse CalDAV XML response
     const events = parseCalDAVResponse(xmlData);
     console.log('Parsed events:', events.length);
+    
+    // Additional debug info
+    if (events.length === 0) {
+      console.log('🔍 No events parsed - checking XML structure...');
+      console.log('XML contains VEVENT:', xmlData.includes('BEGIN:VEVENT'));
+      console.log('XML contains calendar-data:', xmlData.includes('calendar-data'));
+      console.log('XML contains error:', xmlData.toLowerCase().includes('error'));
+      
+      // Try a broader date range (7 days) to see if any events exist
+      console.log('🔍 Trying broader date range (7 days)...');
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 3);
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(now);
+      weekEnd.setDate(now.getDate() + 4);
+      weekEnd.setHours(23, 59, 59, 999);
+      
+      const weekStartUTC = formatDateForCalDAV(weekStart);
+      const weekEndUTC = formatDateForCalDAV(weekEnd);
+      
+      const broadReportBody = `<?xml version="1.0" encoding="utf-8" ?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <D:getetag />
+    <C:calendar-data />
+  </D:prop>
+  <C:filter>
+    <C:comp-filter name="VCALENDAR">
+      <C:comp-filter name="VEVENT">
+        <C:time-range start="${weekStartUTC}" end="${weekEndUTC}"/>
+      </C:comp-filter>
+    </C:comp-filter>
+  </C:filter>
+</C:calendar-query>`;
+      
+      console.log('Broad query range:', weekStartUTC, 'to', weekEndUTC);
+      
+      try {
+        const broadResponse = await fetch(caldavUrl, {
+          method: 'REPORT',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/xml; charset=utf-8',
+            'Depth': '1'
+          },
+          body: broadReportBody
+        });
+        
+        if (broadResponse.ok) {
+          const broadXmlData = await broadResponse.text();
+          const broadEvents = parseCalDAVResponse(broadXmlData);
+          console.log(`🔍 Broad query found ${broadEvents.length} events in 7-day range`);
+          
+          if (broadEvents.length > 0) {
+            console.log('Sample events found:');
+            broadEvents.slice(0, 3).forEach((event, i) => {
+              console.log(`  ${i + 1}. "${event.summary}" (${event.start} - ${event.end})`);
+            });
+          }
+        }
+      } catch (broadError) {
+        console.log('Broad query failed:', broadError.message);
+      }
+    }
     
     // Return in expected dashboard format
     const result = {
