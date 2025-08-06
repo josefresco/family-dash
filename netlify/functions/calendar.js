@@ -72,7 +72,8 @@ exports.handler = async (event, context) => {
         
         if (isWorkspaceAccount) {
           console.log('Detected Google Workspace account, using workspace endpoint');
-          caldavUrl = providerConfig.workspaceEndpoint + `${username}/events/`;
+          // For Workspace, we need to target the user's calendar collection
+          caldavUrl = providerConfig.workspaceEndpoint + `${username}/user/`;
         } else {
           console.log('Detected Gmail account, using standard endpoint');
           caldavUrl += `${username}/events/`;
@@ -120,31 +121,63 @@ exports.handler = async (event, context) => {
   </C:filter>
 </C:calendar-query>`;
     
-    // Make CalDAV request
+    // Make CalDAV request with fallback for Workspace accounts
     const authHeader = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
     
-    console.log('Making CalDAV REPORT request...');
-    const response = await fetch(caldavUrl, {
-      method: 'REPORT',
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Depth': '1'
-      },
-      body: reportBody
-    });
+    // For Workspace accounts, try multiple endpoints if the first fails
+    const urlsToTry = [caldavUrl];
     
-    console.log('CalDAV response status:', response.status);
+    if (provider === 'google' && !username.endsWith('@gmail.com') && !username.endsWith('@googlemail.com')) {
+      // Add fallback URLs for Google Workspace
+      urlsToTry.push(
+        providerConfig.workspaceEndpoint + `${username}/events/`,
+        `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
+        providerConfig.workspaceEndpoint + `${username}/`
+      );
+    }
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('CalDAV error:', response.status, errorText);
+    let response;
+    let lastError;
+    
+    for (const url of urlsToTry) {
+      console.log(`Making CalDAV REPORT request to: ${url.replace(username, '[username]')}`);
+      
+      try {
+        response = await fetch(url, {
+          method: 'REPORT',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/xml; charset=utf-8',
+            'Depth': '1'
+          },
+          body: reportBody
+        });
+        
+        console.log(`CalDAV response status for ${url.replace(username, '[username]')}: ${response.status}`);
+        
+        if (response.ok) {
+          console.log(`✅ Successful CalDAV connection with: ${url.replace(username, '[username]')}`);
+          break; // Success, exit the loop
+        } else {
+          const errorText = await response.text();
+          console.log(`❌ Failed with ${url.replace(username, '[username]')}: ${response.status} ${response.statusText}`);
+          lastError = errorText;
+        }
+      } catch (error) {
+        console.error(`Network error with ${url.replace(username, '[username]')}:`, error.message);
+        lastError = error.message;
+      }
+    }
+    
+    if (!response || !response.ok) {
+      console.error('All CalDAV endpoints failed');
       return {
-        statusCode: response.status,
+        statusCode: response?.status || 500,
         headers,
         body: JSON.stringify({ 
-          error: `CalDAV request failed: ${response.status} ${response.statusText}`,
-          details: errorText.substring(0, 200) // Truncate error details
+          error: `CalDAV request failed: ${response?.status || 'Network Error'} ${response?.statusText || 'All endpoints failed'}`,
+          details: lastError ? lastError.substring(0, 200) : 'No additional details',
+          attempted_urls: urlsToTry.length
         })
       };
     }
