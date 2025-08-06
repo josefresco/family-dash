@@ -378,13 +378,9 @@
             
             // Update status indicators
             const weatherKey = config.get('openweather_api_key');
-            const googleClientId = config.get('google_client_id');
             
             document.getElementById('weather-status').textContent = weatherKey ? 'Configured' : 'Not Configured';
             document.getElementById('weather-status').className = 'config-status ' + (weatherKey ? 'configured' : 'missing');
-            
-            document.getElementById('google-status').textContent = googleClientId ? 'Configured' : 'Not Configured';
-            document.getElementById('google-status').className = 'config-status ' + (googleClientId ? 'configured' : 'missing');
             
             const city = config.get('location.city');
             const state = config.get('location.state');
@@ -422,7 +418,6 @@
                 if (state) config.set('location.state', state);
                 
                 updateConfigStatus();
-                updateGoogleAccountStatus();
                 showStatus('✅ Configuration saved successfully!', 'success');
                 
             } catch (error) {
@@ -1046,7 +1041,6 @@
 
         // Make debugging functions available globally
         window.clearAllAuthData = clearAllAuthData;
-        window.updateGoogleAccountStatus = updateGoogleAccountStatus;
         window.debugGeolocation = debugGeolocation;
         window.testCalDAVConnection = testCalDAVConnection;
         window.saveCalDAVConfig = saveCalDAVConfig;
