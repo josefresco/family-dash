@@ -110,7 +110,7 @@ class CalDAVClient {
                 const isWorkspaceAccount = !this.credentials.username.endsWith('@gmail.com') && !this.credentials.username.endsWith('@googlemail.com');
                 
                 if (isWorkspaceAccount) {
-                    url = provider.workspaceEndpoint + `${this.credentials.username}/user/`;
+                    url = provider.workspaceEndpoint + `${this.credentials.username}/events/`;
                 } else {
                     url += `${this.credentials.username}/events/`;
                 }

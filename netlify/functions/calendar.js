@@ -72,8 +72,8 @@ exports.handler = async (event, context) => {
         
         if (isWorkspaceAccount) {
           console.log('Detected Google Workspace account, using workspace endpoint');
-          // For Workspace, we need to target the user's calendar collection
-          caldavUrl = providerConfig.workspaceEndpoint + `${username}/user/`;
+          // For Workspace, target the primary calendar events collection
+          caldavUrl = providerConfig.workspaceEndpoint + `${username}/events/`;
         } else {
           console.log('Detected Gmail account, using standard endpoint');
           caldavUrl += `${username}/events/`;
@@ -137,9 +137,11 @@ exports.handler = async (event, context) => {
     if (provider === 'google' && !username.endsWith('@gmail.com') && !username.endsWith('@googlemail.com')) {
       // Add fallback URLs for Google Workspace
       urlsToTry.push(
-        providerConfig.workspaceEndpoint + `${username}/events/`,
+        providerConfig.workspaceEndpoint + `${username}/user/`,
         `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
-        providerConfig.workspaceEndpoint + `${username}/`
+        providerConfig.workspaceEndpoint + `${username}/`,
+        // Try primary calendar ID format  
+        providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
       );
     }
     
