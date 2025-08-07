@@ -90,31 +90,40 @@ exports.handler = async (event, context) => {
     
     console.log('CalDAV URL (masked):', caldavUrl.replace(username, '[username]'));
     
-    // Calculate date range
+    // Calculate date range - use Eastern timezone for proper date boundaries
+    // Server runs in UTC but we need to calculate dates relative to Eastern timezone
     const now = new Date();
+    
+    // Get current Eastern time to determine the actual "today" and "tomorrow"
+    const easternNow = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    console.log('Current Eastern time:', easternNow.toLocaleString());
+    console.log('Server UTC time:', now.toISOString());
+    
     const targetDate = dateParam === 'tomorrow' 
-      ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
-      : now;
+      ? new Date(easternNow.getTime() + 24 * 60 * 60 * 1000)
+      : easternNow;
     
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Create date boundaries in Eastern time, then convert to UTC
+    const startOfDayEastern = new Date(targetDate);
+    startOfDayEastern.setHours(0, 0, 0, 0);
     
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const endOfDayEastern = new Date(targetDate);
+    endOfDayEastern.setHours(22, 59, 59, 999); // End at 22:59 to prevent next-day overlap
     
-    // Ensure we don't cross into the next day in any timezone
-    // Subtract 1 hour from end time to avoid boundary issues
-    const adjustedEndOfDay = new Date(endOfDay.getTime() - (60 * 60 * 1000));
+    // Convert Eastern boundaries to UTC for CalDAV query
+    const startOfDay = new Date(startOfDayEastern.toLocaleString("en-US", {timeZone: "UTC"}));
+    const adjustedEndOfDay = new Date(endOfDayEastern.toLocaleString("en-US", {timeZone: "UTC"}));
     
     const startTimeUTC = formatDateForCalDAV(startOfDay);
     const endTimeUTC = formatDateForCalDAV(adjustedEndOfDay);
     
-    console.log('Date range for CalDAV query:');
-    console.log('  Target date:', targetDate.toLocaleDateString());
+    console.log('Date range for CalDAV query (Eastern timezone aware):');
+    console.log('  Date parameter:', dateParam);
+    console.log('  Target date (Eastern):', targetDate.toLocaleDateString());
+    console.log('  Start Eastern:', startOfDayEastern.toLocaleString());
+    console.log('  End Eastern:', endOfDayEastern.toLocaleString());
     console.log('  Start UTC:', startTimeUTC);
-    console.log('  End UTC (adjusted -1hr):', endTimeUTC);
-    console.log('  Start local:', startOfDay.toLocaleString());
-    console.log('  End local (adjusted):', adjustedEndOfDay.toLocaleString());
+    console.log('  End UTC:', endTimeUTC);
     
     // CalDAV REPORT request body
     const reportBody = `<?xml version="1.0" encoding="utf-8" ?>
