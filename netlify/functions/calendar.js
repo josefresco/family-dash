@@ -90,60 +90,27 @@ exports.handler = async (event, context) => {
     
     console.log('CalDAV URL (masked):', caldavUrl.replace(username, '[username]'));
     
-    // Calculate date range using Eastern timezone to avoid boundary issues
+    // Calculate date range
     const now = new Date();
+    const targetDate = dateParam === 'tomorrow' 
+      ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
+      : now;
     
-    // Get the current date in Eastern timezone
-    const easternDateString = now.toLocaleDateString("en-US", {
-      timeZone: "America/New_York",
-      year: "numeric",
-      month: "2-digit", 
-      day: "2-digit"
-    });
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
     
-    console.log('🕐 CalDAV date calculation:', {
-      utc_now: now.toISOString(),
-      eastern_date: easternDateString,
-      date_param: dateParam
-    });
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
     
-    // Parse the Eastern date and add 1 day if requesting tomorrow
-    const [month, day, year] = easternDateString.split('/');
-    let targetDay = parseInt(day, 10);
-    let targetMonth = parseInt(month, 10);
-    let targetYear = parseInt(year, 10);
+    const startTimeUTC = formatDateForCalDAV(startOfDay);
+    const endTimeUTC = formatDateForCalDAV(endOfDay);
     
-    if (dateParam === 'tomorrow') {
-      targetDay += 1;
-      // Handle month/year rollover if needed
-      const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
-      if (targetDay > daysInMonth) {
-        targetDay = 1;
-        targetMonth += 1;
-        if (targetMonth > 12) {
-          targetMonth = 1;
-          targetYear += 1;
-        }
-      }
-    }
-    
-    // Create start and end times in Eastern timezone, then convert to UTC
-    const startOfDayEastern = new Date(`${targetYear}-${targetMonth.toString().padStart(2, '0')}-${targetDay.toString().padStart(2, '0')}T00:00:00`);
-    const endOfDayEastern = new Date(`${targetYear}-${targetMonth.toString().padStart(2, '0')}-${targetDay.toString().padStart(2, '0')}T23:59:59`);
-    
-    // Convert Eastern times to UTC (add 4 hours for EDT)
-    const startOfDayUTC = new Date(startOfDayEastern.getTime() + (4 * 60 * 60 * 1000));
-    const endOfDayUTC = new Date(endOfDayEastern.getTime() + (4 * 60 * 60 * 1000));
-    
-    const startTimeUTC = formatDateForCalDAV(startOfDayUTC);
-    const endTimeUTC = formatDateForCalDAV(endOfDayUTC);
-    
-    console.log('📅 CalDAV date range calculation:');
-    console.log('  Target date (Eastern):', `${targetMonth}/${targetDay}/${targetYear}`);
-    console.log('  Start Eastern:', startOfDayEastern.toISOString());
-    console.log('  End Eastern:', endOfDayEastern.toISOString());
+    console.log('Date range for CalDAV query:');
+    console.log('  Target date:', targetDate.toLocaleDateString());
     console.log('  Start UTC:', startTimeUTC);
     console.log('  End UTC:', endTimeUTC);
+    console.log('  Start local:', startOfDay.toLocaleString());
+    console.log('  End local:', endOfDay.toLocaleString());
     
     // CalDAV REPORT request body
     const reportBody = `<?xml version="1.0" encoding="utf-8" ?>
