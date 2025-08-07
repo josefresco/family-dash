@@ -240,7 +240,7 @@ class CalDAVClient {
         }
         
         try {
-            // Calculate date range
+            // Calculate date range - use precise boundaries to avoid overlapping days
             const now = new Date();
             const targetDate = date === 'tomorrow' 
                 ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
@@ -249,12 +249,14 @@ class CalDAVClient {
             const startOfDay = new Date(targetDate);
             startOfDay.setHours(0, 0, 0, 0);
             
+            // End at 22:59:59 to avoid timezone boundary issues that catch next day events
             const endOfDay = new Date(targetDate);
-            endOfDay.setHours(23, 59, 59, 999);
+            endOfDay.setHours(22, 59, 59, 999);
             
-            console.log('Fetching CalDAV events for date range:', {
+            console.log('Fetching CalDAV events for date range (adjusted to prevent next-day overlap):', {
                 start: startOfDay.toISOString(),
-                end: endOfDay.toISOString()
+                end: endOfDay.toISOString(),
+                targetDateLocal: targetDate.toLocaleDateString()
             });
             
             // Fetch events via Netlify function
