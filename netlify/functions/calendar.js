@@ -102,15 +102,19 @@ exports.handler = async (event, context) => {
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
     
+    // Ensure we don't cross into the next day in any timezone
+    // Subtract 1 hour from end time to avoid boundary issues
+    const adjustedEndOfDay = new Date(endOfDay.getTime() - (60 * 60 * 1000));
+    
     const startTimeUTC = formatDateForCalDAV(startOfDay);
-    const endTimeUTC = formatDateForCalDAV(endOfDay);
+    const endTimeUTC = formatDateForCalDAV(adjustedEndOfDay);
     
     console.log('Date range for CalDAV query:');
     console.log('  Target date:', targetDate.toLocaleDateString());
     console.log('  Start UTC:', startTimeUTC);
-    console.log('  End UTC:', endTimeUTC);
+    console.log('  End UTC (adjusted -1hr):', endTimeUTC);
     console.log('  Start local:', startOfDay.toLocaleString());
-    console.log('  End local:', endOfDay.toLocaleString());
+    console.log('  End local (adjusted):', adjustedEndOfDay.toLocaleString());
     
     // CalDAV REPORT request body
     const reportBody = `<?xml version="1.0" encoding="utf-8" ?>
