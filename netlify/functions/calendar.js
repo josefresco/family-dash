@@ -589,12 +589,15 @@ function parseICSEvent(eventData) {
     if (key === 'SUMMARY') {
       event.summary = decodeICSText(value);
     } else if (key.startsWith('DTSTART')) {
-      event.start = parseICSDateTime(value);
+      // Parse timezone from key if present (e.g., "DTSTART;TZID=America/New_York")
+      const timezone = key.includes('TZID=') ? key.split('TZID=')[1].split(';')[0] : null;
+      event.start = parseICSDateTime(value, timezone);
       if (key.includes('VALUE=DATE') || value.length === 8) {
         event.all_day = true;
       }
     } else if (key.startsWith('DTEND')) {
-      event.end = parseICSDateTime(value);
+      const timezone = key.includes('TZID=') ? key.split('TZID=')[1].split(';')[0] : null;
+      event.end = parseICSDateTime(value, timezone);
     } else if (key === 'LOCATION') {
       event.location = decodeICSText(value);
     } else if (key === 'DESCRIPTION') {
@@ -605,9 +608,11 @@ function parseICSEvent(eventData) {
   return event.summary ? event : null;
 }
 
-// Helper function to parse ICS date/time
-function parseICSDateTime(icsDateTime) {
+// Helper function to parse ICS date/time with timezone support
+function parseICSDateTime(icsDateTime, timezone = null) {
   try {
+    console.log('🕐 Parsing ICS date/time:', { icsDateTime, timezone });
+    
     if (icsDateTime.length === 8) {
       // YYYYMMDD - all day event
       const year = icsDateTime.substring(0, 4);
@@ -627,6 +632,28 @@ function parseICSDateTime(icsDateTime) {
         const hour = time.substring(0, 2);
         const minute = time.substring(2, 4);
         const second = time.substring(4, 6) || '00';
+        
+        // If we have timezone info, convert from local timezone to UTC
+        if (timezone && timezone.includes('America/New_York')) {
+          // Create a date in the specified timezone
+          const localDateTime = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+          const localDate = new Date(localDateTime);
+          
+          // Convert to UTC by adding the timezone offset
+          // For EDT (UTC-4), add 4 hours to convert local time to UTC
+          const utcDate = new Date(localDate.getTime() + (4 * 60 * 60 * 1000));
+          
+          console.log('🕐 Timezone conversion:', {
+            original: localDateTime,
+            timezone: timezone,
+            localDate: localDate.toISOString(),
+            utcDate: utcDate.toISOString()
+          });
+          
+          return utcDate.toISOString();
+        }
+        
+        // Default: return as UTC (original behavior)
         return `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
       }
       
