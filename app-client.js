@@ -616,12 +616,29 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     if (event.all_day) {
                         startTime = 'All Day';
                     } else {
+                        const eventDate = new Date(event.start);
+                        console.log(`🕐 Debug event time conversion for "${event.summary}":`, {
+                            raw_start: event.start,
+                            raw_end: event.end,
+                            parsed_start_date: eventDate,
+                            timezone: this.config.location.timezone,
+                            event_date_string: eventDate.toLocaleDateString('en-US', { 
+                                timeZone: this.config.location.timezone,
+                                weekday: 'long',
+                                month: 'short',
+                                day: 'numeric'
+                            }),
+                            current_display_mode: this.displayMode
+                        });
+                        
                         startTime = new Date(event.start).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
                             hour12: true,
                             timeZone: this.config.location.timezone
                         });
+                        
+                        console.log(`🕐 Converted time for "${event.summary}": ${startTime}`);
                     }
                 } catch (e) {
                     startTime = 'Time TBD';
