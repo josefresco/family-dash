@@ -263,8 +263,20 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         try {
             // Get current time in Eastern Time (Eastham, MA timezone)
             const now = new Date();
-            const easternTime = new Date(now.toLocaleString("en-US", {timeZone: this.config.location.timezone}));
-            const currentHour = easternTime.getHours();
+            // Get the current hour in Eastern timezone directly
+            const currentHour = parseInt(now.toLocaleString("en-US", {
+                timeZone: this.config.location.timezone,
+                hour: 'numeric',
+                hour12: false
+            }), 10);
+            
+            console.log('🕐 Debug current time calculation:', {
+                utc_time: now.toISOString(),
+                utc_date: now.toDateString(),
+                current_hour_eastern: currentHour,
+                threshold: this.config.tomorrowThresholdHour,
+                timezone: this.config.location.timezone
+            });
             
             this.displayMode = currentHour >= this.config.tomorrowThresholdHour ? 'tomorrow' : 'today';
             
@@ -486,13 +498,19 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             const timeContext = this.displayMode === 'tomorrow' ? 'tomorrow\'s' : 'today\'s';
             console.log(`🔍 Loading calendar events for: ${timeContext} (displayMode: ${this.displayMode})`);
             
-            // Debug the date we're requesting
+            // Debug the date we're requesting (use UTC for consistency)
             const now = new Date();
             const targetDate = this.displayMode === 'tomorrow' 
                 ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
                 : now;
-            console.log(`📅 Target date: ${targetDate.toLocaleDateString()} ${targetDate.toLocaleTimeString()}`);
-            console.log(`📅 Current time: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`);
+            
+            console.log('📅 Debug date calculation:', {
+                utc_now: now.toISOString(),
+                display_mode: this.displayMode,
+                target_date_utc: targetDate.toISOString(),
+                target_date_eastern: targetDate.toLocaleString("en-US", {timeZone: this.config.location.timezone}),
+                current_eastern: now.toLocaleString("en-US", {timeZone: this.config.location.timezone})
+            });
             
             calendarContent.innerHTML = this.getLoadingHTML(`Loading ${timeContext} calendar events...`);
             
