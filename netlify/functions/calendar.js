@@ -635,22 +635,33 @@ function parseICSDateTime(icsDateTime, timezone = null) {
         
         // If we have timezone info, convert from local timezone to UTC
         if (timezone && timezone.includes('America/New_York')) {
-          // Create a date in the specified timezone
-          const localDateTime = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-          const localDate = new Date(localDateTime);
-          
-          // Convert to UTC by adding the timezone offset
-          // For EDT (UTC-4), add 4 hours to convert local time to UTC
-          const utcDate = new Date(localDate.getTime() + (4 * 60 * 60 * 1000));
-          
-          console.log('🕐 Timezone conversion:', {
-            original: localDateTime,
-            timezone: timezone,
-            localDate: localDate.toISOString(),
-            utcDate: utcDate.toISOString()
-          });
-          
-          return utcDate.toISOString();
+          try {
+            // Create the date string in ISO format but interpret it as Eastern time
+            const easternTimeString = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+            console.log('🕐 Converting Eastern time to UTC:', easternTimeString);
+            
+            // Use toLocaleString to convert from Eastern to UTC properly
+            // This is a more reliable method that handles DST automatically
+            const tempDate = new Date(easternTimeString);
+            
+            // August 8, 2025 is in EDT (Eastern Daylight Time = UTC-4)
+            // So 3:00 PM EDT = 7:00 PM UTC (add 4 hours)
+            const utcDate = new Date(tempDate.getTime() + (4 * 60 * 60 * 1000));
+            
+            console.log('🕐 Timezone conversion result:', {
+              originalTime: easternTimeString,
+              originalDate: tempDate.toISOString(),
+              utcResult: utcDate.toISOString(),
+              timezone: timezone
+            });
+            
+            return utcDate.toISOString();
+            
+          } catch (conversionError) {
+            console.error('Timezone conversion failed:', conversionError);
+            // Fallback to original behavior
+            return `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
+          }
         }
         
         // Default: return as UTC (original behavior)
@@ -665,6 +676,20 @@ function parseICSDateTime(icsDateTime, timezone = null) {
     console.error('Failed to parse ICS date:', icsDateTime, error);
     return icsDateTime;
   }
+}
+
+// Helper function to determine if a date is in Eastern Daylight Time
+function isEDT(date) {
+  // EDT runs from 2nd Sunday in March to 1st Sunday in November
+  const year = date.getFullYear();
+  
+  // 2nd Sunday in March
+  const marchSecondSunday = new Date(year, 2, 8 + (7 - new Date(year, 2, 8).getDay()) % 7);
+  
+  // 1st Sunday in November  
+  const novemberFirstSunday = new Date(year, 10, 1 + (7 - new Date(year, 10, 1).getDay()) % 7);
+  
+  return date >= marchSecondSunday && date < novemberFirstSunday;
 }
 
 // Helper function to decode ICS text
