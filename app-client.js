@@ -972,19 +972,53 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             const condition = summary.description.toLowerCase();
             const precipitation = data.precipitation;
             
-            const closings = [
+            const goodWeatherClosings = [
                 "Make it a great day! 🌟",
                 "Perfect for outdoor plans! 🚀",
                 "Enjoy the weather! 🎉",
                 "Have a wonderful day! ✨",
-                "Great day to be outside! 🌳"
+                "Great day to be outside! 🌳",
+                "Weather: 10/10, would recommend! 👌",
+                "Mother Nature is showing off today! 💅",
+                "Perfect excuse to touch grass! 🌱", 
+                "Weather app says you're legally required to go outside! 📱",
+                "Even your houseplants are jealous! 🪴",
+                "This is your sign to cancel indoor plans! 🚪",
+                "Weather so nice, it should be illegal! 🚨",
+                "Time to make your vitamin D proud! ☀️",
+                "Your weather app is basically flexing right now! 💪",
+                "Nature's apology for yesterday! 🙏",
+                "Weather report: Chef's kiss approved! 👨‍🍳💋",
+                "Forecast brought to you by good vibes only! ✨",
+                "Weather: Netflix has left the chat! 📺❌",
+                "Perfect day to pretend you're outdoorsy! 🏃‍♀️",
+                "Even the weather app is smiling today! 😊"
+            ];
+
+            const poorWeatherClosings = [
+                "Stay cozy! 🏠",
+                "Perfect day to practice your couch potato skills! 🛋️",
+                "Weather report: Netflix stock is up! 📈",
+                "Mother Nature called in sick today! 🤒",
+                "Time to channel your inner hermit! 🏠",
+                "Weather brought to you by blanket season! 🛋️",
+                "Perfect excuse to order takeout! 🥡",
+                "Today's forecast: maximum coziness required! ☕",
+                "Weather app apologizes for the inconvenience! 📱😅",
+                "Nature's way of saying 'read a book'! 📚",
+                "Perfect day to win at being indoors! 🏆",
+                "Weather: sponsored by hot chocolate! ☕",
+                "Today's vibe: professional indoor enthusiast! 🏠",
+                "Mother Nature hit the snooze button! 😴",
+                "Weather report: pajamas are business casual today! 👔➡️👕",
+                "Perfect conditions for advanced sofa surfing! 🏄‍♀️"
             ];
             
             let encouragement = '';
             if (temp >= 60 && !precipitation?.expected && !condition.includes('rain') && !condition.includes('snow')) {
-                encouragement = " " + closings[Math.floor(Math.random() * closings.length)];
+                encouragement = " " + goodWeatherClosings[Math.floor(Math.random() * goodWeatherClosings.length)];
             } else {
-                encouragement = " Stay cozy! 🏠";
+                encouragement = " " + poorWeatherClosings[Math.floor(Math.random() * poorWeatherClosings.length)];
             }
             
             return apiSummary + encouragement;
@@ -1029,18 +1063,52 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
         
         // Add encouraging closing
-        const closings = [
+        const goodWeatherClosings = [
             "Make it a great day! 🌟",
             "Perfect for outdoor plans! 🚀",
             "Enjoy the weather! 🎉",
             "Have a wonderful day! ✨",
-            "Great day to be outside! 🌳"
+            "Great day to be outside! 🌳",
+            "Weather: 10/10, would recommend! 👌",
+            "Mother Nature is showing off today! 💅",
+            "Perfect excuse to touch grass! 🌱", 
+            "Weather app says you're legally required to go outside! 📱",
+            "Even your houseplants are jealous! 🪴",
+            "This is your sign to cancel indoor plans! 🚪",
+            "Weather so nice, it should be illegal! 🚨",
+            "Time to make your vitamin D proud! ☀️",
+            "Your weather app is basically flexing right now! 💪",
+            "Nature's apology for yesterday! 🙏",
+            "Weather report: Chef's kiss approved! 👨‍🍳💋",
+            "Forecast brought to you by good vibes only! ✨",
+            "Weather: Netflix has left the chat! 📺❌",
+            "Perfect day to pretend you're outdoorsy! 🏃‍♀️",
+            "Even the weather app is smiling today! 😊"
+        ];
+
+        const poorWeatherClosings = [
+            "Stay cozy! 🏠",
+            "Perfect day to practice your couch potato skills! 🛋️",
+            "Weather report: Netflix stock is up! 📈",
+            "Mother Nature called in sick today! 🤒",
+            "Time to channel your inner hermit! 🏠",
+            "Weather brought to you by blanket season! 🛋️",
+            "Perfect excuse to order takeout! 🥡",
+            "Today's forecast: maximum coziness required! ☕",
+            "Weather app apologizes for the inconvenience! 📱😅",
+            "Nature's way of saying 'read a book'! 📚",
+            "Perfect day to win at being indoors! 🏆",
+            "Weather: sponsored by hot chocolate! ☕",
+            "Today's vibe: professional indoor enthusiast! 🏠",
+            "Mother Nature hit the snooze button! 😴",
+            "Weather report: pajamas are business casual today! 👔➡️👕",
+            "Perfect conditions for advanced sofa surfing! 🏄‍♀️"
         ];
         
         if (temp >= 60 && !precipitation?.expected) {
-            narrative += closings[Math.floor(Math.random() * closings.length)];
+            narrative += goodWeatherClosings[Math.floor(Math.random() * goodWeatherClosings.length)];
         } else {
-            narrative += "Stay cozy! 🏠";
+            narrative += poorWeatherClosings[Math.floor(Math.random() * poorWeatherClosings.length)];
         }
         
         return narrative;
