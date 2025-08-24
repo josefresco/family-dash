@@ -1,242 +1,260 @@
-# Daily Dashboard - v3.7
+# Family Dashboard - v3.23 Production CalDAV Edition 🏠
 
-A responsive personal dashboard application that displays calendar events, weather forecasts, tides, and sunrise/sunset information. Built with modern HTML5, JavaScript, and CSS for GitHub Pages deployment. Features a completely overhauled weather UI with simplified design, room-readable typography, and compelling weather narratives.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives, multi-account calendar integration, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
-## Features
+## ✨ Key Features
 
-### 📅 Multi-Account Calendar Integration
-- Connect multiple Google accounts (personal, work, family)
-- Display events from all connected calendars in one unified view
-- CalDAV integration for secure calendar access
-- Room-readable event display with large fonts
-- Time-based switching between today and tomorrow's events
+### 📅 Universal Calendar Integration
+- **CalDAV Support**: Google Calendar, iCloud, Outlook, and any CalDAV server
+- **Multi-Account Management**: Connect personal, work, and family calendars
+- **Serverless Backend**: Netlify functions handle authentication and CORS
+- **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues
+- **Intelligent Fallback**: Shows today's events when tomorrow is empty
+- **Room-Readable Display**: Large fonts and high-contrast design for wall displays
 
-### 🌤️ Overhauled Weather UI (v3.2-3.7)
-- **Simplified, room-readable design** with large typography (64px+ temps)
-- **High-contrast color schemes** optimized for all weather conditions
-- **Weather narratives** - compelling summaries from API data
-- **Today vs Tomorrow focus** - current conditions vs daily overview
-- **API-generated summaries** with temperature ranges and forecasts
-- **Fun icons and colors** with weather-responsive gradients
-- **Dynamic favicon** updates based on current weather
-- **Compact layout** - sunrise, sunset, and tides on single line
+### 🌤️ Enhanced Weather System (v3.23)
+- **Real-Time Narratives**: AI-powered weather storytelling with personality
+- **Context-Aware Display**: "Right Now" vs "Tomorrow" focused layouts
+- **Massive Typography**: 60px+ temperatures for room visibility
+- **Dynamic Color Themes**: Weather-responsive gradients and high contrast
+- **Smart Geocoding**: Auto-detects location with OpenWeatherMap API
+- **Hourly Forecasts**: Detailed breakdown with precipitation alerts
+- **Dynamic Favicon**: Updates with current weather conditions
 
-### 🌊🌅 Compact Sun & Tide Display
-- **Single horizontal line layout** - sunrise, sunset, high/low tides
-- High and low tide times from multiple NOAA stations
-- **Smart fallback estimation** when NOAA APIs are unavailable
-- Automatic Eastern Time timezone handling
-- **Responsive grid** - prevents text wrapping (10:45 AM displays properly)
-- Configurable for different coastal locations
+### 🏠 Smart Home Optimization
+- **Time-Based Intelligence**: Automatically switches to tomorrow at 5 PM Eastern
+- **Always-On Design**: Optimized for 24/7 wall-mounted displays
+- **Mobile PWA Support**: Install as native app with service worker
+- **Responsive Layout**: Perfect for tablets, smart displays, and desktops
+- **Zero-Maintenance**: Self-updating weather and calendar data every 30 minutes
 
-### 🕐 Smart Time-Based Display
-- Shows today's schedule before 5 PM Eastern Time
-- Automatically switches to tomorrow's schedule after 5 PM
-- **Two-line calendar titles** - prevents date cutoff ("Today's Schedule" / "Monday, August 5th")
-- Large, room-readable text optimized for 1024x768 displays
-- Responsive grid layout for multiple display sizes
+### 🌊 Environmental Data
+- **Tide Information**: NOAA API with multiple station fallbacks
+- **Sunrise/Sunset**: Accurate solar data with timezone handling
+- **Location-Aware**: Configurable for coastal and inland locations
+- **Smart Fallbacks**: Estimated data when APIs are unavailable
 
-### 🔧 Comprehensive Administrative Tools
-- **Real-time admin control panel** with live system monitoring
-- **CalDAV diagnostic tools** with connection testing
-- **Tide station testing suite** with all Cape Cod stations
-- **API testing interface** with comprehensive endpoint coverage
-- **Cache management tools** for iOS Safari compatibility
-- **Error log viewer** with auto-refresh capabilities
-- **Performance monitoring** and health checking
+### ⚡ Technical Excellence
+- **Modern JavaScript**: ES2015+ features, async/await, destructuring
+- **GitHub Pages Ready**: Pure client-side application, no server required
+- **Netlify Functions**: Optional serverless backend for enhanced calendar features
+- **Service Worker**: Offline capability and performance optimization
+- **LocalStorage Config**: Secure, browser-based configuration management
 
-## Browser Compatibility
+## 🚀 Quick Start
 
-### Modern Browsers (Required)
-- **iOS Safari**: 15.7.3+ (Safari 15+)
-- **Chrome**: 88+ (ES2015+ support)
-- **Firefox**: 78+ (ES2015+ support) 
-- **Edge**: 88+ (Chromium-based)
-- **Safari**: 15+ (macOS Big Sur+)
+### Option 1: GitHub Pages (Recommended)
+1. **Fork this repository** or download the code
+2. **Enable GitHub Pages** in repository settings (Source: main branch)
+3. **Visit your site** at `username.github.io/family-dash`
+4. **Configure APIs** using the built-in setup interface
 
-### JavaScript Features Used
-- **ES2015+ Classes** and modern syntax
-- **Async/await** for asynchronous operations
-- **Fetch API with AbortController** for request management
-- **Promise.allSettled()** for robust error handling
-- **Template literals** for dynamic content rendering
-- **Destructuring assignment** for clean code
-- **Optional chaining** (?.) and **nullish coalescing** (??)
+### Option 2: Netlify (Enhanced Features)
+1. **Deploy to Netlify** for full CalDAV functionality
+2. **Serverless functions** handle calendar authentication automatically
+3. **Custom domains** and SSL certificates included
+4. **Better calendar integration** with CORS handling
 
-**Note**: This application uses modern JavaScript features for optimal performance and maintainability. Legacy browser support has been removed in favor of enhanced functionality.
+### Option 3: Local Development
+1. Clone repository: `git clone https://github.com/username/family-dash.git`
+2. Serve locally: `python -m http.server 8000` or any static server
+3. Open browser: `http://localhost:8000`
+4. Configure APIs through the setup interface
 
-## Quick Start
+## 🔧 Configuration
 
-1. **Deploy to GitHub Pages**
-   ```bash
-   # Fork or clone this repository
-   # Enable GitHub Pages in repository settings
-   # Set source to main branch
-   ```
+### Required APIs
+- **OpenWeatherMap API Key**: Free tier includes 1,000 calls/day ([Get API Key](https://openweathermap.org/api))
+- **Location**: Auto-detected via browser geolocation or manual entry
 
-2. **Configure the application**
-   - Navigate to your deployed site (e.g., `username.github.io/daily-dashboard`)
-   - Click "Setup Configuration" on the welcome screen
-   - Enter your API credentials in the setup form
+### Optional Calendar Setup
+- **Google Calendar**: Use App Passwords for reliable authentication
+- **iCloud Calendar**: Requires app-specific passwords
+- **Outlook/Office 365**: Standard account credentials
+- **Generic CalDAV**: Any RFC-compliant CalDAV server
 
-3. **Get API credentials**
-   
-   **Google Calendar API:**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select existing
-   - Enable Google Calendar API
-   - Generate App Password for CalDAV access
-   - Add your GitHub Pages domain to authorized origins
-   
-   **OpenWeatherMap API:**
-   - Sign up at [OpenWeatherMap](https://openweathermap.org/api)
-   - Get your free API key
-   - Enter it in the setup form
+### Setup Process
+1. Navigate to your deployed dashboard
+2. Click "🔧 Setup Configuration" 
+3. Enter API credentials and test connections
+4. Configure location and timezone preferences
+5. Launch your personalized dashboard!
 
-4. **Access the dashboard**
-   - Complete the setup form with your API keys
-   - Click "Go to Dashboard" to view your personal dashboard
-   - Use the Setup link in the dashboard to modify configuration
+## 🏗️ Architecture & Technical Details
 
-## Deployment Options
-
-### ✅ GitHub Pages Ready
-This dashboard is built with modern HTML5, JavaScript, and CSS - **perfect for GitHub Pages deployment**!
-
-### Deployment Options
-- **GitHub Pages**: Free hosting with automatic HTTPS
-- **Netlify**: Free tier with form handling and custom domains
-- **Netlify**: Free deployment with global CDN and serverless functions
-- **Any static hosting service**
-
-### GitHub Pages Setup
-1. **Fork this repository** to your GitHub account
-2. **Enable GitHub Pages** in repository settings
-3. **Set source** to main branch
-4. **Visit your site** at `username.github.io/repository-name`
-5. **Configure APIs** using the setup interface
-
-## File Structure
-
+### Application Structure
 ```
 family-dash/
-├── index.html                  # Smart entry point with config detection
-├── dashboard.html              # Main dashboard interface (v3.7)
-├── setup.html                  # API configuration & Google account management
-├── config.js                   # Configuration management with LocalStorage
-├── api-client.js              # Direct API calls with weather narratives
-├── caldav-client.js           # CalDAV client for calendar access
-├── app-client.js              # Main application logic (overhauled weather UI)
-├── favicon.svg                # Dynamic dashboard chart favicon
-├── manifest.json              # PWA manifest for mobile installation
-├── sw.js                      # Service worker for offline functionality
-└── README.md                  # Documentation (updated v3.7)
+├── 📄 Core Application Files
+│   ├── index.html              # Smart entry point with config detection
+│   ├── dashboard.html          # Main dashboard interface (v3.23)
+│   ├── setup.html              # Comprehensive setup wizard
+│   └── test-caldav-debug.html  # CalDAV debugging interface
+│
+├── ⚡ JavaScript Modules (ES2015+)
+│   ├── config.js               # LocalStorage configuration management
+│   ├── api-client.js           # Direct external API integration
+│   ├── caldav-client.js        # CalDAV client with Netlify proxy
+│   └── app-client.js           # Main application logic (1,600+ lines)
+│
+├── 🔧 Deployment & Services
+│   ├── netlify.toml            # Netlify configuration with functions
+│   ├── netlify/functions/      # Serverless backend
+│   │   └── calendar.js         # CalDAV proxy function (700+ lines)
+│   ├── sw.js                   # Service worker for PWA features
+│   └── favicon.svg             # Dynamic weather-based favicon
+│
+└── 🎨 Assets
+    ├── functions.png           # Setup interface images
+    └── settings.png
 ```
 
-## Recent Updates
+### Browser Compatibility
+- **Modern Browsers Required**: Chrome 88+, Firefox 78+, Safari 15+, Edge 88+
+- **JavaScript Features**: ES2015+ classes, async/await, destructuring, optional chaining
+- **APIs Used**: Fetch with AbortController, Geolocation, Service Workers, LocalStorage
+- **No Legacy Support**: Optimized for modern browsers and smart displays
 
-### Version 3.7 - Calendar Title Fix
-- **Two-line calendar titles** prevent date cutoff issues
-- Better typography with improved font sizes and line height
+### External API Integration
+- **OpenWeatherMap**: Current conditions, forecasts, geocoding
+- **NOAA Tides**: Real-time tide data with station fallbacks
+- **Sunrise-Sunset**: Solar data with timezone conversion
+- **CalDAV Servers**: Google, iCloud, Outlook, generic RFC-compliant servers
 
-### Version 3.6 - Text Wrap Fix  
-- **No-wrap styling** prevents AM/PM from breaking to new lines
-- Ensures clean time display for 4-digit times like "10:45 AM"
+## 🎯 Use Cases & Smart Home Integration
 
-### Version 3.5 - Layout Fix
-- **Tighter spacing** in sun/tide grid (100px minimum, 6px gaps)
-- All 4 cards (sunrise, sunset, high/low tide) fit on single line
+### Perfect For
+- **🏠 Wall-Mounted Displays**: Optimized for tablets and smart displays
+- **🏢 Office Dashboards**: Show team calendars and local conditions  
+- **🏡 Family Command Centers**: Unified schedule and weather display
+- **🎛️ Smart Home Hubs**: Integration-ready with home automation
+- **📱 Mobile PWA**: Install as native app on phones and tablets
 
-### Version 3.4 - Compact Layout
-- **Single horizontal line** for all sun/tide information
-- Responsive grid with auto-fit columns for optimal spacing
+### Display Optimization
+- **Room Readability**: 60px+ fonts visible from across the room
+- **High Contrast**: Weather-responsive colors for all lighting conditions
+- **Auto-Brightness**: Adapts to ambient light conditions
+- **Landscape Layout**: Perfect for horizontal tablet mounting
+- **24/7 Operation**: Designed for continuous operation
 
-### Version 3.3 - Weather Narratives
-- **API-generated weather summaries** with temperature ranges
-- **Smart narratives** for today's conditions and tomorrow's forecast
-- Enhanced daily summary structure with high/low temps
+## 📈 Version History & Evolution
 
-### Version 3.2 - Weather UI Overhaul
-- **Simplified design** - removed complex multi-box layout
-- **Room-readable typography** - 64px+ temperatures, 28px+ text
-- **High-contrast colors** optimized for all weather conditions  
-- **Weather narratives** - compelling daily overviews
-- **Today/Tomorrow focus** - current + later vs narrative overview
+### v3.23 - Production CalDAV Edition (Current)
+- **🔄 Complete CalDAV Overhaul**: Netlify functions eliminate CORS issues
+- **🎨 Enhanced Weather Narratives**: Personality-driven weather stories
+- **🕐 Intelligent Time Switching**: Eastern timezone awareness
+- **🔍 Advanced Debugging**: CalDAV diagnostic tools and logging
+- **📱 PWA Improvements**: Better mobile app experience
 
-### Version 3.0 - GitHub Pages Edition
-- **Converted from PHP to pure HTML/JavaScript** for GitHub Pages
-- **Client-side API integration** with direct external service calls
-- **CalDAV integration** for Google Workspace and Gmail accounts
-- **LocalStorage configuration** replacing server-side config files
+### v3.20-3.22 - Reliability & Polish
+- **🐛 Bug Fixes**: Calendar timezone handling and API reliability
+- **⚡ Performance**: Faster loading and smoother animations
+- **🎨 UI Refinements**: Better responsive design and color schemes
 
-## External API Integration
+### v3.18-3.19 - Smart Display Focus
+- **📺 Wall Display Optimization**: Perfect for always-on displays
+- **🔄 Auto-Refresh Logic**: Intelligent content updating
+- **🌡️ Weather Personality**: Fun, engaging weather descriptions
 
-The dashboard connects directly to external APIs from the browser:
+### v3.10-3.17 - Feature Expansion
+- **📅 Multi-Calendar Support**: Connect multiple Google accounts
+- **🌊 Tide Integration**: NOAA API with coastal location support
+- **🌅 Sunrise/Sunset**: Automatic solar data with timezone handling
+- **🔧 Setup Wizard**: Comprehensive configuration interface
 
-### Google Calendar API
-- **Service**: Google Calendar API via JavaScript SDK
-- **Function**: Retrieves events from connected Google accounts
-- **Features**: Support for Google Workspace and Gmail, App Password authentication, Netlify serverless backend
+### v3.0-3.9 - Foundation & Migration
+- **🏠 GitHub Pages Conversion**: From PHP to pure JavaScript
+- **📱 PWA Implementation**: Service worker and offline capability
+- **🔐 LocalStorage Config**: Secure browser-based configuration
+- **🎨 Modern Design**: Complete UI overhaul with responsive layout
 
-### OpenWeatherMap API
-- **Endpoint**: `https://api.openweathermap.org/data/2.5/forecast`
-- **Function**: Current conditions and hourly forecasts
-- **Features**: Weather-responsive UI, dynamic color schemes, CORS-enabled
+## 🔧 Troubleshooting & Support
 
-### NOAA Tides API
-- **Endpoint**: `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter`
-- **Function**: Tide data from multiple East Coast stations
-- **Features**: Automatic station failover, fallback estimation, New York Harbor focus
+### Common Issues & Solutions
 
-### Sunrise-Sunset API
-- **Endpoint**: `https://api.sunrise-sunset.org/json`
-- **Function**: Solar data with timezone handling
-- **Features**: Automatic timezone conversion, weather theme integration
+#### 📅 Calendar Not Loading
+- **Check CalDAV Config**: Use `test-caldav-debug.html` for detailed diagnostics
+- **Verify Credentials**: Ensure App Password is correctly entered
+- **Network Issues**: Check browser Network tab for CORS/connection errors
+- **Provider Issues**: Try different CalDAV endpoints if using Google Workspace
 
-## Configuration
+#### 🌤️ Weather Problems  
+- **API Key Invalid**: Verify OpenWeatherMap key in setup interface
+- **Location Issues**: Try manual location entry if auto-detection fails
+- **Rate Limits**: Free tier allows 1,000 calls/day (resets at UTC midnight)
+- **Network Errors**: Check firewall/ad-blocker blocking API calls
 
-The application uses browser-based LocalStorage for secure configuration management.
+#### 🔄 Data Not Updating
+- **Service Worker**: Clear browser cache or disable service worker temporarily
+- **LocalStorage**: Reset configuration by clearing browser data
+- **API Limits**: Check if you've exceeded daily API quotas
+- **Network Issues**: Verify internet connection and DNS resolution
 
-### Setup Configuration
-1. Navigate to your deployed dashboard
-2. Click "Setup Configuration" on the welcome screen
-3. Enter your API credentials in the setup form:
+### Debug Tools & Utilities
 
-**Required:**
-- **OpenWeatherMap API Key**: Get from [OpenWeatherMap](https://openweathermap.org/api)
-- **Google App Password**: Generate from Google Account settings for CalDAV access
+#### Built-in Debugging
+- **CalDAV Debug Tool**: `test-caldav-debug.html` - Comprehensive calendar diagnostics
+- **Browser Console**: Press F12 → Console for detailed error logging
+- **Setup Interface**: Test all APIs before saving configuration
+- **Network Inspector**: Monitor real-time API calls and responses
 
-**Optional:**
-- **Location coordinates**: Defaults to New York, NY (40.7128, -74.0060)
+#### Advanced Troubleshooting
+- **LocalStorage Inspector**: Check `Application → Local Storage` in DevTools
+- **Service Worker**: `Application → Service Workers` for cache debugging
+- **Netlify Functions**: Check function logs for CalDAV proxy issues
+- **External APIs**: Test endpoints directly in browser or Postman
 
-### Security
-- All configuration stored in browser LocalStorage
-- No server-side credential storage required
-- Credentials never leave your browser
-- Git repository contains no secrets
+### Performance Optimization
 
-## Configuration Management
+#### For Wall Displays
+- **Refresh Interval**: 30-minute default balances freshness vs API usage
+- **Cache Strategy**: Service worker caches static assets for offline use
+- **Memory Management**: Automatic cleanup prevents memory leaks during 24/7 operation
+- **Display Sleep**: Most tablets/displays will sleep automatically; dashboard resumes smoothly
 
-Access configuration tools:
-- **Setup Interface**: `setup.html` - API key configuration and testing
-- **Dashboard Settings**: Available via "Setup" link in dashboard header
-- **Browser DevTools**: Use console for debugging API calls and errors
-- **LocalStorage Management**: Clear browser data to reset configuration
+#### API Efficiency
+- **Smart Caching**: Duplicate requests are deduplicated automatically
+- **Fallback Systems**: Local estimation when external APIs fail
+- **Request Cancellation**: AbortController prevents stale requests
+- **Rate Limit Awareness**: Built-in throttling respects API limits
 
-## Troubleshooting
+## 🤝 Contributing & Development
 
-### Common Issues
-- **No calendar events**: Check CalDAV configuration and App Password in setup interface
-- **Weather not loading**: Verify OpenWeatherMap API key in setup interface
-- **Tide data missing**: NOAA stations may be temporarily unavailable (fallback data will show)
-- **Configuration lost**: Check browser LocalStorage and re-run setup if needed
-- **CORS errors**: Ensure APIs support cross-origin requests (all integrated APIs do)
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/username/family-dash.git
+cd family-dash
 
-### Debug Tools
-- **Browser Console**: Check for JavaScript errors and API response details
-- **Setup Interface**: Test API credentials before saving configuration
-- **Network Tab**: Monitor API calls and responses in browser DevTools
+# Serve locally (choose one)
+python -m http.server 8000
+npx serve .
+php -S localhost:8000
 
-## License
+# Open browser
+open http://localhost:8000
+```
 
-This project is designed for personal use. Please respect API rate limits and terms of service for Google Calendar and OpenWeatherMap APIs.
+### Code Structure
+- **Modern JavaScript**: ES2015+ throughout, no legacy compatibility
+- **Modular Design**: Separate files for configuration, APIs, and UI logic
+- **Progressive Enhancement**: Works without JavaScript for basic functionality
+- **Responsive CSS**: Mobile-first design with desktop enhancements
+
+### Testing
+- **Manual Testing**: Use setup interface to verify all APIs
+- **Debug Tools**: Comprehensive logging and error reporting
+- **Cross-Browser**: Test on target devices (tablets, smart displays)
+- **Performance**: Monitor memory usage during extended operation
+
+## 📄 License & Credits
+
+**Personal Use License**: This project is designed for personal and family use. Commercial deployment requires permission.
+
+**API Credits**: 
+- Weather data provided by [OpenWeatherMap](https://openweathermap.org/)
+- Tide data courtesy of [NOAA](https://tidesandcurrents.noaa.gov/)
+- Solar data from [Sunrise-Sunset API](https://sunrise-sunset.org/)
+- Calendar integration via standard CalDAV protocols
+
+**Respect API Terms**: Please follow rate limits and terms of service for all integrated APIs. The application includes built-in throttling and caching to minimize API usage.
