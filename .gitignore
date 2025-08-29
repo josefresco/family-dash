@@ -25,5 +25,6 @@ access_log
 
 # OS files
 .DS_Store
-Thumbs.db.claude-session-log
+Thumbs.db
+.claude-session-log
 .claude-state.json
