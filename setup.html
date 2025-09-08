@@ -589,35 +589,50 @@
         }
         
         function showCurrentConfig(status) {
-            const config = window.dashboardConfig;
-            const provider = config.get('caldav.provider');
-            const username = config.get('caldav.username');
-            const endpoint = config.get('caldav.endpoint');
-            
-            let providerName = '';
-            switch(provider) {
-                case 'google': providerName = 'Google Calendar'; break;
-                case 'apple': providerName = 'Apple iCloud'; break;
-                case 'outlook': providerName = 'Microsoft Outlook'; break;
-                case 'generic': providerName = 'Custom CalDAV Server'; break;
-                default: providerName = 'Unknown Provider';
-            }
-            
-            const configDetails = document.getElementById('current-config-details');
-            configDetails.innerHTML = `
-                <div style="display: grid; gap: 10px;">
-                    <div><strong>Provider:</strong> ${providerName}</div>
-                    <div><strong>Username:</strong> ${username || 'Not set'}</div>
-                    ${endpoint ? `<div><strong>Endpoint:</strong> ${endpoint}</div>` : ''}
-                    <div><strong>Status:</strong> ${status.message}</div>
-                    <div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
-                        Last configured: ${new Date().toLocaleString()}
+            try {
+                // Load from CalDAV client's localStorage
+                const saved = localStorage.getItem('dashboard-caldav-config');
+                if (!saved) {
+                    hideCurrentConfig();
+                    return;
+                }
+                
+                const config = JSON.parse(saved);
+                const provider = config.provider;
+                const username = config.username;
+                const endpoint = config.customEndpoint;
+                const savedAt = config.savedAt;
+                
+                let providerName = '';
+                switch(provider) {
+                    case 'google': providerName = 'Google Calendar'; break;
+                    case 'apple': providerName = 'Apple iCloud'; break;
+                    case 'outlook': providerName = 'Microsoft Outlook'; break;
+                    case 'generic': providerName = 'Custom CalDAV Server'; break;
+                    default: providerName = 'Unknown Provider';
+                }
+                
+                const configDate = savedAt ? new Date(savedAt).toLocaleString() : 'Unknown';
+                
+                const configDetails = document.getElementById('current-config-details');
+                configDetails.innerHTML = `
+                    <div style="display: grid; gap: 10px;">
+                        <div><strong>Provider:</strong> ${providerName}</div>
+                        <div><strong>Username:</strong> ${username || 'Not set'}</div>
+                        ${endpoint ? `<div><strong>Endpoint:</strong> ${endpoint}</div>` : ''}
+                        <div><strong>Status:</strong> ${status.message}</div>
+                        <div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
+                            Last configured: ${configDate}
+                        </div>
                     </div>
-                </div>
-            `;
-            
-            document.getElementById('current-caldav-config').style.display = 'block';
-            document.getElementById('skip-calendar').style.display = 'none';
+                `;
+                
+                document.getElementById('current-caldav-config').style.display = 'block';
+                document.getElementById('skip-calendar').style.display = 'none';
+            } catch (error) {
+                console.warn('Error loading current config for display:', error);
+                hideCurrentConfig();
+            }
         }
         
         function hideCurrentConfig() {
@@ -782,12 +797,53 @@
             skipButton.style.display = 'none';
             endpointGroup.style.display = provider === 'generic' ? 'block' : 'none';
             
-            // Update password help text
+            // Update password help text with detailed instructions
             const helpTexts = {
-                google: 'For Google accounts, use an <a href="https://support.google.com/accounts/answer/185833" target="_blank">App Password</a>, not your regular password. Works with both Gmail and Google Workspace accounts.',
-                apple: 'Use an <a href="https://support.apple.com/en-us/102654" target="_blank">app-specific password</a> from your Apple ID settings.',
-                outlook: 'Use your Microsoft account password. If you have 2FA enabled, you may need an app password.',
-                generic: 'Enter your CalDAV server account password.'
+                google: `
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <strong>⚠️ Google Calendar requires an App Password:</strong>
+                        <ol style="margin: 10px 0; padding-left: 20px;">
+                            <li>Go to <a href="https://myaccount.google.com/security" target="_blank">Google Account Security</a></li>
+                            <li>Enable <strong>2-Factor Authentication</strong> if not already enabled</li>
+                            <li>Click <strong>"2-Step Verification"</strong> → <strong>"App passwords"</strong></li>
+                            <li>Select <strong>"Mail"</strong> and generate a 16-character password</li>
+                            <li>Use that App Password (not your regular password) in the field above</li>
+                        </ol>
+                        <div style="font-size: 12px; color: #856404;">
+                            📝 Works with Gmail and Google Workspace accounts
+                        </div>
+                    </div>
+                `,
+                apple: `
+                    <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <strong>🍎 Apple iCloud Setup:</strong>
+                        <ol style="margin: 10px 0; padding-left: 20px;">
+                            <li>Go to <a href="https://appleid.apple.com" target="_blank">Apple ID Settings</a></li>
+                            <li>Sign in and go to <strong>"Security"</strong></li>
+                            <li>Under <strong>"App-Specific Passwords"</strong>, click <strong>"Generate Password"</strong></li>
+                            <li>Enter a label (e.g., "Family Dashboard") and generate</li>
+                            <li>Use the generated password in the field above</li>
+                        </ol>
+                    </div>
+                `,
+                outlook: `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <strong>📧 Microsoft Outlook Setup:</strong>
+                        <p>Most accounts can use your regular Microsoft password. If you have 2FA enabled:</p>
+                        <ol style="margin: 10px 0; padding-left: 20px;">
+                            <li>Go to <a href="https://account.microsoft.com/security" target="_blank">Microsoft Account Security</a></li>
+                            <li>Click <strong>"Advanced security options"</strong></li>
+                            <li>Under <strong>"App passwords"</strong>, create a new password</li>
+                            <li>Use the app password instead of your regular password</li>
+                        </ol>
+                    </div>
+                `,
+                generic: `
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <strong>🔧 Custom CalDAV Server:</strong>
+                        <p>Enter the account password for your CalDAV server. Check with your server administrator if you're unsure about authentication requirements.</p>
+                    </div>
+                `
             };
             
             passwordHelp.innerHTML = helpTexts[provider] || '';
@@ -1137,24 +1193,45 @@
         }
         
         function editCurrentConfig() {
-            const config = window.dashboardConfig;
-            const provider = config.get('caldav.provider');
-            const username = config.get('caldav.username');
-            const endpoint = config.get('caldav.endpoint');
-            
-            // Populate form with current values
-            document.getElementById('caldav-provider').value = provider || '';
-            document.getElementById('caldav-username').value = username || '';
-            document.getElementById('caldav-endpoint').value = endpoint || '';
-            // Don't populate password for security
-            
-            // Show the form
-            toggleCalDAVFields();
-            
-            // Scroll to form
-            document.getElementById('caldav-fields').scrollIntoView({ behavior: 'smooth' });
-            
-            showStatus('Configuration loaded for editing. Update and save when ready.', 'info');
+            try {
+                // Load from CalDAV client's localStorage (not dashboardConfig)
+                const saved = localStorage.getItem('dashboard-caldav-config');
+                if (!saved) {
+                    showStatus('No saved configuration found.', 'error');
+                    return;
+                }
+                
+                const config = JSON.parse(saved);
+                const provider = config.provider;
+                const username = config.username;
+                const endpoint = config.customEndpoint;
+                
+                // Populate form with current values
+                document.getElementById('caldav-provider').value = provider || '';
+                document.getElementById('caldav-username').value = username || '';
+                document.getElementById('caldav-endpoint').value = endpoint || '';
+                // Don't populate password for security - user will need to re-enter
+                
+                // Show the form
+                toggleCalDAVFields();
+                
+                // Scroll to form
+                document.getElementById('caldav-fields').scrollIntoView({ behavior: 'smooth' });
+                
+                if (provider === 'google') {
+                    showStatus('📝 Configuration loaded. You\'ll need to re-enter your Google App Password (see instructions below).', 'info');
+                } else {
+                    showStatus('Configuration loaded for editing. Please re-enter your password and save.', 'info');
+                }
+                
+                // Focus on password field since that needs to be re-entered
+                setTimeout(() => {
+                    document.getElementById('caldav-password').focus();
+                }, 500);
+                
+            } catch (error) {
+                showStatus(`Error loading configuration: ${error.message}`, 'error');
+            }
         }
         
         function clearCurrentConfig() {
