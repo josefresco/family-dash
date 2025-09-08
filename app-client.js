@@ -811,11 +811,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     padding: 4px 8px;
                     border-radius: 8px;
                 ">
-                    🌇 ${(() => {
-                        const sunset = this.sunData?.sunset || 'N/A';
-                        console.log('Rendering sunset in TODAY weather:', sunset, 'sunData:', this.sunData);
-                        return sunset;
-                    })()}
+                    🌇 ${this.sunData?.sunset || 'N/A'}
                 </div>
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
                     🏠 RIGHT NOW
@@ -896,11 +892,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     padding: 4px 8px;
                     border-radius: 8px;
                 ">
-                    🌇 ${(() => {
-                        const sunset = this.sunData?.sunset || 'N/A';
-                        console.log('Rendering sunset in TOMORROW weather:', sunset, 'sunData:', this.sunData);
-                        return sunset;
-                    })()}
+                    🌇 ${this.sunData?.sunset || 'N/A'}
                 </div>
                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
                     🌅 TOMORROW
@@ -1346,32 +1338,23 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     async loadSunriseSunsetData() {
         try {
-            console.log('=== LOADING SUNSET DATA ===');
             const data = await this.makeApiRequest('sunrise-sunset');
             if (!data) return; // Request was cancelled
             
-            console.log('Sunset data loaded:', data);
             this.sunData = data;
-            console.log('this.sunData set to:', this.sunData);
             this.renderSunTideData();
             
             // Re-render weather data to update sunset time display
-            console.log('Checking if weatherData exists for re-render:', !!this.weatherData);
             if (this.weatherData) {
-                console.log('Re-rendering weather data with sunset time...');
                 this.renderWeatherData(this.weatherData);
-            } else {
-                console.warn('No weatherData available for sunset re-render');
             }
         } catch (error) {
             console.error('Failed to load sunrise/sunset data:', error);
             this.sunData = { sunrise: 'N/A', sunset: 'N/A' };
-            console.log('Fallback sunData set to:', this.sunData);
             this.renderSunTideData();
             
             // Re-render weather data even with fallback data
             if (this.weatherData) {
-                console.log('Re-rendering weather data with fallback sunset data...');
                 this.renderWeatherData(this.weatherData);
             }
         }
