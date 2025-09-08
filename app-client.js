@@ -382,7 +382,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             this.loadCalendarEvents(),
             this.loadWeatherData(),
             this.loadTideData(),
-            this.loadSunriseSunsetData()
+            this.loadSunriseSunsetData(),
+            this.loadWeekendEvents()
         ];
 
         try {
@@ -712,6 +713,130 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
 
         calendarContent.innerHTML = html;
+    }
+
+    async loadWeekendEvents() {
+        const weekendContent = document.getElementById('weekend-content');
+        
+        try {
+            // Get next weekend dates (Saturday and Sunday)
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            
+            // Calculate days until next Saturday
+            const daysUntilSaturday = currentDay === 0 ? 6 : (6 - currentDay);
+            
+            const nextSaturday = new Date(today);
+            nextSaturday.setDate(today.getDate() + daysUntilSaturday);
+            
+            const nextSunday = new Date(nextSaturday);
+            nextSunday.setDate(nextSaturday.getDate() + 1);
+            
+            console.log('Loading weekend events for:', {
+                saturday: nextSaturday.toDateString(),
+                sunday: nextSunday.toDateString()
+            });
+
+            // Load events for both Saturday and Sunday
+            const [saturdayEvents, sundayEvents] = await Promise.all([
+                this.loadEventsForDate(nextSaturday),
+                this.loadEventsForDate(nextSunday)
+            ]);
+
+            // Combine and render weekend events
+            this.renderWeekendEvents([
+                ...saturdayEvents.map(event => ({ ...event, day: 'Saturday' })),
+                ...sundayEvents.map(event => ({ ...event, day: 'Sunday' }))
+            ]);
+
+        } catch (error) {
+            console.error('Failed to load weekend events:', error);
+            weekendContent.innerHTML = `
+                <div class="weekend-no-events">
+                    Failed to load weekend events
+                </div>
+            `;
+        }
+    }
+
+    async loadEventsForDate(date) {
+        try {
+            // Format date for API call - use the same format as the main calendar
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // Use the existing makeApiRequest method with calendar endpoint
+            // We'll pass the date as a parameter, similar to how weather works
+            const data = await this.makeApiRequest('calendar', dateStr);
+            
+            if (!data?.calendars?.length) {
+                return [];
+            }
+
+            // Collect all events from all calendars
+            const allEvents = data.calendars
+                .filter(calendar => calendar.events?.length > 0)
+                .flatMap(calendar => 
+                    calendar.events.map(event => ({
+                        ...event,
+                        calendarColor: calendar.color || '#ff9800'
+                    }))
+                );
+
+            // Sort events by time
+            allEvents.sort((a, b) => {
+                if (a.all_day && !b.all_day) return -1;
+                if (!a.all_day && b.all_day) return 1;
+                if (a.all_day && b.all_day) return 0;
+                return new Date(a.start) - new Date(b.start);
+            });
+
+            return allEvents;
+
+        } catch (error) {
+            console.error('Failed to load events for date:', date, error);
+            return [];
+        }
+    }
+
+    renderWeekendEvents(events) {
+        const weekendContent = document.getElementById('weekend-content');
+        
+        if (!events || events.length === 0) {
+            weekendContent.innerHTML = `
+                <div class="weekend-no-events">
+                    No events planned for the weekend
+                </div>
+            `;
+            return;
+        }
+
+        const html = events.map(event => {
+            let eventTime;
+            try {
+                if (event.all_day) {
+                    eventTime = 'All Day';
+                } else {
+                    eventTime = new Date(event.start).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: this.config.location.timezone
+                    });
+                }
+            } catch (e) {
+                eventTime = 'Time TBD';
+            }
+
+            return `
+                <div class="weekend-event" style="border-left-color: ${event.calendarColor};">
+                    <div class="weekend-event-day">${event.day}</div>
+                    <div class="weekend-event-time">${eventTime}</div>
+                    <div class="weekend-event-title">${event.summary || 'Untitled Event'}</div>
+                </div>
+            `;
+        }).join('');
+
+        weekendContent.innerHTML = html;
     }
 
     async loadWeatherData() {
