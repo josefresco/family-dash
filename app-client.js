@@ -742,6 +742,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             }
             
             console.log('Rendering weather data...');
+            this.weatherData = data; // Store weather data for later use
             this.renderWeatherData(data);
             console.log('Weather data rendered successfully');
         } catch (error) {
