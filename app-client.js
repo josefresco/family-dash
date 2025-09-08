@@ -732,22 +732,32 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             const nextSunday = new Date(nextSaturday);
             nextSunday.setDate(nextSaturday.getDate() + 1);
             
+            console.log('=== WEEKEND EVENTS DEBUG ===');
+            console.log('Today:', today.toDateString(), 'Day of week:', currentDay);
+            console.log('Days until Saturday:', daysUntilSaturday);
             console.log('Loading weekend events for:', {
                 saturday: nextSaturday.toDateString(),
                 sunday: nextSunday.toDateString()
             });
 
             // Load events for both Saturday and Sunday
+            console.log('Making API calls for weekend events...');
             const [saturdayEvents, sundayEvents] = await Promise.all([
                 this.loadEventsForDate(nextSaturday),
                 this.loadEventsForDate(nextSunday)
             ]);
 
+            console.log('Saturday events:', saturdayEvents.length, saturdayEvents);
+            console.log('Sunday events:', sundayEvents.length, sundayEvents);
+
             // Combine and render weekend events
-            this.renderWeekendEvents([
+            const allWeekendEvents = [
                 ...saturdayEvents.map(event => ({ ...event, day: 'Saturday' })),
                 ...sundayEvents.map(event => ({ ...event, day: 'Sunday' }))
-            ]);
+            ];
+            
+            console.log('Total weekend events to render:', allWeekendEvents.length, allWeekendEvents);
+            this.renderWeekendEvents(allWeekendEvents);
 
         } catch (error) {
             console.error('Failed to load weekend events:', error);
@@ -764,11 +774,16 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             // Format date for API call - use the same format as the main calendar
             const dateStr = date.toISOString().split('T')[0];
             
+            console.log('loadEventsForDate called with:', date.toDateString(), 'formatted as:', dateStr);
+            
             // Use the existing makeApiRequest method with calendar endpoint
             // We'll pass the date as a parameter, similar to how weather works
             const data = await this.makeApiRequest('calendar', dateStr);
             
+            console.log('API response for', dateStr, ':', data);
+            
             if (!data?.calendars?.length) {
+                console.log('No calendars found in response for', dateStr);
                 return [];
             }
 
