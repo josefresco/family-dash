@@ -108,20 +108,25 @@ exports.handler = async (event, context) => {
     startOfDayEastern.setHours(0, 0, 0, 0);
     
     const endOfDayEastern = new Date(targetDate);
-    endOfDayEastern.setHours(22, 59, 59, 999); // End at 22:59 to prevent next-day overlap
+    endOfDayEastern.setHours(23, 59, 59, 999); // Include full day
+    
+    // For all-day event compatibility, extend query to next day but filter on client side
+    const queryEndDate = new Date(endOfDayEastern.getTime() + 24 * 60 * 60 * 1000);
+    queryEndDate.setHours(12, 0, 0, 0); // Query until noon next day to capture all-day events
     
     // Convert Eastern boundaries to UTC for CalDAV query
     const startOfDay = new Date(startOfDayEastern.toLocaleString("en-US", {timeZone: "UTC"}));
-    const adjustedEndOfDay = new Date(endOfDayEastern.toLocaleString("en-US", {timeZone: "UTC"}));
+    const queryEndDay = new Date(queryEndDate.toLocaleString("en-US", {timeZone: "UTC"}));
     
     const startTimeUTC = formatDateForCalDAV(startOfDay);
-    const endTimeUTC = formatDateForCalDAV(adjustedEndOfDay);
+    const endTimeUTC = formatDateForCalDAV(queryEndDay);
     
     console.log('Date range for CalDAV query (Eastern timezone aware):');
     console.log('  Date parameter:', dateParam);
     console.log('  Target date (Eastern):', targetDate.toLocaleDateString());
     console.log('  Start Eastern:', startOfDayEastern.toLocaleString());
-    console.log('  End Eastern:', endOfDayEastern.toLocaleString());
+    console.log('  Filter End Eastern:', endOfDayEastern.toLocaleString());
+    console.log('  Query End Eastern:', queryEndDate.toLocaleString());
     console.log('  Start UTC:', startTimeUTC);
     console.log('  End UTC:', endTimeUTC);
     
@@ -278,22 +283,40 @@ exports.handler = async (event, context) => {
       }
     }
     
+    // Filter events to ensure all-day events only appear on their start date
+    const filteredEvents = events.filter(event => {
+      if (!event.all_day) {
+        return true; // Keep all timed events
+      }
+      
+      // For all-day events, only show on their start date
+      const eventStartDate = new Date(event.start + 'T00:00:00');
+      const targetDateString = targetDate.toISOString().split('T')[0];
+      const eventDateString = eventStartDate.toISOString().split('T')[0];
+      
+      console.log(`🗓️ Filtering all-day event "${event.summary}": event date=${eventDateString}, target date=${targetDateString}`);
+      
+      return eventDateString === targetDateString;
+    });
+    
+    console.log(`📅 Events before filtering: ${events.length}, after filtering: ${filteredEvents.length}`);
+    
     // Return in expected dashboard format
     const result = {
-      calendars: events.length > 0 ? [{
+      calendars: filteredEvents.length > 0 ? [{
         name: providerConfig.name,
         color: '#4285f4',
-        events: events,
-        event_count: events.length
+        events: filteredEvents,
+        event_count: filteredEvents.length
       }] : [],
       connected_users: [{ email: username }],
       total_accounts: 1,
       successful_accounts: 1,
       failed_accounts: 0,
-      total_events: events.length,
+      total_events: filteredEvents.length,
       date_requested: dateParam,
       source: 'netlify_caldav',
-      message: events.length > 0 ? `Found ${events.length} events` : 'No events found for this date',
+      message: filteredEvents.length > 0 ? `Found ${filteredEvents.length} events` : 'No events found for this date',
       // Add debug information to response for troubleshooting
       debug: {
         caldav_url: caldavUrl.replace(username, '[username]'),
