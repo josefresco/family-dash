@@ -798,7 +798,20 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 height: 100%;
                 display: flex;
                 flex-direction: column;
+                position: relative;
             ">
+                <div style="
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    background: rgba(0,0,0,0.2);
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                ">
+                    🌇 ${this.sunData?.sunset || 'N/A'}
+                </div>
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
                     🏠 RIGHT NOW
                 </div>
@@ -866,7 +879,20 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 height: 100%;
                 display: flex;
                 flex-direction: column;
+                position: relative;
             ">
+                <div style="
+                    position: absolute;
+                    top: 18px;
+                    right: 18px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    background: rgba(0,0,0,0.2);
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                ">
+                    🌇 ${this.sunData?.sunset || 'N/A'}
+                </div>
                 <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
                     🌅 TOMORROW
                 </div>
