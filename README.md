@@ -1,4 +1,4 @@
-# Family Dashboard - v3.23 Production CalDAV Edition 🏠
+# Family Dashboard - v3.24 Enhanced Setup & Debug Edition 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives, multi-account calendar integration, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -9,17 +9,20 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Multi-Account Management**: Connect personal, work, and family calendars
 - **Serverless Backend**: Netlify functions handle authentication and CORS
 - **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues
-- **Intelligent Fallback**: Shows today's events when tomorrow is empty
+- **All-Day Event Fix**: All-day events now display on correct single day only
+- **Enhanced Setup**: Current configuration management with edit/debug capabilities
+- **Connection Testing**: Built-in CalDAV connection testing and diagnostics
 - **Room-Readable Display**: Large fonts and high-contrast design for wall displays
 
-### 🌤️ Enhanced Weather System (v3.23)
-- **Real-Time Narratives**: AI-powered weather storytelling with personality
+### 🌤️ Enhanced Weather System (v3.24)
+- **Smart Commentary**: Weather-specific activity suggestions (outdoor vs indoor)
 - **Context-Aware Display**: "Right Now" vs "Tomorrow" focused layouts
 - **Massive Typography**: 60px+ temperatures for room visibility
 - **Dynamic Color Themes**: Weather-responsive gradients and high contrast
 - **Smart Geocoding**: Auto-detects location with OpenWeatherMap API
 - **Hourly Forecasts**: Detailed breakdown with precipitation alerts
 - **Dynamic Favicon**: Updates with current weather conditions
+- **Debug Tools**: Comprehensive weather API debugging and troubleshooting
 
 ### 🏠 Smart Home Optimization
 - **Time-Based Intelligence**: Automatically switches to tomorrow at 5 PM Eastern
@@ -73,12 +76,15 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Outlook/Office 365**: Standard account credentials
 - **Generic CalDAV**: Any RFC-compliant CalDAV server
 
-### Setup Process
+### Enhanced Setup Process (v3.24)
 1. Navigate to your deployed dashboard
 2. Click "🔧 Setup Configuration" 
-3. Enter API credentials and test connections
-4. Configure location and timezone preferences
-5. Launch your personalized dashboard!
+3. **View Current Configuration**: See existing CalDAV/weather settings
+4. **Test Connections**: Verify API credentials and connection health
+5. **Debug Tools**: Comprehensive diagnostics for troubleshooting
+6. **Edit Configuration**: Modify existing settings without starting over
+7. **Step-by-Step Guidance**: Provider-specific setup instructions (Google App Passwords, etc.)
+8. Launch your personalized dashboard!
 
 ## 🏗️ Architecture & Technical Details
 
@@ -87,7 +93,7 @@ A sophisticated, room-readable personal dashboard application designed for alway
 family-dash/
 ├── 📄 Core Application Files
 │   ├── index.html              # Smart entry point with config detection
-│   ├── dashboard.html          # Main dashboard interface (v3.23)
+│   ├── dashboard.html          # Main dashboard interface (v3.24)
 │   ├── setup.html              # Comprehensive setup wizard
 │   └── test-caldav-debug.html  # CalDAV debugging interface
 │
@@ -139,7 +145,16 @@ family-dash/
 
 ## 📈 Version History & Evolution
 
-### v3.23 - Production CalDAV Edition (Current)
+### v3.24 - Enhanced Setup & Debug Edition (Current)
+- **🐛 All-Day Event Fix**: All-day calendar events now display on single correct day only
+- **🌤️ Smart Weather Commentary**: Context-aware activity suggestions (sunny=outdoors, rainy=indoors)
+- **🔧 Enhanced Setup Interface**: Current configuration viewing, editing, and management
+- **🐛 Comprehensive Debug Tools**: Weather and CalDAV debugging with exportable logs
+- **📚 Step-by-Step Guidance**: Provider-specific setup instructions with Google App Password help
+- **🔍 Connection Testing**: Built-in API testing and health verification
+- **💾 Configuration Management**: Edit existing settings without reconfiguration
+
+### v3.23 - Production CalDAV Edition
 - **🔄 Complete CalDAV Overhaul**: Netlify functions eliminate CORS issues
 - **🎨 Enhanced Weather Narratives**: Personality-driven weather stories
 - **🕐 Intelligent Time Switching**: Eastern timezone awareness
@@ -192,10 +207,14 @@ family-dash/
 
 ### Debug Tools & Utilities
 
-#### Built-in Debugging
-- **CalDAV Debug Tool**: `test-caldav-debug.html` - Comprehensive calendar diagnostics
+#### Built-in Debugging (Enhanced v3.24)
+- **Setup Screen Debug Tools**: Integrated weather and CalDAV debugging
+  - 🌤️ **Weather Debug**: Shows concise API responses, rate limits, and key validation
+  - 📅 **CalDAV Debug**: Comprehensive connection testing with exportable logs
+  - 📋 **Copy/Export Functions**: Save debug data for troubleshooting
+- **CalDAV Debug Tool**: `test-caldav-debug.html` - Standalone calendar diagnostics
+- **Configuration Management**: View, edit, test, and remove existing configurations
 - **Browser Console**: Press F12 → Console for detailed error logging
-- **Setup Interface**: Test all APIs before saving configuration
 - **Network Inspector**: Monitor real-time API calls and responses
 
 #### Advanced Troubleshooting
