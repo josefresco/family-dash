@@ -795,12 +795,9 @@
                 const city = document.getElementById('location-city').value || 'New York';
                 const state = document.getElementById('location-state').value || 'NY';
                 
-                // Create comprehensive weather debug info
+                // Create concise weather debug info
                 const debugInfo = {
                     timestamp: new Date().toISOString(),
-                    api_key_provided: !!apiKey,
-                    api_key_length: apiKey.length,
-                    location: { city, state },
                     tests: []
                 };
                 
@@ -814,18 +811,23 @@
                     
                     debugInfo.tests.push({
                         test: 'Current Weather API',
-                        url: currentWeatherUrl.replace(apiKey, '[API_KEY]'),
                         status: currentResponse.status,
                         success: currentResponse.ok,
-                        data: currentData,
+                        summary: currentResponse.ok ? {
+                            location: `${currentData.name}, ${currentData.sys?.country}`,
+                            temperature: `${currentData.main?.temp}°F`,
+                            condition: currentData.weather?.[0]?.description,
+                            humidity: `${currentData.main?.humidity}%`,
+                            wind_speed: `${currentData.wind?.speed} mph`,
+                            coordinates: `${currentData.coord?.lat}, ${currentData.coord?.lon}`
+                        } : null,
                         error: currentResponse.ok ? null : currentData.message || 'Unknown error'
                     });
                 } catch (error) {
                     debugInfo.tests.push({
                         test: 'Current Weather API',
                         success: false,
-                        error: error.message,
-                        stack: error.stack
+                        error: error.message
                     });
                 }
                 
@@ -839,40 +841,47 @@
                     
                     debugInfo.tests.push({
                         test: '5-Day Forecast API',
-                        url: forecastUrl.replace(apiKey, '[API_KEY]'),
                         status: forecastResponse.status,
                         success: forecastResponse.ok,
-                        data: forecastData,
+                        summary: forecastResponse.ok ? {
+                            location: `${forecastData.city?.name}, ${forecastData.city?.country}`,
+                            total_forecasts: forecastData.cnt,
+                            next_24h_forecasts: forecastData.list?.slice(0, 8).map(item => ({
+                                time: new Date(item.dt * 1000).toLocaleString(),
+                                temp: `${item.main.temp}°F`,
+                                condition: item.weather[0].description,
+                                precipitation: item.rain ? `${item.rain['3h'] || 0}mm` : 'None'
+                            })) || [],
+                            timezone_offset: `${forecastData.city?.timezone / 3600}h from UTC`
+                        } : null,
                         error: forecastResponse.ok ? null : forecastData.message || 'Unknown error'
                     });
                 } catch (error) {
                     debugInfo.tests.push({
                         test: '5-Day Forecast API',
                         success: false,
-                        error: error.message,
-                        stack: error.stack
+                        error: error.message
                     });
                 }
                 
-                // Test 3: Dashboard weather API call simulation
-                try {
-                    debugInfo.dashboard_simulation = {
-                        note: 'This simulates how your dashboard calls the weather API',
-                        config: {
-                            location: { city, state },
-                            timezone: 'America/New_York',
-                            api_key_configured: true
-                        }
-                    };
-                } catch (error) {
-                    debugInfo.dashboard_simulation = { error: error.message };
-                }
+                // Add summary info
+                debugInfo.summary = {
+                    total_tests: debugInfo.tests.length,
+                    successful_tests: debugInfo.tests.filter(t => t.success).length,
+                    failed_tests: debugInfo.tests.filter(t => !t.success).length,
+                    api_key_status: apiKey.length === 32 ? 'Valid length (32 chars)' : `Invalid length (${apiKey.length} chars, should be 32)`,
+                    location_tested: `${city}, ${state}`,
+                    dashboard_config: {
+                        update_frequency: '30 minutes',
+                        typical_daily_calls: '~48 calls/day',
+                        timezone: 'America/New_York'
+                    }
+                };
                 
-                // Add API limits information
-                debugInfo.api_info = {
-                    free_tier_limits: '1,000 calls/day, 60 calls/minute',
-                    note: 'Check your OpenWeatherMap account for current usage',
-                    dashboard_update_frequency: '30 minutes (48 calls/day typical)'
+                debugInfo.api_limits = {
+                    free_tier: '1,000 calls/day, 60 calls/minute',
+                    your_usage_check: 'Visit https://openweathermap.org/api to check current usage',
+                    note: 'Dashboard uses ~48 calls/day (well within free limits)'
                 };
                 
                 // Display debug information
