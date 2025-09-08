@@ -884,20 +884,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         if (data.daily_summary?.summary) {
             const apiSummary = data.daily_summary.summary;
             
-            // Add time-based encouragement to API summary
-            const now = new Date();
-            const hour = now.getHours();
+            // Get weather-specific encouragement
+            const encouragement = this.getWeatherEncouragement(data.daily_summary, data.precipitation);
             
-            let timeEncouragement = '';
-            if (hour < 12) {
-                timeEncouragement = " Great morning to get outside! ☀️";
-            } else if (hour < 17) {
-                timeEncouragement = " Perfect afternoon weather! 🌞";
-            } else {
-                timeEncouragement = " Nice evening conditions! 🌅";
-            }
-            
-            return apiSummary + timeEncouragement;
+            return apiSummary + " " + encouragement;
         }
         
         // Fallback to custom narrative if no API summary
@@ -945,17 +935,14 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             narrative += "Light breeze. ";
         }
         
-        // Current time-based suggestion
-        const now = new Date();
-        const hour = now.getHours();
-        
-        if (hour < 12) {
-            narrative += "Great morning to get outside! ☀️";
-        } else if (hour < 17) {
-            narrative += "Perfect afternoon weather! 🌞";
-        } else {
-            narrative += "Nice evening conditions! 🌅";
-        }
+        // Get weather-specific encouragement for fallback narrative
+        const fallbackSummary = {
+            high_temp: temp,
+            description: condition
+        };
+        const fallbackPrecipitation = condition.includes('rain') || condition.includes('snow') ? { expected: true } : null;
+        const encouragement = this.getWeatherEncouragement(fallbackSummary, fallbackPrecipitation);
+        narrative += encouragement;
         
         return narrative;
     }
@@ -967,61 +954,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         if (summary?.summary) {
             const apiSummary = summary.summary;
             
-            // Add encouraging closing based on conditions
-            const temp = summary.high_temp;
-            const condition = summary.description.toLowerCase();
-            const precipitation = data.precipitation;
+            // Get weather-specific encouragement
+            const encouragement = this.getWeatherEncouragement(summary, data.precipitation);
             
-            const goodWeatherClosings = [
-                "Make it a great day! 🌟",
-                "Perfect for outdoor plans! 🚀",
-                "Enjoy the weather! 🎉",
-                "Have a wonderful day! ✨",
-                "Great day to be outside! 🌳",
-                "Weather: 10/10, would recommend! 👌",
-                "Mother Nature is showing off today! 💅",
-                "Perfect excuse to touch grass! 🌱", 
-                "Weather app says you're legally required to go outside! 📱",
-                "Even your houseplants are jealous! 🪴",
-                "This is your sign to cancel indoor plans! 🚪",
-                "Weather so nice, it should be illegal! 🚨",
-                "Time to make your vitamin D proud! ☀️",
-                "Your weather app is basically flexing right now! 💪",
-                "Nature's apology for yesterday! 🙏",
-                "Weather report: Chef's kiss approved! 👨‍🍳💋",
-                "Forecast brought to you by good vibes only! ✨",
-                "Weather: Netflix has left the chat! 📺❌",
-                "Perfect day to pretend you're outdoorsy! 🏃‍♀️",
-                "Even the weather app is smiling today! 😊"
-            ];
-
-            const poorWeatherClosings = [
-                "Stay cozy! 🏠",
-                "Perfect day to practice your couch potato skills! 🛋️",
-                "Weather report: Netflix stock is up! 📈",
-                "Mother Nature called in sick today! 🤒",
-                "Time to channel your inner hermit! 🏠",
-                "Weather brought to you by blanket season! 🛋️",
-                "Perfect excuse to order takeout! 🥡",
-                "Today's forecast: maximum coziness required! ☕",
-                "Weather app apologizes for the inconvenience! 📱😅",
-                "Nature's way of saying 'read a book'! 📚",
-                "Perfect day to win at being indoors! 🏆",
-                "Weather: sponsored by hot chocolate! ☕",
-                "Today's vibe: professional indoor enthusiast! 🏠",
-                "Mother Nature hit the snooze button! 😴",
-                "Weather report: pajamas are business casual today! 👔➡️👕",
-                "Perfect conditions for advanced sofa surfing! 🏄‍♀️"
-            ];
-            
-            let encouragement = '';
-            if (temp >= 60 && !precipitation?.expected && !condition.includes('rain') && !condition.includes('snow')) {
-                encouragement = " " + goodWeatherClosings[Math.floor(Math.random() * goodWeatherClosings.length)];
-            } else {
-                encouragement = " " + poorWeatherClosings[Math.floor(Math.random() * poorWeatherClosings.length)];
-            }
-            
-            return apiSummary + encouragement;
+            return apiSummary + " " + encouragement;
         }
         
         // Fallback to custom narrative if no API summary
@@ -1062,56 +998,103 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             narrative += `Expect ${hours}h of ${precipType}. `;
         }
         
-        // Add encouraging closing
-        const goodWeatherClosings = [
-            "Make it a great day! 🌟",
-            "Perfect for outdoor plans! 🚀",
-            "Enjoy the weather! 🎉",
-            "Have a wonderful day! ✨",
+        // Get weather-specific encouragement
+        const encouragement = this.getWeatherEncouragement(summary, precipitation);
+        narrative += encouragement;
+        
+        return narrative;
+    }
+    
+    getWeatherEncouragement(summary, precipitation) {
+        const temp = summary.high_temp;
+        const condition = summary.description.toLowerCase();
+        
+        // Weather-specific commentary arrays
+        const sunnyOutdoorComments = [
+            "Perfect excuse to touch grass! 🌱",
+            "Time to make your vitamin D proud! ☀️",
             "Great day to be outside! 🌳",
             "Weather: 10/10, would recommend! 👌",
             "Mother Nature is showing off today! 💅",
-            "Perfect excuse to touch grass! 🌱", 
             "Weather app says you're legally required to go outside! 📱",
             "Even your houseplants are jealous! 🪴",
             "This is your sign to cancel indoor plans! 🚪",
             "Weather so nice, it should be illegal! 🚨",
-            "Time to make your vitamin D proud! ☀️",
             "Your weather app is basically flexing right now! 💪",
             "Nature's apology for yesterday! 🙏",
             "Weather report: Chef's kiss approved! 👨‍🍳💋",
             "Forecast brought to you by good vibes only! ✨",
             "Weather: Netflix has left the chat! 📺❌",
             "Perfect day to pretend you're outdoorsy! 🏃‍♀️",
-            "Even the weather app is smiling today! 😊"
+            "Even the weather app is smiling today! 😊",
+            "Perfect for outdoor plans! 🚀",
+            "Make it a great day! 🌟"
         ];
 
-        const poorWeatherClosings = [
-            "Stay cozy! 🏠",
+        const cloudyOutdoorComments = [
+            "Cloudy but comfortable for activities! ☁️",
+            "Perfect overcast for hiking! 🥾",
+            "Great weather for a walk! 🚶‍♀️",
+            "No harsh sun - ideal for outdoor time! 🌫️",
+            "Soft lighting courtesy of Mother Nature! 📷",
+            "Perfect photography weather! 📸",
+            "Great day for exploring! 🗺️",
+            "Natural sun protection included! 🕶️",
+            "Comfortable temps for being active! 💪",
+            "Still a beautiful day to be out! 🌤️"
+        ];
+
+        const rainyIndoorComments = [
             "Perfect day to practice your couch potato skills! 🛋️",
             "Weather report: Netflix stock is up! 📈",
-            "Mother Nature called in sick today! 🤒",
             "Time to channel your inner hermit! 🏠",
             "Weather brought to you by blanket season! 🛋️",
             "Perfect excuse to order takeout! 🥡",
             "Today's forecast: maximum coziness required! ☕",
-            "Weather app apologizes for the inconvenience! 📱😅",
             "Nature's way of saying 'read a book'! 📚",
             "Perfect day to win at being indoors! 🏆",
             "Weather: sponsored by hot chocolate! ☕",
             "Today's vibe: professional indoor enthusiast! 🏠",
-            "Mother Nature hit the snooze button! 😴",
             "Weather report: pajamas are business casual today! 👔➡️👕",
-            "Perfect conditions for advanced sofa surfing! 🏄‍♀️"
+            "Perfect conditions for advanced sofa surfing! 🏄‍♀️",
+            "Stay cozy! 🏠",
+            "Mother Nature called in sick today! 🤒",
+            "Weather app apologizes for the inconvenience! 📱😅",
+            "Mother Nature hit the snooze button! 😴"
+        ];
+
+        const coldIndoorComments = [
+            "Bundle up or stay cozy inside! 🧥",
+            "Perfect excuse for hot drinks and blankets! ☕",
+            "Indoor activities are calling your name! 🏠",
+            "Great day for warming up indoors! 🔥",
+            "Weather brought to you by sweater season! 🧶",
+            "Time to embrace the hygge lifestyle! 🕯️",
+            "Perfect day for soup and comfort food! 🍲",
+            "Indoor adventures await! 🎲",
+            "Cozy vibes only today! ✨",
+            "Mother Nature wants you to stay warm! ❄️"
         ];
         
-        if (temp >= 60 && !precipitation?.expected) {
-            narrative += goodWeatherClosings[Math.floor(Math.random() * goodWeatherClosings.length)];
+        // Determine weather category and return appropriate comment
+        if (condition.includes('rain') || condition.includes('shower') || condition.includes('storm') || 
+            (precipitation && precipitation.expected)) {
+            return rainyIndoorComments[Math.floor(Math.random() * rainyIndoorComments.length)];
+        } else if (condition.includes('snow') || temp < 40) {
+            return coldIndoorComments[Math.floor(Math.random() * coldIndoorComments.length)];
+        } else if (condition.includes('clear') || condition.includes('sunny') || 
+                   (temp >= 70 && !condition.includes('cloud'))) {
+            return sunnyOutdoorComments[Math.floor(Math.random() * sunnyOutdoorComments.length)];
+        } else if (condition.includes('cloud') || condition.includes('overcast') || 
+                   (temp >= 55 && temp < 70)) {
+            return cloudyOutdoorComments[Math.floor(Math.random() * cloudyOutdoorComments.length)];
+        } else if (temp >= 60) {
+            // Default to sunny outdoor comments for pleasant weather
+            return sunnyOutdoorComments[Math.floor(Math.random() * sunnyOutdoorComments.length)];
         } else {
-            narrative += poorWeatherClosings[Math.floor(Math.random() * poorWeatherClosings.length)];
+            // Default to indoor comments for less ideal weather
+            return rainyIndoorComments[Math.floor(Math.random() * rainyIndoorComments.length)];
         }
-        
-        return narrative;
     }
     
     getImprovedWeatherColors(data) {
