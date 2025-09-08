@@ -1342,10 +1342,18 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             
             this.sunData = data;
             this.renderSunTideData();
+            // Re-render weather data to update sunset time display
+            if (this.weatherData) {
+                this.renderWeatherData(this.weatherData);
+            }
         } catch (error) {
             console.error('Failed to load sunrise/sunset data:', error);
             this.sunData = { sunrise: 'N/A', sunset: 'N/A' };
             this.renderSunTideData();
+            // Re-render weather data even with fallback data
+            if (this.weatherData) {
+                this.renderWeatherData(this.weatherData);
+            }
         }
     }
 
