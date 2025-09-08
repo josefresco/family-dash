@@ -358,6 +358,9 @@
                 <button class="button" onclick="testWeatherAPI()">
                     <span>🔍</span> Test API
                 </button>
+                <button class="button" onclick="debugWeatherAPI()" style="background: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);">
+                    <span>🐛</span> Debug Weather Data
+                </button>
                 <button class="button success" onclick="saveWeatherConfig()">
                     <span>💾</span> Save & Continue
                 </button>
@@ -770,6 +773,123 @@
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalHTML;
+            }
+        }
+        
+        async function debugWeatherAPI() {
+            const apiKey = document.getElementById('weather-key').value.trim();
+            if (!apiKey) {
+                showStatus('Please enter your OpenWeatherMap API key first.', 'error');
+                return;
+            }
+            
+            const debugBtn = document.querySelector('button[onclick="debugWeatherAPI()"]');
+            const originalHTML = debugBtn.innerHTML;
+            debugBtn.disabled = true;
+            debugBtn.innerHTML = '<div class="loading"><div class="spinner"></div> Debugging...</div>';
+            
+            try {
+                showStatus('Gathering weather debug information...', 'info');
+                
+                // Get current location for weather testing
+                const city = document.getElementById('location-city').value || 'New York';
+                const state = document.getElementById('location-state').value || 'NY';
+                
+                // Create comprehensive weather debug info
+                const debugInfo = {
+                    timestamp: new Date().toISOString(),
+                    api_key_provided: !!apiKey,
+                    api_key_length: apiKey.length,
+                    location: { city, state },
+                    tests: []
+                };
+                
+                // Test 1: Current weather API
+                try {
+                    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},US&appid=${apiKey}&units=imperial`;
+                    console.log('Testing current weather API:', currentWeatherUrl.replace(apiKey, '[API_KEY]'));
+                    
+                    const currentResponse = await fetch(currentWeatherUrl);
+                    const currentData = await currentResponse.json();
+                    
+                    debugInfo.tests.push({
+                        test: 'Current Weather API',
+                        url: currentWeatherUrl.replace(apiKey, '[API_KEY]'),
+                        status: currentResponse.status,
+                        success: currentResponse.ok,
+                        data: currentData,
+                        error: currentResponse.ok ? null : currentData.message || 'Unknown error'
+                    });
+                } catch (error) {
+                    debugInfo.tests.push({
+                        test: 'Current Weather API',
+                        success: false,
+                        error: error.message,
+                        stack: error.stack
+                    });
+                }
+                
+                // Test 2: 5-day forecast API (used by dashboard)
+                try {
+                    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city},${state},US&appid=${apiKey}&units=imperial`;
+                    console.log('Testing forecast API:', forecastUrl.replace(apiKey, '[API_KEY]'));
+                    
+                    const forecastResponse = await fetch(forecastUrl);
+                    const forecastData = await forecastResponse.json();
+                    
+                    debugInfo.tests.push({
+                        test: '5-Day Forecast API',
+                        url: forecastUrl.replace(apiKey, '[API_KEY]'),
+                        status: forecastResponse.status,
+                        success: forecastResponse.ok,
+                        data: forecastData,
+                        error: forecastResponse.ok ? null : forecastData.message || 'Unknown error'
+                    });
+                } catch (error) {
+                    debugInfo.tests.push({
+                        test: '5-Day Forecast API',
+                        success: false,
+                        error: error.message,
+                        stack: error.stack
+                    });
+                }
+                
+                // Test 3: Dashboard weather API call simulation
+                try {
+                    debugInfo.dashboard_simulation = {
+                        note: 'This simulates how your dashboard calls the weather API',
+                        config: {
+                            location: { city, state },
+                            timezone: 'America/New_York',
+                            api_key_configured: true
+                        }
+                    };
+                } catch (error) {
+                    debugInfo.dashboard_simulation = { error: error.message };
+                }
+                
+                // Add API limits information
+                debugInfo.api_info = {
+                    free_tier_limits: '1,000 calls/day, 60 calls/minute',
+                    note: 'Check your OpenWeatherMap account for current usage',
+                    dashboard_update_frequency: '30 minutes (48 calls/day typical)'
+                };
+                
+                // Display debug information
+                const debugContent = document.getElementById('debug-content');
+                debugContent.textContent = JSON.stringify(debugInfo, null, 2);
+                document.getElementById('debug-section').style.display = 'block';
+                
+                // Scroll to debug section
+                document.getElementById('debug-section').scrollIntoView({ behavior: 'smooth' });
+                
+                showStatus('✅ Weather debug information collected. See debug panel below.', 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Weather debug failed: ${error.message}`, 'error');
+            } finally {
+                debugBtn.disabled = false;
+                debugBtn.innerHTML = originalHTML;
             }
         }
         
