@@ -456,7 +456,7 @@
                     <span>📍</span>
                     <span>Location</span>
                 </div>
-                <div class="section-status configured" id="location-status">New York, NY</div>
+                <div class="section-status configured" id="location-status">Loading...</div>
             </div>
             
             <div class="button-group">
@@ -565,6 +565,10 @@
             const state = config.get('location.state') || 'NY';
             document.getElementById('location-city').value = city;
             document.getElementById('location-state').value = state;
+            
+            // Update the location status display
+            document.getElementById('location-status').textContent = `${city}, ${state}`;
+            
             completedSteps.location = true;
             
             // Load CalDAV config if exists
