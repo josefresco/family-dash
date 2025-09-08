@@ -543,14 +543,46 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     console.log('Today fallback calendar response:', todayData);
                     
                     if (todayData && todayData.calendars && todayData.calendars.length > 0 && todayData.total_events > 0) {
-                        // Show today's events with a note
-                        const modifiedData = {
-                            ...todayData,
-                            message: "No events tomorrow - showing today's remaining events"
-                        };
-                        console.log('Rendering today\'s events as fallback');
-                        this.renderMultiAccountCalendar(modifiedData);
-                        return;
+                        // Filter out past events from today when using as fallback
+                        const now = new Date();
+                        const filteredCalendars = todayData.calendars.map(calendar => {
+                            if (!calendar.events || calendar.events.length === 0) return calendar;
+                            
+                            const futureEvents = calendar.events.filter(event => {
+                                // Keep all-day events
+                                if (event.all_day) return true;
+                                
+                                try {
+                                    const eventStart = new Date(event.start);
+                                    return eventStart > now; // Only keep future events
+                                } catch (error) {
+                                    console.warn('Error parsing event time:', error);
+                                    return true; // Keep event if we can't parse the time
+                                }
+                            });
+                            
+                            return {
+                                ...calendar,
+                                events: futureEvents,
+                                event_count: futureEvents.length
+                            };
+                        }).filter(calendar => calendar.events && calendar.events.length > 0);
+                        
+                        // Only show fallback if we have remaining events
+                        if (filteredCalendars.length > 0) {
+                            const totalRemainingEvents = filteredCalendars.reduce((sum, cal) => sum + cal.event_count, 0);
+                            
+                            // Show today's remaining events with a note
+                            const modifiedData = {
+                                ...todayData,
+                                calendars: filteredCalendars,
+                                total_events: totalRemainingEvents,
+                                message: `No events tomorrow - showing ${totalRemainingEvents} remaining event${totalRemainingEvents === 1 ? '' : 's'} from today`
+                            };
+                            console.log(`Rendering ${totalRemainingEvents} remaining today's events as fallback`);
+                            this.renderMultiAccountCalendar(modifiedData);
+                            return;
+                        }
                     }
                 } catch (fallbackError) {
                     console.warn('Fallback to today failed:', fallbackError);
