@@ -99,9 +99,23 @@ exports.handler = async (event, context) => {
     console.log('Current Eastern time:', easternNow.toLocaleString());
     console.log('Server UTC time:', now.toISOString());
     
-    const targetDate = dateParam === 'tomorrow' 
-      ? new Date(easternNow.getTime() + 24 * 60 * 60 * 1000)
-      : easternNow;
+    let targetDate;
+    
+    if (dateParam === 'tomorrow') {
+      targetDate = new Date(easternNow.getTime() + 24 * 60 * 60 * 1000);
+    } else if (dateParam === 'today') {
+      targetDate = easternNow;
+    } else if (dateParam.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Handle specific date strings like "2025-09-13"
+      console.log('Processing specific date string:', dateParam);
+      const [year, month, day] = dateParam.split('-').map(Number);
+      targetDate = new Date(year, month - 1, day); // Create in local timezone
+      console.log('Parsed target date:', targetDate.toLocaleDateString());
+    } else {
+      // Default fallback to today
+      console.log('Unknown date parameter, defaulting to today:', dateParam);
+      targetDate = easternNow;
+    }
     
     // Create date boundaries in Eastern time, then convert to UTC
     const startOfDayEastern = new Date(targetDate);
