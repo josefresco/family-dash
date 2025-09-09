@@ -1,20 +1,23 @@
-# Family Dashboard - v3.24 Enhanced Setup & Debug Edition 🏠
+# Family Dashboard - v3.25 Weekend Events & Enhanced Display Edition 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives, multi-account calendar integration, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with sunset times, weekend event previews, and multi-account calendar integration with intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ## ✨ Key Features
 
 ### 📅 Universal Calendar Integration
 - **CalDAV Support**: Google Calendar, iCloud, Outlook, and any CalDAV server
 - **Multi-Account Management**: Connect personal, work, and family calendars
+- **Weekend Events Preview**: Dedicated section showing upcoming Saturday/Sunday events
 - **Serverless Backend**: Netlify functions handle authentication and CORS
 - **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues
 - **All-Day Event Fix**: All-day events now display on correct single day only
 - **Enhanced Setup**: Current configuration management with edit/debug capabilities
 - **Connection Testing**: Built-in CalDAV connection testing and diagnostics
 - **Room-Readable Display**: Large fonts and high-contrast design for wall displays
+- **iPad Optimized**: Responsive layout optimized for 1080x810 tablet displays
 
-### 🌤️ Enhanced Weather System (v3.24)
+### 🌤️ Enhanced Weather System (v3.25)
+- **Sunset Time Display**: Real-time sunset time in weather panel upper corner
 - **Smart Commentary**: Weather-specific activity suggestions (outdoor vs indoor)
 - **Context-Aware Display**: "Right Now" vs "Tomorrow" focused layouts
 - **Massive Typography**: 60px+ temperatures for room visibility
@@ -43,6 +46,33 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Netlify Functions**: Optional serverless backend for enhanced calendar features
 - **Service Worker**: Offline capability and performance optimization
 - **LocalStorage Config**: Secure, browser-based configuration management
+
+## 🆕 What's New in v3.25
+
+### 🎯 Weekend Events Preview
+- **Dedicated weekend section** at the bottom of the calendar panel
+- **Shows upcoming Saturday and Sunday events** without affecting daily view
+- **Responsive design** optimized for iPad 1080x810 displays
+- **Orange accent styling** to distinguish from daily events
+- **Auto-calculates** next weekend dates dynamically
+
+### 🌅 Enhanced Weather Display  
+- **Sunset time indicator** in upper right corner of weather panel
+- **Real-time sunrise/sunset data** from Sunrise-Sunset API
+- **Compact display** that doesn't increase panel height
+- **Updates automatically** with weather data refresh
+
+### 🔧 Backend Improvements
+- **Fixed CalDAV function** to handle specific date requests (YYYY-MM-DD format)
+- **Enhanced date filtering** for accurate event display
+- **Improved error handling** and debugging capabilities
+- **Better timezone support** for multi-date queries
+
+### 📱 Display Optimizations
+- **Font size refinements** - weather narrative reduced from 46px to 40px for better fit
+- **Improved responsive design** for various screen sizes
+- **Enhanced scrolling behavior** in weekend events section
+- **Better contrast** and readability improvements
 
 ## 🚀 Quick Start
 
