@@ -816,47 +816,26 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     }))
                 );
 
-            // Filter events to only include those that actually fall on the requested date
-            // This is a workaround for backend CalDAV proxy returning wrong events
-            const targetYear = date.getFullYear();
-            const targetMonth = date.getMonth();
-            const targetDate = date.getDate();
+            // TEMPORARILY DISABLED: Date filtering due to backend CalDAV proxy issues
+            // The backend is returning wrong events, but filtering hides all events
+            // TODO: Fix backend CalDAV proxy to return correct events for requested dates
+            console.log(`Backend returned ${allEvents.length} events for ${date.toDateString()} (may be incorrect dates due to backend issue)`);
             
-            const filteredEvents = allEvents.filter(event => {
-                try {
-                    const eventStart = new Date(event.start);
-                    const eventYear = eventStart.getFullYear();
-                    const eventMonth = eventStart.getMonth();
-                    const eventDate = eventStart.getDate();
-                    
-                    const isMatchingDate = eventYear === targetYear && 
-                                         eventMonth === targetMonth && 
-                                         eventDate === targetDate;
-                    
-                    console.log(`Event "${event.summary}" date check:`, {
-                        requestedDate: date.toDateString(),
-                        eventStart: event.start,
-                        eventStartParsed: eventStart.toDateString(),
-                        isMatchingDate
-                    });
-                    
-                    return isMatchingDate;
-                } catch (e) {
-                    console.warn('Error filtering event by date:', e, event);
-                    return false;
-                }
-            });
+            // Show warning in events about wrong dates
+            const eventsWithWarning = allEvents.map(event => ({
+                ...event,
+                summary: `[⚠️ Backend Issue] ${event.summary}`
+            }));
 
             // Sort events by time
-            filteredEvents.sort((a, b) => {
+            eventsWithWarning.sort((a, b) => {
                 if (a.all_day && !b.all_day) return -1;
                 if (!a.all_day && b.all_day) return 1;
                 if (a.all_day && b.all_day) return 0;
                 return new Date(a.start) - new Date(b.start);
             });
 
-            console.log(`Filtered ${allEvents.length} -> ${filteredEvents.length} events for ${date.toDateString()}`);
-            return filteredEvents;
+            return eventsWithWarning;
 
         } catch (error) {
             console.error('Failed to load events for date:', date, error);
