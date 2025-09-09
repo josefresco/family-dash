@@ -747,8 +747,25 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 this.loadEventsForDate(nextSunday)
             ]);
 
-            console.log('Saturday events:', saturdayEvents.length, saturdayEvents);
-            console.log('Sunday events:', sundayEvents.length, sundayEvents);
+            console.log('Saturday events:', saturdayEvents.length);
+            saturdayEvents.forEach((event, i) => {
+                console.log(`Saturday event ${i}:`, {
+                    summary: event.summary,
+                    start: event.start,
+                    end: event.end,
+                    all_day: event.all_day
+                });
+            });
+            
+            console.log('Sunday events:', sundayEvents.length);
+            sundayEvents.forEach((event, i) => {
+                console.log(`Sunday event ${i}:`, {
+                    summary: event.summary,
+                    start: event.start,
+                    end: event.end,
+                    all_day: event.all_day
+                });
+            });
 
             // Combine and render weekend events
             const allWeekendEvents = [
@@ -756,7 +773,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ...sundayEvents.map(event => ({ ...event, day: 'Sunday' }))
             ];
             
-            console.log('Total weekend events to render:', allWeekendEvents.length, allWeekendEvents);
+            console.log('Total weekend events to render:', allWeekendEvents.length);
             this.renderWeekendEvents(allWeekendEvents);
 
         } catch (error) {
