@@ -242,9 +242,20 @@ class CalDAVClient {
         try {
             // Calculate date range - use precise boundaries to avoid overlapping days
             const now = new Date();
-            const targetDate = date === 'tomorrow' 
-                ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
-                : now;
+            let targetDate;
+            
+            if (date === 'tomorrow') {
+                targetDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            } else if (date === 'today') {
+                targetDate = now;
+            } else if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                // Handle specific date strings like "2025-09-13"
+                const [year, month, day] = date.split('-').map(Number);
+                targetDate = new Date(year, month - 1, day); // Create in local timezone
+            } else {
+                // Default fallback to today
+                targetDate = now;
+            }
             
             const startOfDay = new Date(targetDate);
             startOfDay.setHours(0, 0, 0, 0);
