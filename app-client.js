@@ -771,14 +771,16 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     async loadEventsForDate(date) {
         try {
-            // Format date for API call - use the same format as the main calendar
-            const dateStr = date.toISOString().split('T')[0];
+            // Format date for API call - use local date string to avoid timezone issues
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
             
             console.log('loadEventsForDate called with:', date.toDateString(), 'formatted as:', dateStr);
             
-            // Use the existing makeApiRequest method with calendar endpoint
-            // We'll pass the date as a parameter, similar to how weather works
-            const data = await this.makeApiRequest('calendar', dateStr);
+            // Call the calendar API directly with the specific date
+            const data = await this.activeCalendarClient.getCalendarEvents(dateStr);
             
             console.log('API response for', dateStr, ':', data);
             
