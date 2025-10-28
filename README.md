@@ -296,6 +296,13 @@ open http://localhost:8000
 - **Cross-Browser**: Test on target devices (tablets, smart displays)
 - **Performance**: Monitor memory usage during extended operation
 
+### GitHub Token Management
+If you receive a notification that your GitHub Personal Access Token is expiring:
+1. **Regenerate**: Click the regeneration link in the GitHub email
+2. **Auto-Update**: GitHub automatically updates connected apps (Netlify)
+3. **Verify**: Make a test commit to confirm deployment still works
+4. **No Manual Entry**: Netlify uses OAuth, so no token entry required
+
 ## 📄 License & Credits
 
 **Personal Use License**: This project is designed for personal and family use. Commercial deployment requires permission.
