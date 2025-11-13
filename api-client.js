@@ -241,32 +241,8 @@ class APIClient {
     }
     
     generateWeatherSummary(currentData, highTemp, lowTemp) {
-        const condition = currentData.weather[0].description.toLowerCase();
-        
-        let summary = '';
-        
-        // Focus on weather story, not temperatures
-        if (condition.includes('rain')) {
-            summary = 'Rainy conditions are in the forecast. ';
-        } else if (condition.includes('snow')) {
-            summary = 'Snow is expected today. ';
-        } else if (condition.includes('clear')) {
-            summary = 'Beautiful clear skies await you. ';
-        } else if (condition.includes('cloud')) {
-            summary = 'Cloudy weather is expected. ';
-        } else {
-            summary = `${condition.charAt(0).toUpperCase() + condition.slice(1)} conditions today. `;
-        }
-        
-        // Wind conditions
-        const windSpeed = Math.round(currentData.wind?.speed || 0);
-        if (windSpeed > 15) {
-            summary += 'Strong winds expected. ';
-        } else if (windSpeed > 8) {
-            summary += 'Breezy conditions. ';
-        }
-        
-        return summary.trim();
+        // Use WeatherNarrativeEngine for consistent weather summaries
+        return window.weatherNarrativeEngine.generateWeatherSummary(currentData, highTemp, lowTemp);
     }
     
     createForecastDailySummary(forecasts, firstForecast) {
@@ -287,38 +263,8 @@ class APIClient {
     }
     
     generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast) {
-        const condition = firstForecast.weather[0].description.toLowerCase();
-        
-        let summary = '';
-        
-        // Analyze conditions throughout the day - focus on story
-        const conditions = forecasts.map(f => f.weather[0].description.toLowerCase());
-        const hasRain = conditions.some(c => c.includes('rain'));
-        const hasSnow = conditions.some(c => c.includes('snow'));
-        const hasClear = conditions.some(c => c.includes('clear'));
-        const mostlyCloudy = conditions.filter(c => c.includes('cloud')).length > conditions.length / 2;
-        
-        if (hasRain) {
-            summary = 'Tomorrow brings rain showers. ';
-        } else if (hasSnow) {
-            summary = 'Snow is in tomorrow\'s forecast. ';
-        } else if (hasClear && !mostlyCloudy) {
-            summary = 'Tomorrow looks bright with clear skies. ';
-        } else if (mostlyCloudy) {
-            summary = 'Expect cloudy skies tomorrow. ';
-        } else {
-            summary = `Tomorrow will have ${condition} conditions. `;
-        }
-        
-        // Wind analysis
-        const avgWind = forecasts.reduce((sum, f) => sum + (f.wind?.speed || 0), 0) / forecasts.length;
-        if (avgWind > 15) {
-            summary += 'Windy conditions expected. ';
-        } else if (avgWind > 8) {
-            summary += 'Light to moderate breeze. ';
-        }
-        
-        return summary.trim();
+        // Use WeatherNarrativeEngine for consistent forecast summaries
+        return window.weatherNarrativeEngine.generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast);
     }
 
     processWeatherForecast(data, date_param) {
