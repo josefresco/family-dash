@@ -1,6 +1,6 @@
-# Family Dashboard - v3.25 Weekend Events & Enhanced Display Edition 🏠
+# Family Dashboard - v3.26 Code Refactoring & Enhanced Commentary Edition 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with sunset times, weekend event previews, and multi-account calendar integration with intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **doubled commentary variety**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ## ✨ Key Features
 
@@ -46,6 +46,33 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Netlify Functions**: Optional serverless backend for enhanced calendar features
 - **Service Worker**: Offline capability and performance optimization
 - **LocalStorage Config**: Secure, browser-based configuration management
+
+## 🆕 What's New in v3.26
+
+### 🔧 Major Code Refactoring
+- **4 New Utility Modules**: Modular architecture for improved maintainability
+  - `weather-narrative-engine.js` - Centralized weather commentary (108 comments!)
+  - `logger.js` - Structured logging with debug levels
+  - `date-utils.js` - Date/time operations and timezone handling
+  - `error-handler.js` - Centralized error management with retry logic
+- **Eliminated Code Duplication**: Weather logic consolidated from multiple files
+- **Improved Organization**: Better separation of concerns and code reusability
+- **Enhanced Maintainability**: Changes to weather commentary now in single location
+
+### 💬 Doubled Weather Commentary (54 → 108 Comments)
+- **Sunny outdoor comments**: 18 → 36 (100% increase!)
+- **Cloudy outdoor comments**: 10 → 20 (100% increase!)
+- **Rainy indoor comments**: 16 → 32 (100% increase!)
+- **Cold indoor comments**: 10 → 20 (100% increase!)
+- **More variety**: Users see fresh, engaging weather descriptions every time
+- **Consistent tone**: All comments maintain the fun, personality-driven style
+
+### 🏗️ Improved Architecture
+- **Modular Design**: Utility functions separated into focused modules
+- **Better Error Handling**: Retry logic with exponential backoff
+- **Structured Logging**: Context-specific loggers for different modules
+- **Date Utilities**: Centralized timezone and date formatting functions
+- **Weather Engine**: Single source of truth for all weather narratives
 
 ## 🆕 What's New in v3.25
 
@@ -128,10 +155,15 @@ family-dash/
 │   └── test-caldav-debug.html  # CalDAV debugging interface
 │
 ├── ⚡ JavaScript Modules (ES2015+)
+│   ├── 🛠️ Utility Modules (NEW v3.26)
+│   │   ├── logger.js                    # Structured logging utility
+│   │   ├── error-handler.js             # Centralized error handling
+│   │   ├── date-utils.js                # Date/time utilities
+│   │   └── weather-narrative-engine.js  # Weather commentary (108 comments!)
 │   ├── config.js               # LocalStorage configuration management
-│   ├── api-client.js           # Direct external API integration
+│   ├── api-client.js           # Direct external API integration (refactored)
 │   ├── caldav-client.js        # CalDAV client with Netlify proxy
-│   └── app-client.js           # Main application logic (1,600+ lines)
+│   └── app-client.js           # Main application logic (refactored)
 │
 ├── 🔧 Deployment & Services
 │   ├── netlify.toml            # Netlify configuration with functions
@@ -175,7 +207,23 @@ family-dash/
 
 ## 📈 Version History & Evolution
 
-### v3.24 - Enhanced Setup & Debug Edition (Current)
+### v3.26 - Code Refactoring & Enhanced Commentary Edition (Current)
+- **🔧 Major Refactoring**: Created 4 utility modules (1,320+ lines of organized code)
+- **💬 Doubled Weather Commentary**: 108 unique comments (up from 54)
+- **🏗️ Modular Architecture**: Eliminated code duplication across files
+- **📝 Structured Logging**: Context-aware logging with multiple levels
+- **🎯 Better Error Handling**: Retry logic and user-friendly error messages
+- **📅 Date Utilities**: Centralized timezone and date formatting
+- **⚡ Weather Engine**: Single source for all weather narratives
+- **🧹 Code Cleanup**: Consolidated duplicate logic from api-client.js and app-client.js
+
+### v3.25 - Weekend Events & Enhanced Display Edition
+- **🎯 Weekend Events Preview**: Dedicated section for Saturday/Sunday events
+- **🌅 Enhanced Weather Display**: Sunset time indicator in weather panel
+- **🔧 Backend Improvements**: Fixed CalDAV date handling
+- **📱 Display Optimizations**: Font refinements and responsive design
+
+### v3.24 - Enhanced Setup & Debug Edition
 - **🐛 All-Day Event Fix**: All-day calendar events now display on single correct day only
 - **🌤️ Smart Weather Commentary**: Context-aware activity suggestions (sunny=outdoors, rainy=indoors)
 - **🔧 Enhanced Setup Interface**: Current configuration viewing, editing, and management
