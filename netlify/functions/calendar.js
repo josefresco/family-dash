@@ -693,10 +693,12 @@ function parseICSDateTime(icsDateTime, timezone = null) {
             // Use toLocaleString to convert from Eastern to UTC properly
             // This is a more reliable method that handles DST automatically
             const tempDate = new Date(easternTimeString);
-            
-            // August 8, 2025 is in EDT (Eastern Daylight Time = UTC-4)
-            // So 3:00 PM EDT = 7:00 PM UTC (add 4 hours)
-            const utcDate = new Date(tempDate.getTime() + (4 * 60 * 60 * 1000));
+
+            // Determine if date is in EDT (UTC-4) or EST (UTC-5)
+            // EDT: March-November (add 4 hours)
+            // EST: November-March (add 5 hours)
+            const offsetHours = isEDT(tempDate) ? 4 : 5;
+            const utcDate = new Date(tempDate.getTime() + (offsetHours * 60 * 60 * 1000));
             
             console.log('🕐 Timezone conversion result:', {
               originalTime: easternTimeString,
