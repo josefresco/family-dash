@@ -353,7 +353,16 @@
                     Sign up, verify your email, and copy the key from your dashboard.
                 </div>
             </div>
-            
+
+            <div class="form-group">
+                <label for="claude-api-key">Claude API Key (Optional - For AI Weather Descriptions):</label>
+                <input type="password" id="claude-api-key" placeholder="Enter your Claude API key (optional)">
+                <div class="help-text">
+                    <strong>Optional:</strong> Get your Claude API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>.
+                    With a Claude API key, you'll get AI-generated weather descriptions. Without it, you'll see standard weather data.
+                </div>
+            </div>
+
             <div class="button-group">
                 <button class="button" onclick="testWeatherAPI()">
                     <span>🔍</span> Test API
@@ -552,12 +561,18 @@
         
         function loadExistingConfig() {
             const config = window.dashboardConfig;
-            
+
             // Load weather API key
             const weatherKey = config.get('openweather_api_key');
             if (weatherKey) {
                 document.getElementById('weather-key').value = weatherKey;
                 completedSteps.weather = true;
+            }
+
+            // Load Claude API key (optional)
+            const claudeKey = config.get('claude_api_key');
+            if (claudeKey) {
+                document.getElementById('claude-api-key').value = claudeKey;
             }
             
             // Load location
@@ -755,23 +770,33 @@
                 showStatus('Please enter your OpenWeatherMap API key.', 'error');
                 return;
             }
-            
+
+            const claudeApiKey = document.getElementById('claude-api-key').value.trim();
+
             const saveBtn = document.querySelector('button[onclick="saveWeatherConfig()"]');
             const originalHTML = saveBtn.innerHTML;
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="loading"><div class="spinner"></div> Saving...</div>';
-            
+
             try {
                 const config = window.dashboardConfig;
                 config.set('openweather_api_key', apiKey);
-                
+
+                // Save Claude API key (optional)
+                if (claudeApiKey) {
+                    config.set('claude_api_key', claudeApiKey);
+                    showStatus('✅ Weather API and Claude API configured successfully! You\'ll get AI-generated weather descriptions.', 'success');
+                } else {
+                    config.set('claude_api_key', '');
+                    showStatus('✅ Weather API configured successfully! (Claude API key not set - using standard descriptions)', 'success');
+                }
+
                 completedSteps.weather = true;
                 updateProgressIndicator();
                 updateSectionStates();
-                
-                showStatus('✅ Weather API configured successfully!', 'success');
+
                 updateWeatherStatus('✅ Configured', 'configured');
-                
+
             } catch (error) {
                 showStatus(`❌ Failed to save configuration: ${error.message}`, 'error');
             } finally {

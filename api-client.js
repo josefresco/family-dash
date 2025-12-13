@@ -5,6 +5,15 @@ class APIClient {
     constructor(config) {
         this.config = config;
         this.abortController = null;
+        this.claudeWeatherService = null;
+    }
+
+    // Initialize Claude Weather Service if available
+    initClaudeService() {
+        if (!this.claudeWeatherService && window.ClaudeWeatherService) {
+            this.claudeWeatherService = new window.ClaudeWeatherService(this.config);
+        }
+        return this.claudeWeatherService;
     }
     
     // Cancel any ongoing requests
@@ -137,18 +146,18 @@ class APIClient {
                     console.warn('Forecast request returned null, continuing with current data only');
                 }
                 
-                return this.processCurrentWeatherWithForecast(currentData, forecastData, date_param);
+                return await this.processCurrentWeatherWithForecast(currentData, forecastData, date_param);
             } else {
                 // Use forecast API for tomorrow
                 const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
                 console.log('Requesting forecast for tomorrow...');
                 const data = await this.makeRequest(url, {});
-                
+
                 if (!data) {
                     throw new Error('Weather forecast request was cancelled or failed');
                 }
-                
-                return this.processWeatherForecast(data, date_param);
+
+                return await this.processWeatherForecast(data, date_param);
             }
         } catch (error) {
             console.error('Weather API error:', error);
@@ -156,10 +165,10 @@ class APIClient {
         }
     }
     
-    processCurrentWeatherWithForecast(currentData, forecastData, date_param) {
+    async processCurrentWeatherWithForecast(currentData, forecastData, date_param) {
         console.log('Processing current weather data:', currentData);
         console.log('Processing forecast data:', forecastData);
-        
+
         if (!currentData?.main || !currentData?.weather?.length) {
             console.error('Invalid weather data structure:', {
                 hasMain: !!currentData?.main,
@@ -169,18 +178,18 @@ class APIClient {
             });
             throw new Error('Invalid current weather data received');
         }
-        
+
         // Process hourly forecasts for today
         const hourlyForecasts = [];
         if (forecastData?.list?.length) {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
-            
+
             const todayForecasts = forecastData.list.filter(item => {
                 const itemDate = new Date(item.dt * 1000).toISOString().split('T')[0];
                 return itemDate === todayStr;
             }).slice(0, 4); // Next 4 forecasts
-            
+
             hourlyForecasts.push(...todayForecasts.map(f => ({
                 time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
                     hour: 'numeric',
@@ -191,9 +200,9 @@ class APIClient {
                 icon: f.weather[0].icon
             })));
         }
-        
+
         // Calculate daily summary from current data and forecasts
-        const dailySummary = this.createDailySummary(currentData, forecastData, hourlyForecasts);
+        const dailySummary = await this.createDailySummary(currentData, forecastData, hourlyForecasts, date_param);
 
         return {
             temperature: Math.round(currentData.main.temp),
@@ -210,14 +219,14 @@ class APIClient {
         };
     }
     
-    createDailySummary(currentData, forecastData, hourlyForecasts) {
+    async createDailySummary(currentData, forecastData, hourlyForecasts, date_param = 'today') {
         // Use current temp as baseline
         const currentTemp = Math.round(currentData.main.temp);
-        
+
         // Calculate high/low from hourly forecasts if available
         let highTemp = currentTemp;
         let lowTemp = currentTemp;
-        
+
         if (hourlyForecasts && hourlyForecasts.length > 0) {
             const temps = hourlyForecasts.map(h => h.temperature);
             highTemp = Math.max(currentTemp, ...temps);
@@ -229,62 +238,135 @@ class APIClient {
             highTemp = Math.max(currentTemp, ...temps);
             lowTemp = Math.min(currentTemp, ...temps);
         }
-        
+
+        const summary = await this.generateWeatherSummary(currentData, highTemp, lowTemp, hourlyForecasts, date_param);
+
         return {
             current_temp: currentTemp,
             high_temp: highTemp,
             low_temp: lowTemp,
             description: currentData.weather[0].description,
             icon: currentData.weather[0].icon,
-            summary: this.generateWeatherSummary(currentData, highTemp, lowTemp)
+            summary: summary
         };
     }
     
-    generateWeatherSummary(currentData, highTemp, lowTemp) {
-        // Use WeatherNarrativeEngine for consistent weather summaries
+    async generateWeatherSummary(currentData, highTemp, lowTemp, hourlyForecasts, date_param = 'today') {
+        // Try to use Claude AI if available
+        const claudeService = this.initClaudeService();
+        if (claudeService && claudeService.isConfigured()) {
+            try {
+                // Build weather data object for Claude
+                const weatherData = {
+                    temperature: Math.round(currentData.main.temp),
+                    description: currentData.weather[0].description,
+                    humidity: currentData.main.humidity,
+                    windSpeed: Math.round(currentData.wind?.speed || 0),
+                    visibility: Math.round((currentData.visibility || 10000) / 1609.34),
+                    daily_summary: {
+                        current_temp: Math.round(currentData.main.temp),
+                        high_temp: highTemp,
+                        low_temp: lowTemp,
+                        description: currentData.weather[0].description
+                    },
+                    hourly_forecasts: hourlyForecasts || []
+                };
+
+                const claudeDescription = await claudeService.getWeatherDescription(weatherData, date_param);
+                if (claudeDescription) {
+                    console.log('Using Claude AI weather description');
+                    return claudeDescription;
+                }
+            } catch (error) {
+                console.warn('Claude AI description failed, falling back to narrative engine:', error);
+            }
+        }
+
+        // Fallback to WeatherNarrativeEngine
         return window.weatherNarrativeEngine.generateWeatherSummary(currentData, highTemp, lowTemp);
     }
     
-    createForecastDailySummary(forecasts, firstForecast) {
+    async createForecastDailySummary(forecasts, firstForecast, date_param = 'tomorrow') {
         // Calculate high/low from all forecasts
         const temps = forecasts.map(f => Math.round(f.main.temp));
         const highTemp = Math.max(...temps);
         const lowTemp = Math.min(...temps);
         const avgTemp = Math.round(temps.reduce((sum, t) => sum + t, 0) / temps.length);
-        
+
+        const summary = await this.generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast, date_param);
+
         return {
             current_temp: avgTemp,
             high_temp: highTemp,
             low_temp: lowTemp,
             description: firstForecast.weather[0].description,
             icon: firstForecast.weather[0].icon,
-            summary: this.generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast)
+            summary: summary
         };
     }
     
-    generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast) {
-        // Use WeatherNarrativeEngine for consistent forecast summaries
+    async generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast, date_param = 'tomorrow') {
+        // Try to use Claude AI if available
+        const claudeService = this.initClaudeService();
+        if (claudeService && claudeService.isConfigured()) {
+            try {
+                // Build hourly forecasts for Claude
+                const hourlyForecasts = forecasts.map(f => ({
+                    time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        hour12: true
+                    }),
+                    temperature: Math.round(f.main.temp),
+                    description: f.weather[0].description
+                }));
+
+                // Build weather data object for Claude
+                const weatherData = {
+                    temperature: Math.round(forecasts.reduce((sum, f) => sum + f.main.temp, 0) / forecasts.length),
+                    description: firstForecast.weather[0].description,
+                    humidity: firstForecast.main.humidity,
+                    windSpeed: Math.round(firstForecast.wind?.speed || 0),
+                    visibility: Math.round((firstForecast.visibility || 10000) / 1609.34),
+                    daily_summary: {
+                        high_temp: highTemp,
+                        low_temp: lowTemp,
+                        description: firstForecast.weather[0].description
+                    },
+                    hourly_forecasts: hourlyForecasts
+                };
+
+                const claudeDescription = await claudeService.getWeatherDescription(weatherData, date_param);
+                if (claudeDescription) {
+                    console.log('Using Claude AI forecast description');
+                    return claudeDescription;
+                }
+            } catch (error) {
+                console.warn('Claude AI forecast description failed, falling back to narrative engine:', error);
+            }
+        }
+
+        // Fallback to WeatherNarrativeEngine
         return window.weatherNarrativeEngine.generateForecastSummary(forecasts, highTemp, lowTemp, firstForecast);
     }
 
-    processWeatherForecast(data, date_param) {
+    async processWeatherForecast(data, date_param) {
         if (!data?.list?.length) {
             throw new Error('Invalid weather data received');
         }
-        
+
         const now = new Date();
-        const targetDate = date_param === 'tomorrow' 
+        const targetDate = date_param === 'tomorrow'
             ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
             : now;
-        
+
         const targetDateStr = targetDate.toISOString().split('T')[0];
-        
+
         // Find forecasts for target date
         const forecasts = data.list.filter(item => {
             const itemDate = new Date(item.dt * 1000).toISOString().split('T')[0];
             return itemDate === targetDateStr;
         });
-        
+
         if (!forecasts.length) {
             // Fallback to current weather if no forecasts available
             const current = data.list[0];
@@ -300,11 +382,11 @@ class APIClient {
                 source: 'live_openweather'
             };
         }
-        
+
         // Process multiple forecasts for the day
         const avgTemp = Math.round(forecasts.reduce((sum, f) => sum + f.main.temp, 0) / forecasts.length);
         const firstForecast = forecasts[0];
-        
+
         // Create hourly forecasts array
         const hourlyForecasts = forecasts.map(f => ({
             time: new Date(f.dt * 1000).toLocaleTimeString('en-US', {
@@ -315,9 +397,9 @@ class APIClient {
             description: f.weather[0].description,
             icon: f.weather[0].icon
         }));
-        
+
         // Create daily summary for forecast data
-        const dailySummary = this.createForecastDailySummary(forecasts, firstForecast);
+        const dailySummary = await this.createForecastDailySummary(forecasts, firstForecast, date_param);
 
         return {
             temperature: avgTemp,

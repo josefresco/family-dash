@@ -6,7 +6,8 @@ class AppConfig {
         this.defaultConfig = {
             // API Keys (will be set by user)
             openweather_api_key: '',
-            
+            claude_api_key: '',
+
             // Location settings
             location: {
                 lat: 40.7128,
