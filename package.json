@@ -1,0 +1,24 @@
+{
+  "name": "family-dashboard",
+  "version": "3.26.1",
+  "description": "A sophisticated, room-readable personal dashboard application designed for always-on displays",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "build:advanced": "node build-advanced.js",
+    "analyze": "node analyze-bundle.js",
+    "serve": "npx serve dist",
+    "stats": "cat dist/bundle-stats.json"
+  },
+  "devDependencies": {
+    "terser": "^5.36.0"
+  },
+  "keywords": [
+    "dashboard",
+    "weather",
+    "calendar",
+    "smart-home"
+  ],
+  "author": "",
+  "license": "ISC"
+}

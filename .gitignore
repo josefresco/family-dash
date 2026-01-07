@@ -3,7 +3,12 @@ config.php
 
 # Token storage directory
 tokens/
+tokens/*.json
+
+# Ignore JSON config files but allow package files
 *.json
+!package.json
+!package-lock.json
 
 # Server logs
 error_log
@@ -28,3 +33,13 @@ access_log
 Thumbs.db
 .claude-session-log
 .claude-state.json
+
+# Build artifacts
+node_modules/
+dist/
+bundle-analysis.json
+
+# Lighthouse reports
+lighthouse-report.*
+*.lighthouse.html
+*.lighthouse.json

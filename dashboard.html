@@ -7,10 +7,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
     <title>Daily Dashboard - v3.26 Code Refactoring & Enhanced Commentary Edition</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="logger.js?v=3.25" as="script">
+    <link rel="preload" href="error-handler.js?v=3.25" as="script">
+    <link rel="preload" href="date-utils.js?v=3.25" as="script">
+    <link rel="preload" href="weather-narrative-engine.js?v=3.25" as="script">
+    <link rel="preload" href="config.js?v=3.25" as="script">
+    <link rel="preload" href="api-client.js?v=3.25" as="script">
+    <link rel="preload" href="app-client.js?v=3.25" as="script">
+
+    <!-- Favicon with explicit type -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="icon" sizes="32x32" href="favicon.svg">
-    
+
     <style>
         /* === BASE STYLES === */
         * {
@@ -84,6 +95,9 @@
             height: 25px;
             opacity: 0.8;
             flex-shrink: 0;
+            /* Prevent layout shift */
+            min-width: 25px;
+            min-height: 25px;
         }
 
         .admin-link {
@@ -594,6 +608,8 @@
             padding: 20px;
             color: #7f8c8d;
             font-size: 14px;
+            /* Prevent layout shift during loading */
+            min-height: 60px;
         }
 
         .spinner {
@@ -909,17 +925,17 @@
     </button>
 
     <!-- Load the enhanced JavaScript application -->
-    <!-- Load utility modules first -->
-    <script src="logger.js?v=3.25"></script>
-    <script src="error-handler.js?v=3.25"></script>
-    <script src="date-utils.js?v=3.25"></script>
-    <script src="weather-narrative-engine.js?v=3.25"></script>
+    <!-- Load utility modules first - defer for better FCP/TTI -->
+    <script defer src="logger.js?v=3.25"></script>
+    <script defer src="error-handler.js?v=3.25"></script>
+    <script defer src="date-utils.js?v=3.25"></script>
+    <script defer src="weather-narrative-engine.js?v=3.25"></script>
 
     <!-- Load configuration and API clients -->
-    <script src="config.js?v=3.25"></script>
-    <script src="api-client.js?v=3.25"></script>
-    <script src="caldav-client.js?v=3.25"></script>
-    <script src="app-client.js?v=3.25"></script>
+    <script defer src="config.js?v=3.25"></script>
+    <script defer src="api-client.js?v=3.25"></script>
+    <script defer src="caldav-client.js?v=3.25"></script>
+    <script defer src="app-client.js?v=3.25"></script>
 
     <script>
         // Global error handler to catch external script errors (like h1-check.js)
