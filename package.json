@@ -6,9 +6,12 @@
   "scripts": {
     "build": "node build.js",
     "build:advanced": "node build-advanced.js",
+    "build:optimized": "node build-optimized.js",
     "analyze": "node analyze-bundle.js",
     "serve": "npx serve dist",
-    "stats": "cat dist/bundle-stats.json"
+    "stats": "cat dist/bundle-stats.json",
+    "stats:advanced": "cat dist/bundle-stats-advanced.json",
+    "stats:optimized": "cat dist/bundle-stats-optimized.json"
   },
   "devDependencies": {
     "terser": "^5.36.0"

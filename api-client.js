@@ -5,6 +5,8 @@ class APIClient {
     constructor(config) {
         this.config = config;
         this.abortController = null;
+        // Cache for geocoding results (location rarely changes)
+        this.geocodeCache = new Map();
     }
     
     // Cancel any ongoing requests
@@ -60,24 +62,31 @@ class APIClient {
     }
     
     // Weather API - Direct call to OpenWeatherMap
-    // Geocode city, state to coordinates using OpenWeatherMap Geocoding API
+    // Geocode city, state to coordinates using OpenWeatherMap Geocoding API (with caching)
     async geocodeLocation(city, state) {
         const apiKey = this.config.get('openweather_api_key');
         if (!apiKey) {
             throw new Error('OpenWeatherMap API key required for geocoding');
         }
-        
+
+        // Check cache first (optimization: avoid repeated API calls for same location)
+        const cacheKey = `${city},${state}`;
+        if (this.geocodeCache.has(cacheKey)) {
+            console.log('Using cached geocoding result for:', { city, state });
+            return this.geocodeCache.get(cacheKey);
+        }
+
         try {
             // Use OpenWeatherMap's Geocoding API (more reliable than external services)
             const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)},${encodeURIComponent(state)},US&limit=1&appid=${apiKey}`;
             console.log('Geocoding location:', { city, state });
-            
+
             const response = await this.makeRequest(geocodeUrl, {});
-            
+
             if (!response || response.length === 0) {
                 throw new Error(`Location not found: ${city}, ${state}`);
             }
-            
+
             const location = response[0];
             const coords = {
                 lat: location.lat,
@@ -86,10 +95,12 @@ class APIClient {
                 state: location.state,
                 country: location.country
             };
-            
-            console.log('Geocoded coordinates:', coords);
+
+            // Cache the result
+            this.geocodeCache.set(cacheKey, coords);
+            console.log('Geocoded and cached coordinates:', coords);
             return coords;
-            
+
         } catch (error) {
             console.error('Geocoding error:', error);
             throw new Error(`Failed to geocode ${city}, ${state}: ${error.message}`);

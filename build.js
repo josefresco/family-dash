@@ -22,7 +22,8 @@ const SOURCE_FILES = [
     'error-handler.js',
     'date-utils.js',
     'logger.js',
-    'config.js'
+    'config.js',
+    'module-loader.js'
 ];
 
 const OUTPUT_DIR = 'dist';

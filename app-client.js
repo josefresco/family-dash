@@ -201,10 +201,16 @@ class DashboardApp {
 
     async initializeCalDAV() {
         try {
+            // Lazy load CalDAV client only when needed
+            if (!window.CalDAVClient) {
+                console.log('📦 Lazy loading CalDAV client...');
+                await window.moduleLoader.loadCalDAV();
+            }
+
             // Initialize CalDAV client
             window.caldavClient = new CalDAVClient(this.appConfig);
             console.log('✅ CalDAV client initialized');
-            
+
             // Check if CalDAV is configured
             if (window.caldavClient.isConfigured) {
                 console.log('📅 Using CalDAV client with Netlify functions');
@@ -548,20 +554,24 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                         const now = new Date();
                         const filteredCalendars = todayData.calendars.map(calendar => {
                             if (!calendar.events || calendar.events.length === 0) return calendar;
-                            
+
+                            // Pre-parse dates once to avoid repeated parsing (optimization)
                             const futureEvents = calendar.events.filter(event => {
                                 // Keep all-day events
                                 if (event.all_day) return true;
-                                
+
                                 try {
-                                    const eventStart = new Date(event.start);
-                                    return eventStart > now; // Only keep future events
+                                    // Cache parsed date for reuse
+                                    if (!event._parsedStart) {
+                                        event._parsedStart = new Date(event.start);
+                                    }
+                                    return event._parsedStart > now; // Only keep future events
                                 } catch (error) {
                                     console.warn('Error parsing event time:', error);
                                     return true; // Keep event if we can't parse the time
                                 }
                             });
-                            
+
                             return {
                                 ...calendar,
                                 events: futureEvents,
@@ -652,28 +662,36 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     }))
                 );
             
-            // Sort events by time using modern comparison
+            // Pre-parse all dates once before sorting and rendering (optimization)
+            allEvents.forEach(event => {
+                if (!event.all_day && !event._parsedStart) {
+                    event._parsedStart = new Date(event.start);
+                }
+            });
+
+            // Sort events by time using cached parsed dates
             allEvents.sort((a, b) => {
                 if (a.all_day && !b.all_day) return -1;
                 if (!a.all_day && b.all_day) return 1;
                 if (a.all_day && b.all_day) return 0;
-                return new Date(a.start) - new Date(b.start);
+                return a._parsedStart - b._parsedStart;
             });
-            
-            // Render events using template literals and modern methods
+
+            // Render events using template literals and cached dates
             html += allEvents.map(event => {
                 let startTime;
                 try {
                     if (event.all_day) {
                         startTime = 'All Day';
                     } else {
-                        const eventDate = new Date(event.start);
+                        // Use cached parsed date
+                        const eventDate = event._parsedStart;
                         console.log(`🕐 Debug event time conversion for "${event.summary}":`, {
                             raw_start: event.start,
                             raw_end: event.end,
                             parsed_start_date: eventDate,
                             timezone: this.config.location.timezone,
-                            event_date_string: eventDate.toLocaleDateString('en-US', { 
+                            event_date_string: eventDate.toLocaleDateString('en-US', {
                                 timeZone: this.config.location.timezone,
                                 weekday: 'long',
                                 month: 'short',
@@ -681,14 +699,14 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                             }),
                             current_display_mode: this.displayMode
                         });
-                        
-                        startTime = new Date(event.start).toLocaleTimeString('en-US', {
+
+                        startTime = eventDate.toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
                             hour12: true,
                             timeZone: this.config.location.timezone
                         });
-                        
+
                         console.log(`🕐 Converted time for "${event.summary}": ${startTime}`);
                     }
                 } catch (e) {

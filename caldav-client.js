@@ -408,14 +408,15 @@ class CalDAVClient {
     // Parse ICS (iCalendar) data to extract events
     parseICSData(icsData) {
         const events = [];
-        
+
         try {
-            const lines = icsData.split('\n').map(line => line.trim());
+            // Optimized: Split once and process without double-trimming
+            const lines = icsData.split('\n');
             let currentEvent = null;
-            
+
             for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
+                const line = lines[i].trim();
+
                 if (line === 'BEGIN:VEVENT') {
                     currentEvent = {};
                 } else if (line === 'END:VEVENT' && currentEvent) {
@@ -432,9 +433,13 @@ class CalDAVClient {
                     }
                     currentEvent = null;
                 } else if (currentEvent) {
-                    const [key, ...valueParts] = line.split(':');
-                    const value = valueParts.join(':');
-                    
+                    // Optimized: Use indexOf to avoid unnecessary split operations
+                    const colonIndex = line.indexOf(':');
+                    if (colonIndex === -1) continue;
+
+                    const key = line.substring(0, colonIndex);
+                    const value = line.substring(colonIndex + 1);
+
                     switch (key) {
                         case 'SUMMARY':
                             currentEvent.summary = value;
@@ -457,11 +462,11 @@ class CalDAVClient {
                     }
                 }
             }
-            
+
         } catch (error) {
             console.error('Failed to parse ICS data:', error);
         }
-        
+
         return events;
     }
     
