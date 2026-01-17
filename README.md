@@ -505,6 +505,13 @@ A: Currently supports one CalDAV connection. Multi-account support would require
 **Q: What tablets work best for this?**
 A: Optimized for iPad displays (1080x810), but responsive design works on most tablets and smart displays.
 
+### GitHub Token Management
+If you receive a notification that your GitHub Personal Access Token is expiring:
+1. **Regenerate**: Click the regeneration link in the GitHub email
+2. **Auto-Update**: GitHub automatically updates connected apps (Netlify)
+3. **Verify**: Make a test commit to confirm deployment still works
+4. **No Manual Entry**: Netlify uses OAuth, so no token entry required
+
 ## 📄 License & Credits
 
 **Personal Use License**: This project is designed for personal and family use. Commercial deployment requires permission.
