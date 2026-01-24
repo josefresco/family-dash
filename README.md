@@ -1,20 +1,21 @@
-# Family Dashboard - v3.26 Code Refactoring & Enhanced Commentary Edition 🏠
+# Family Dashboard - v3.27 Adults Only Weather Edition 🏠🔥
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **doubled commentary variety**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ---
 
 ## 🎉 Latest Updates
 
-### Recent Improvements (v3.26.1)
+### New Release (v3.27.0) - Adults Only Weather Edition 🔥
+- **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor added
+- **😂 106 Total Comments**: Nearly doubled from 56 for maximum variety
+- **💋 Spicy Categories**: Sunny, cloudy, rainy, and cold all got saucier
+- **🍑 Mature Audiences**: Weather descriptions that make you laugh AND blush
+
+### Previous Improvements (v3.26.1)
 - **✅ Fixed Timezone Bug**: Calendar events now show correct times during EST/EDT transitions
 - **✅ Dynamic Offset**: Automatically applies correct UTC offset based on time of year
 - **✅ No More Time Confusion**: 9:00 AM appointments now display correctly in winter months
-
-### Recent Release (v3.26)
-- **🔧 Major Code Refactoring**: 4 new utility modules for better organization
-- **💬 Doubled Weather Commentary**: 108 unique comments (was 54) for more variety
-- **📚 Better Documentation**: Complete CHANGELOG.md and detailed release notes
 
 [See complete version history below](#-version-history--evolution)
 
@@ -66,6 +67,29 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Service Worker**: Offline capability and performance optimization
 - **LocalStorage Config**: Secure, browser-based configuration management
 - **Optimized Bundle**: 57% smaller with advanced minification (160 KB → 68 KB)
+
+## 🆕 What's New in v3.27 - Adults Only Weather Edition 🔥
+
+### 🤬 50 New R-Rated Weather Comments
+- **Sunny outdoor**: +13 spicy comments like "Hot as balls outside - embrace it!" and "This weather fucks. Hard."
+- **Cloudy outdoor**: +12 sassy comments like "Clouds thicker than a Kardashian!" and "Moody weather for moody bitches!"
+- **Rainy indoor**: +13 cheeky comments like "F*ck it, it's a Netflix and actually chill day!" and "Perfect excuse to day-drink guilt-free!"
+- **Cold indoor**: +12 frosty zingers like "Cold as a witch's tit out there!" and "Freezing your balls off weather!"
+
+### 📊 Commentary Statistics
+| Category | Before | After | R-Rated Added |
+|----------|--------|-------|---------------|
+| Sunny Outdoor | 15 | 28 | +13 |
+| Cloudy Outdoor | 10 | 22 | +12 |
+| Rainy Indoor | 16 | 29 | +13 |
+| Cold Indoor | 15 | 27 | +12 |
+| **Total** | **56** | **106** | **+50** |
+
+### 🎭 Adult Humor Features
+- **Uncensored Commentary**: Real talk about the weather
+- **Mature Themes**: Adult humor that actually makes you laugh
+- **Mixed Content**: Family-friendly and R-rated comments coexist
+- **Random Selection**: Never know if you'll get spicy or sweet!
 
 ## 🆕 What's New in v3.26
 
@@ -215,7 +239,7 @@ family-dash/
 │   │   ├── logger.js                    # Structured logging utility (244 lines)
 │   │   ├── error-handler.js             # Centralized error handling (322 lines)
 │   │   ├── date-utils.js                # Date/time utilities (300 lines)
-│   │   └── weather-narrative-engine.js  # Weather commentary - 108 comments! (378 lines)
+│   │   └── weather-narrative-engine.js  # Weather commentary - 106 comments (50 R-rated!)
 │   ├── config.js               # LocalStorage configuration management
 │   ├── api-client.js           # Direct external API integration
 │   ├── caldav-client.js        # CalDAV client with Netlify proxy
@@ -304,7 +328,13 @@ See [BUNDLE_OPTIMIZATION.md](BUNDLE_OPTIMIZATION.md) for complete details.
 
 ## 📈 Version History & Evolution
 
-### v3.26.1 - Timezone Fix (Latest)
+### v3.27.0 - Adults Only Weather Edition (Latest) 🔥
+- **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor
+- **😂 106 Total Comments**: Nearly doubled commentary variety (was 56)
+- **🍑 Spicy Additions**: All four weather categories got sassier
+- **💋 Mature Audiences**: Perfect for adults who like their weather with a side of laughs
+
+### v3.26.1 - Timezone Fix
 - **🐛 Fixed EST/EDT Timezone Bug**: Calendar events now display at correct times year-round
 - **⏰ Dynamic Offset Calculation**: Automatically applies +4 hours (EDT) or +5 hours (EST)
 - **📅 Accurate Event Times**: Fixed issue where 9:00 AM appointments showed as 8:00 AM in winter
@@ -494,7 +524,7 @@ A: Only to Netlify functions if you deploy there (for CORS handling). All calend
 A: Make sure you have the latest version (v3.26.1+) which fixes EST/EDT timezone transitions.
 
 **Q: Can I customize the weather commentary?**
-A: Yes! Edit `weather-narrative-engine.js` to modify the 108 built-in weather comments.
+A: Yes! Edit `weather-narrative-engine.js` to modify the 106 built-in weather comments (including 50 R-rated ones!).
 
 **Q: Does this work offline?**
 A: Partially. The service worker caches static files, but weather and calendar data require an internet connection.

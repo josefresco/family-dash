@@ -5,6 +5,28 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.27.0] - 2025-01-24
+
+### Added
+- **50 New R-Rated Weather Comments** - Adult humor edition with hilarious, uncensored commentary:
+  - Sunny outdoor: +13 spicy comments (15 → 28 total)
+  - Cloudy outdoor: +12 sassy comments (10 → 22 total)
+  - Rainy indoor: +13 cheeky comments (16 → 29 total)
+  - Cold indoor: +12 frosty zingers (15 → 27 total)
+- **Total Commentary**: Now 106 unique weather comments (up from 56)
+- **Adult Humor**: Weather descriptions that make you laugh and blush
+
+### Changed
+- **Updated `weather-narrative-engine.js`** with expanded commentary arrays
+- **Funnier Weather Experience**: More variety and entertainment for mature audiences
+
+### Technical Details
+- Weather commentary increased by 89% (56 → 106 comments)
+- Maintained family-friendly comments alongside new R-rated additions
+- Version bumped to 3.27.0 for the "Adults Only Weather" edition
+
+---
+
 ## [3.26.0] - 2024-11-13
 
 ### Added
