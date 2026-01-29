@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
