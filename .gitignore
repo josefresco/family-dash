@@ -9,6 +9,7 @@ tokens/*.json
 *.json
 !package.json
 !package-lock.json
+!vercel.json
 
 # Server logs
 error_log

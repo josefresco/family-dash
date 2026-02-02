@@ -3,7 +3,7 @@
 
 class WeatherNarrativeEngine {
     constructor() {
-        // Weather-specific commentary arrays (optimized: 56 total comments, reduced from 108 for smaller bundle)
+        // Weather-specific commentary arrays (106 total comments - includes 50 R-rated additions!)
         this.sunnyOutdoorComments = [
             "Perfect excuse to touch grass! 🌱",
             "Time to make your vitamin D proud! ☀️",
@@ -19,7 +19,21 @@ class WeatherNarrativeEngine {
             "Peak 'main character energy' weather! 🎬",
             "The sun woke up and chose excellence! ☀️👑",
             "Golden hour lasting all day vibes! 🌅",
-            "Forecast: 100% chance of 'wow moments'! 🤩"
+            "Forecast: 100% chance of 'wow moments'! 🤩",
+            // R-rated additions
+            "Hot as balls outside - embrace it! 🔥🍒",
+            "The sun is out and so should you be, dammit! ☀️",
+            "Weather so nice, it's practically foreplay! 💋",
+            "Get your ass outside, it's gorgeous! 🌞",
+            "This weather fucks. Hard. 🔥",
+            "Mother Nature's feeling slutty today! 💃",
+            "Sun's out, buns out weather! 🍑☀️",
+            "Holy shit, it's beautiful out there! 😍",
+            "Weather hotter than your ex's new partner! 🔥",
+            "Damn, even the weather is showing off today! 💅",
+            "The kind of weather that makes you wanna call in 'sick'! 🤒😏",
+            "Perfect day to give zero f*cks indoors! 🌞",
+            "Weather so good it's borderline obscene! 🥵"
         ];
 
         this.cloudyOutdoorComments = [
@@ -32,7 +46,20 @@ class WeatherNarrativeEngine {
             "No squinting required - eyes approved! 👀✅",
             "Perfect for those 'thoughtful walk' vibes! 🚶",
             "Clouds giving you that soft-focus glow! ✨",
-            "Goldilocks weather: not too bright, just right! 🐻"
+            "Goldilocks weather: not too bright, just right! 🐻",
+            // R-rated additions
+            "Overcast like your ex's personality! ☁️😒",
+            "Clouds thicker than a Kardashian! 🍑☁️",
+            "The sky's looking thicc today! 🌥️",
+            "Moody weather for moody bitches! 💅☁️",
+            "Grey skies, zero f*cks given! 🤷",
+            "Cloudy with a chance of not giving a damn! ☁️",
+            "The sky looks hungover but still cute! 🍻☁️",
+            "Nature's 'soft filter' for your walk of shame! 📸",
+            "Even the weather is feeling emo today! 🖤☁️",
+            "Perfect for hiding from your responsibilities! 🏃☁️",
+            "Clouds rolling in like your in-laws! 😬☁️",
+            "Sky's looking as confused as my love life! 🌥️"
         ];
 
         this.rainyIndoorComments = [
@@ -51,7 +78,21 @@ class WeatherNarrativeEngine {
             "Weather says: movie marathon mandatory! 🎬",
             "Productivity from bed: 100% acceptable! 🛏️✅",
             "Rainy day = guilt-free lazy day! 😌",
-            "Rain check on life? Approved! ✓"
+            "Rain check on life? Approved! ✓",
+            // R-rated additions
+            "Wet outside, stay inside and get wet... your whistle! 🍺🌧️",
+            "Rain so hard it's practically pornographic! 🌧️💦",
+            "F*ck it, it's a Netflix and actually chill day! 📺",
+            "Weather giving major 'stay in bed with someone' vibes! 🛏️😏",
+            "The sky is pissing down - don't go out there! ☔",
+            "Raining like God left the damn faucet on! 🌧️",
+            "Perfect excuse to day-drink guilt-free! 🍷🌧️",
+            "Mother Nature is having a breakdown - stay inside! 😭🌧️",
+            "Too wet to function - couch it is! 🛋️💦",
+            "The sky's crying harder than you did at that movie! 😢🌧️",
+            "Shitty weather = excellent excuse to be a slob! 🛋️",
+            "Rain making everywhere look like a wet t-shirt contest! 👕💦",
+            "Weather saying 'your plans can kiss my ass!' ☔🍑"
         ];
 
         this.coldIndoorComments = [
@@ -69,7 +110,20 @@ class WeatherNarrativeEngine {
             "Layers on layers: today's fashion trend! 🧥🧣",
             "Brrr-illiant day to stay inside! 🥶🏠",
             "Cold outside, warm inside = perfection! 🎯",
-            "Time for competitive coziness! 🏅"
+            "Time for competitive coziness! 🏅",
+            // R-rated additions
+            "Cold as a witch's tit out there! 🧙‍♀️❄️",
+            "Freezing your balls off weather! 🥶🍒",
+            "It's colder than my ex's heart! 💔❄️",
+            "Jack Frost can kiss my warm ass! 🍑❄️",
+            "Nippy? More like nipples-visible cold! 🥶",
+            "Time to snuggle or get f*cking cold! 🛋️❄️",
+            "Cold enough to freeze the tits off a brass monkey! 🐒❄️",
+            "Your heating bill is about to get f*cked! 💸❄️",
+            "Whiskey weather - doctor's orders! 🥃❄️",
+            "Colder than a penguin's pecker! 🐧❄️",
+            "Perfect weather for spooning... or more! 🥄😏",
+            "So cold, Hell might actually freeze over! 😈❄️"
         ];
     }
 
