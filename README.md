@@ -6,13 +6,12 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.27.1) - CalDAV Date Range Fix
-- **Bug Fix**: Previous-evening events (e.g. a 7 PM event) no longer appear the next morning
-- **Root Cause**: `new Date(toLocaleString(..., {timeZone: "America/New_York"}))` produced a UTC timestamp 4–5 hours off, making the CalDAV query start at ~7 PM EST the prior day
-- **Fix**: Eastern date derived via `toLocaleDateString('en-CA', ...)`, with UTC boundaries computed by adding the EST/EDT offset; tomorrow uses DST-safe integer arithmetic
-- **Defence-in-depth**: Post-query filter now also validates timed events against the correct Eastern date
+### New Release (v3.27.3) - ZIP Code Location
+- **Simplified Setup**: Single ZIP code field replaces city + state inputs — one field, no abbreviations
+- **Smarter Auto-Detect**: Geolocation button kept; on success it populates ZIP automatically via reverse geocode; fails gracefully on locked-down iPads
+- **Unambiguous Geocoding**: OpenWeatherMap zip endpoint eliminates city name conflicts (Springfield, IL vs MO etc.)
 
-### Previous Release (v3.27.0) - Adults Only Weather Edition
+### Previous Release (v3.27.1) - CalDAV Date Range Fix
 - **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor added
 - **😂 106 Total Comments**: Nearly doubled from 56 for maximum variety
 - **💋 Spicy Categories**: Sunny, cloudy, rainy, and cold all got saucier
@@ -326,7 +325,12 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 📈 Version History & Evolution
 
-### v3.27.1 - CalDAV Date Range Fix (Latest)
+### v3.27.3 - ZIP Code Location (Latest)
+- **Simplified Setup**: Single ZIP code field replaces city + state inputs
+- **Smarter Auto-Detect**: Geolocation now populates ZIP directly; fails gracefully on restricted devices
+- **More Reliable Geocoding**: Uses OpenWeatherMap's zip-based endpoint (unambiguous, single field)
+
+### v3.27.1 - CalDAV Date Range Fix
 - **Bug Fix**: Previous-evening events no longer bleed into the next day's calendar view
 - **Correct UTC Boundaries**: Eastern midnight now computed accurately for both EST and EDT
 - **DST-Safe Tomorrow**: Day increment uses integer calendar arithmetic

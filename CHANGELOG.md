@@ -5,6 +5,19 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.27.3] - 2026-03-06
+
+### Changed
+- **Location input**: Replaced city + state fields with a single ZIP code field in setup
+  - Geolocation auto-detect kept; on success it now populates the ZIP field via Nominatim reverse geocode
+  - Falls back gracefully to manual entry on locked-down devices (e.g. iPads with restricted location permissions)
+  - ZIP validation: must be exactly 5 digits before saving
+- **Geocoding**: `geocodeLocation()` now uses OpenWeatherMap `/geo/1.0/zip` endpoint instead of `/geo/1.0/direct`
+- **Tide station selection**: Uses ZIP prefix (`026xx` = Cape Cod) instead of city/state string matching
+- **Config**: `location.zip` replaces `location.city` and `location.state` — existing users will be prompted to re-enter their ZIP on next setup visit
+
+---
+
 ## [3.27.2] - 2026-03-06
 
 ### Removed
