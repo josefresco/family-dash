@@ -546,10 +546,16 @@ function parseICSEvent(eventData) {
   };
 
   const lines = eventData.split(/\r?\n/);
+  let inSubComponent = false; // skip VALARM, VTODO etc. nested blocks
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
+
+    // Track nested components so we don't read VALARM fields as event fields
+    if (/^BEGIN:(VALARM|VTODO|VJOURNAL|VFREEBUSY)/.test(trimmed)) { inSubComponent = true; continue; }
+    if (/^END:(VALARM|VTODO|VJOURNAL|VFREEBUSY)/.test(trimmed)) { inSubComponent = false; continue; }
+    if (inSubComponent) continue;
 
     const colonIndex = trimmed.indexOf(':');
     if (colonIndex === -1) continue;
