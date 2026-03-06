@@ -274,7 +274,7 @@ function processHTMLFiles() {
  * Copy static assets
  */
 function copyStaticAssets() {
-    const assets = ['favicon.svg', 'sw.js', 'netlify.toml', '.htaccess'];
+    const assets = ['favicon.svg', 'sw.js', '.htaccess'];
 
     assets.forEach(filename => {
         try {

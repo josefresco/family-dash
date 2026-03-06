@@ -213,7 +213,7 @@ class DashboardApp {
 
             // Check if CalDAV is configured
             if (window.caldavClient.isConfigured) {
-                console.log('📅 Using CalDAV client with Netlify functions');
+                console.log('📅 Using CalDAV client with Vercel functions');
                 const testResult = await window.caldavClient.testConnection();
                 if (testResult.success) {
                     console.log('✅ CalDAV connection verified:', testResult.message);
