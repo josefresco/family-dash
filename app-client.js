@@ -1001,6 +1001,11 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         // Update favicon
         this.updateFavicon(mainIcon);
 
+        // Apply body background to match weather theme
+        if (colors.body) {
+            document.body.style.background = colors.body;
+        }
+
         // Check for extreme weather alerts
         const alertInfo = this.checkWeatherAlerts(data);
         if (alertInfo) {
@@ -1401,58 +1406,110 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     getImprovedWeatherColors(data) {
         const condition = data.daily_summary.description.toLowerCase();
         const temp = data.daily_summary.high_temp;
-        const icon = data.daily_summary.icon;
-        
-        // High-contrast color schemes optimized for room readability
-        if (condition.includes('rain') || condition.includes('shower') || condition.includes('storm')) {
+
+        // Condition-first, then temperature for clear/mixed skies
+        if (condition.includes('thunderstorm') || condition.includes('tornado') || condition.includes('hurricane')) {
             return {
-                primary: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-                primaryText: '#ffffff',
-                secondary: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                secondaryText: '#003d5c',
-                accent: '#00d4ff'
+                primary:        'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+                primaryText:    '#ffffff',
+                secondary:      'linear-gradient(135deg, #373b44 0%, #4286f4 100%)',
+                secondaryText:  '#c8d6e5',
+                accent:         '#4286f4',
+                body:           'linear-gradient(135deg, #0f2027 0%, #203a43 100%)'
             };
-        } else if (condition.includes('snow')) {
+        } else if (condition.includes('rain') || condition.includes('shower') || condition.includes('drizzle')) {
             return {
-                primary: 'linear-gradient(135deg, #e6f3ff 0%, #b3daff 100%)',
-                primaryText: '#1a365d',
-                secondary: 'linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%)',
-                secondaryText: '#2d3748',
-                accent: '#3182ce'
+                primary:        'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                primaryText:    '#ffffff',
+                secondary:      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                secondaryText:  '#003d5c',
+                accent:         '#00d4ff',
+                body:           'linear-gradient(135deg, #1a2a4a 0%, #2a5298 100%)'
             };
-        } else if (condition.includes('clear') || condition.includes('sunny')) {
+        } else if (condition.includes('snow') || condition.includes('blizzard') || condition.includes('sleet') || condition.includes('ice')) {
             return {
-                primary: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
-                primaryText: '#ffffff',
-                secondary: 'linear-gradient(135deg, #fff7ad 0%, #ffa502 100%)',
-                secondaryText: '#744210',
-                accent: '#f39801'
+                primary:        'linear-gradient(135deg, #e6f3ff 0%, #b3daff 100%)',
+                primaryText:    '#1a365d',
+                secondary:      'linear-gradient(135deg, #ffffff 0%, #dce9f5 100%)',
+                secondaryText:  '#2d3748',
+                accent:         '#3182ce',
+                body:           'linear-gradient(135deg, #a8c8e8 0%, #7ba8d0 100%)'
             };
-        } else if (temp >= 80) {
+        } else if (condition.includes('fog') || condition.includes('mist') || condition.includes('haze')) {
             return {
-                primary: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
-                primaryText: '#ffffff',
-                secondary: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
-                secondaryText: '#8b4513',
-                accent: '#ff4757'
+                primary:        'linear-gradient(135deg, #757f9a 0%, #d7dde8 100%)',
+                primaryText:    '#2d3436',
+                secondary:      'linear-gradient(135deg, #e8eaf0 0%, #c8cdd8 100%)',
+                secondaryText:  '#4a5568',
+                accent:         '#9aa5b4',
+                body:           'linear-gradient(135deg, #5a6375 0%, #8a9ab0 100%)'
             };
-        } else if (temp <= 40) {
+        } else if (condition.includes('cloud') || condition.includes('overcast')) {
             return {
-                primary: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
-                primaryText: '#ffffff',
-                secondary: 'linear-gradient(135deg, #a8e6cf 0%, #dcedc8 100%)',
-                secondaryText: '#2d3436',
-                accent: '#00b894'
+                primary:        'linear-gradient(135deg, #4a5568 0%, #718096 100%)',
+                primaryText:    '#ffffff',
+                secondary:      'linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%)',
+                secondaryText:  '#2d3748',
+                accent:         '#a0aec0',
+                body:           'linear-gradient(135deg, #3d4a5c 0%, #5a6a80 100%)'
             };
         } else {
-            // Default pleasant weather
-            return {
-                primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                primaryText: '#ffffff',
-                secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                secondaryText: '#2d3436',
-                accent: '#6c5ce7'
-            };
+            // Clear / sunny / partly cloudy — use temperature buckets
+            if (temp >= 95) {
+                return {
+                    primary:        'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)',
+                    primaryText:    '#ffffff',
+                    secondary:      'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)',
+                    secondaryText:  '#7d1e0e',
+                    accent:         '#e74c3c',
+                    body:           'linear-gradient(135deg, #922b21 0%, #c0392b 100%)'
+                };
+            } else if (temp >= 80) {
+                return {
+                    primary:        'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                    primaryText:    '#ffffff',
+                    secondary:      'linear-gradient(135deg, #feca57 0%, #ff9f43 100%)',
+                    secondaryText:  '#8b4513',
+                    accent:         '#ff4757',
+                    body:           'linear-gradient(135deg, #c0392b 0%, #e55039 100%)'
+                };
+            } else if (temp >= 65) {
+                return {
+                    primary:        'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+                    primaryText:    '#4a3000',
+                    secondary:      'linear-gradient(135deg, #fffde7 0%, #fff9c4 100%)',
+                    secondaryText:  '#5d4037',
+                    accent:         '#f39c12',
+                    body:           'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)'
+                };
+            } else if (temp >= 50) {
+                return {
+                    primary:        'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
+                    primaryText:    '#1a3a0a',
+                    secondary:      'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                    secondaryText:  '#2e7d32',
+                    accent:         '#43a047',
+                    body:           'linear-gradient(135deg, #2e7d32 0%, #56ab2f 100%)'
+                };
+            } else if (temp >= 35) {
+                return {
+                    primary:        'linear-gradient(135deg, #00b4db 0%, #0083b0 100%)',
+                    primaryText:    '#ffffff',
+                    secondary:      'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%)',
+                    secondaryText:  '#006064',
+                    accent:         '#00acc1',
+                    body:           'linear-gradient(135deg, #0083b0 0%, #005f7f 100%)'
+                };
+            } else {
+                return {
+                    primary:        'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+                    primaryText:    '#ffffff',
+                    secondary:      'linear-gradient(135deg, #dbeeff 0%, #a8d4ff 100%)',
+                    secondaryText:  '#1a3a5c',
+                    accent:         '#0984e3',
+                    body:           'linear-gradient(135deg, #0652dd 0%, #1289a7 100%)'
+                };
+            }
         }
     }
 
