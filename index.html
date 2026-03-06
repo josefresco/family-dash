@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
-    <title>Daily Dashboard - New York, NY</title>
+    <title>Daily Dashboard</title>
 
     <!-- Preload critical resources -->
     <link rel="preload" href="config.js" as="script">
@@ -84,12 +84,7 @@
 </head>
 <body>
     <div id="setup-prompt" class="setup-prompt">
-        <div id="loading" class="loading">
-            <h1>📊</h1>
-            <p>Loading Dashboard...</p>
-        </div>
-        
-        <div id="config-needed">
+        <div id="config-needed" class="hidden">
             <h1>📊 Daily Dashboard</h1>
             <p>Welcome! To get started, you'll need to configure your API keys for weather data and calendar integration.</p>
             <a href="setup.html" class="button">🔧 Setup Configuration</a>
@@ -104,21 +99,12 @@
         // Check if configuration is complete and redirect accordingly
         document.addEventListener('DOMContentLoaded', function() {
             const config = window.dashboardConfig;
-            
-            // Show loading while checking
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('config-needed').classList.add('hidden');
-            
-            setTimeout(() => {
-                if (config.isConfigured()) {
-                    // Configuration is complete, redirect to dashboard
-                    window.location.href = 'dashboard.html';
-                } else {
-                    // Show setup prompt
-                    document.getElementById('loading').classList.remove('show');
-                    document.getElementById('config-needed').classList.remove('hidden');
-                }
-            }, 1000);
+
+            if (config.isConfigured()) {
+                window.location.href = 'dashboard.html';
+            } else {
+                document.getElementById('config-needed').classList.remove('hidden');
+            }
         });
     </script>
 </body>
