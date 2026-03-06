@@ -3,7 +3,7 @@
 
 class WeatherNarrativeEngine {
     constructor() {
-        // Weather-specific commentary arrays (106 total comments - includes 50 R-rated additions!)
+        // Weather-specific commentary arrays (156 total comments - includes 100 R-rated additions!)
         this.sunnyOutdoorComments = [
             "Perfect excuse to touch grass! 🌱",
             "Time to make your vitamin D proud! ☀️",
@@ -33,7 +33,21 @@ class WeatherNarrativeEngine {
             "Damn, even the weather is showing off today! 💅",
             "The kind of weather that makes you wanna call in 'sick'! 🤒😏",
             "Perfect day to give zero f*cks indoors! 🌞",
-            "Weather so good it's borderline obscene! 🥵"
+            "Weather so good it's borderline obscene! 🥵",
+            // Comedian-inspired additions
+            "Carlin was right — gorgeous days are wasted on people who stay indoors! ☀️",
+            "Richard Pryor wouldn't waste this sunshine — get your ass outside! 🌞🔥",
+            "Rodney Dangerfield got no respect, but this weather respects YOU! ☀️👔",
+            "Joan Rivers: 'Can we talk? It's TOO gorgeous to stay home!' 💅☀️",
+            "Bill Burr voice: 'You have zero good excuses not to go outside. ZERO.' ☀️🎤",
+            "Dave Chappelle weather take: 'The sun is out and so should your ass be!' 🌞",
+            "John Mulaney energy: this weather is a CHOICE and that choice should be outside! ☀️",
+            "Norm Macdonald would call this 'pretty good, actually' — highest praise possible! 😐☀️",
+            "Don Rickles would call you a bum for staying inside on a day like this, ya hockey puck! 😤☀️",
+            "Wanda Sykes says: 'Uh-uh, no excuses — take your ass outside!' 👋☀️",
+            "Mitch Hedberg: 'The weather outside is perfect. I'm gonna assume that's true and go out.' ☀️",
+            "Amy Schumer approves: hot outside, hotter inside — go outside anyway! 🔥☀️",
+            "Robin Williams energy: why are you still inside?! Go be spectacular! 🌟☀️"
         ];
 
         this.cloudyOutdoorComments = [
@@ -59,7 +73,20 @@ class WeatherNarrativeEngine {
             "Even the weather is feeling emo today! 🖤☁️",
             "Perfect for hiding from your responsibilities! 🏃☁️",
             "Clouds rolling in like your in-laws! 😬☁️",
-            "Sky's looking as confused as my love life! 🌥️"
+            "Sky's looking as confused as my love life! 🌥️",
+            // Comedian-inspired additions
+            "George Carlin's cloud take: 'It's not the weather that's grey — it's your attitude!' ☁️",
+            "Rodney Dangerfield cloudy day: still no respect, but at least no sunburn! ☁️👔",
+            "Bill Burr on overcast: 'It's FINE. Stop being a baby about some clouds!' ☁️🎤",
+            "Norm Macdonald's cloud review: 'Welp.' That's the whole review. ☁️😐",
+            "Anthony Jeselnik on grey skies: 'The sky looks how I feel about your life choices!' ☁️😈",
+            "Joan Rivers on grey skies: 'Even the sky needs a touch-up today, honey!' 💄☁️",
+            "Sarah Silverman vibes: clouds are just God saying 'meh' to the day! ☁️🤷",
+            "Jeff Ross roasting today's weather: 'Is that a sky or my will to live?' ☁️🎤",
+            "Phyllis Diller's silver lining: 'My face looks MUCH better in this lighting!' 😂☁️",
+            "Henny Youngman's cloud review: 'Take my sunshine... please!' ☁️🎻",
+            "Don Rickles on grey skies: 'Beautiful day, ya hockey puck! ...no, I'm serious!' ☁️😤",
+            "Louis CK would say: 'This weather is fine. Everything is FINE.' ☁️😬"
         ];
 
         this.rainyIndoorComments = [
@@ -92,7 +119,21 @@ class WeatherNarrativeEngine {
             "The sky's crying harder than you did at that movie! 😢🌧️",
             "Shitty weather = excellent excuse to be a slob! 🛋️",
             "Rain making everywhere look like a wet t-shirt contest! 👕💦",
-            "Weather saying 'your plans can kiss my ass!' ☔🍑"
+            "Weather saying 'your plans can kiss my ass!' ☔🍑",
+            // Comedian-inspired additions
+            "George Carlin on rain: 'It's not bad weather — it's a great excuse to say f*ck it!' 🌧️",
+            "Richard Pryor's rainy day plan: stay inside, pour a drink, be brilliant! 🥃🌧️",
+            "Robin Williams: rainy days are nature's improv — embrace the beautiful chaos! 🌧️🎭",
+            "Bill Burr's rain take: 'Rain's doing what it wants — maybe you should too!' 🌧️🎤",
+            "Dave Chappelle on rainy days: 'I'm staying inside! The weather said so!' 💰🌧️",
+            "Amy Schumer's rainy day formula: wine, delivery, zero pants — living the dream! 🍷🌧️",
+            "John Mulaney in the rain: 'I am a large adult baby and I REFUSE to go out there!' 👶🌧️",
+            "Anthony Jeselnik rain review: 'Even the sky knows your plans were terrible!' ☔😈",
+            "Norm Macdonald's weather report: 'It's raining. [long pause] Yeah.' 🌧️😐",
+            "Wanda Sykes on the rain: 'Hell no! My hair just got done!' 💇‍♀️🌧️",
+            "Joan Rivers rain reaction: 'My hair will NOT survive this — we are staying home!' 💅☔",
+            "Mitch Hedberg: 'Rain is like a concert — you didn't want to go out anyway!' 🌧️🎸",
+            "Jeff Ross roasting today: 'This rain hits harder than my last relationship!' 💔🌧️"
         ];
 
         this.coldIndoorComments = [
@@ -123,7 +164,20 @@ class WeatherNarrativeEngine {
             "Whiskey weather - doctor's orders! 🥃❄️",
             "Colder than a penguin's pecker! 🐧❄️",
             "Perfect weather for spooning... or more! 🥄😏",
-            "So cold, Hell might actually freeze over! 😈❄️"
+            "So cold, Hell might actually freeze over! 😈❄️",
+            // Comedian-inspired additions
+            "George Carlin cold take: 'The weather doesn't give a f*ck about your plans — adapt!' ❄️",
+            "Richard Pryor on cold weather: 'It's colder than a politician's soul out there!' ❄️🎤",
+            "Rodney Dangerfield in winter: 'I asked the cold to give me some respect — it didn't!' ❄️👔",
+            "Bill Burr cold rant: 'It's FREEZING! Who decided we'd live somewhere with seasons?!' 🥶🎤",
+            "Robin Williams: 'Layer up or become a delightful human popsicle — your choice!' 🧊🎭",
+            "Joan Rivers on cold: 'I've had colder receptions, but barely, honey!' 💔❄️",
+            "Dave Chappelle cold day plan: 'Stay inside. Order food. Re-evaluate everything.' ❄️🛋️",
+            "Amy Schumer's cold survival guide: whiskey, blanket, zero expectations! 🥃❄️",
+            "John Mulaney frozen outside: 'This is a CRIME and someone should be arrested for it!' ❄️😤",
+            "Sarah Silverman on freezing temps: 'Cold enough to make me consider being nicer to people!' ❄️😇",
+            "Don Rickles winter roast: 'You'd stay inside too if you had a face like yours, pal!' ❄️😤",
+            "Norm Macdonald's cold forecast: 'Cold as heck out there. Heck is very cold, turns out.' ❄️😐"
         ];
     }
 
