@@ -1056,7 +1056,6 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     renderTodayWeather(data, colors, mainIcon) {
         const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
-        const condition = data.description || data.daily_summary.description;
         const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
         const laterSentence = this.getLaterTodaySentence(data);
         const sunPill = this.getSunPillInfo();
@@ -1088,13 +1087,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     ${sunPill.label}: ${sunPill.time}
                 </div>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin: 2px 0 8px;">
-                    <div style="font-size: 72px; font-weight: 200; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.1; flex-shrink: 0;">
-                        ${currentTemp}°F
-                    </div>
-                    <div style="font-size: 32px; font-weight: 700; text-transform: capitalize; opacity: 0.95; line-height: 1.2; text-align: left;">
-                        ${condition}
-                    </div>
+                <div style="font-size: 96px; font-weight: 200; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.05; margin: 2px 0 8px;">
+                    ${currentTemp}°F
                 </div>
 
                 <!-- Today's Weather Summary - two-color -->
