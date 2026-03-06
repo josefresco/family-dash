@@ -5,6 +5,17 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.27.1] - 2026-03-06
+
+### Fixed
+- **CalDAV date range calculation** - Events from the previous evening (e.g. 7 PM) no longer bleed into the next day's view
+  - Root cause: `new Date(toLocaleString(..., {timeZone: "America/New_York"}))` produced a UTC timestamp 4–5 hours off because JS interprets the Eastern wall-clock string as UTC
+  - Fix: use `toLocaleDateString('en-CA', { timeZone: 'America/New_York' })` to get a plain `YYYY-MM-DD` string, then compute exact UTC midnight by adding the Eastern offset (5 h EST / 4 h EDT)
+  - Tomorrow calculation now uses DST-safe integer day arithmetic (`Date.UTC(y, m-1, d+1)`)
+  - Added post-query filter that verifies every timed event falls on the correct Eastern date as a second layer of defence
+
+---
+
 ## [3.27.0] - 2025-01-24
 
 ### Added

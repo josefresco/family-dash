@@ -1,4 +1,4 @@
-# Family Dashboard - v3.27 Adults Only Weather Edition 🏠🔥
+# Family Dashboard - v3.27.1 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,16 +6,17 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.27.0) - Adults Only Weather Edition 🔥
+### New Release (v3.27.1) - CalDAV Date Range Fix
+- **Bug Fix**: Previous-evening events (e.g. a 7 PM event) no longer appear the next morning
+- **Root Cause**: `new Date(toLocaleString(..., {timeZone: "America/New_York"}))` produced a UTC timestamp 4–5 hours off, making the CalDAV query start at ~7 PM EST the prior day
+- **Fix**: Eastern date derived via `toLocaleDateString('en-CA', ...)`, with UTC boundaries computed by adding the EST/EDT offset; tomorrow uses DST-safe integer arithmetic
+- **Defence-in-depth**: Post-query filter now also validates timed events against the correct Eastern date
+
+### Previous Release (v3.27.0) - Adults Only Weather Edition
 - **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor added
 - **😂 106 Total Comments**: Nearly doubled from 56 for maximum variety
 - **💋 Spicy Categories**: Sunny, cloudy, rainy, and cold all got saucier
 - **🍑 Mature Audiences**: Weather descriptions that make you laugh AND blush
-
-### Previous Improvements (v3.26.1)
-- **✅ Fixed Timezone Bug**: Calendar events now show correct times during EST/EDT transitions
-- **✅ Dynamic Offset**: Automatically applies correct UTC offset based on time of year
-- **✅ No More Time Confusion**: 9:00 AM appointments now display correctly in winter months
 
 [See complete version history below](#-version-history--evolution)
 
@@ -328,7 +329,13 @@ See [BUNDLE_OPTIMIZATION.md](BUNDLE_OPTIMIZATION.md) for complete details.
 
 ## 📈 Version History & Evolution
 
-### v3.27.0 - Adults Only Weather Edition (Latest) 🔥
+### v3.27.1 - CalDAV Date Range Fix (Latest)
+- **Bug Fix**: Previous-evening events no longer bleed into the next day's calendar view
+- **Correct UTC Boundaries**: Eastern midnight now computed accurately for both EST and EDT
+- **DST-Safe Tomorrow**: Day increment uses integer calendar arithmetic
+- **Post-Query Filter**: Timed events validated against the correct Eastern date
+
+### v3.27.0 - Adults Only Weather Edition
 - **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor
 - **😂 106 Total Comments**: Nearly doubled commentary variety (was 56)
 - **🍑 Spicy Additions**: All four weather categories got sassier
@@ -521,7 +528,7 @@ A: Only to Netlify functions if you deploy there (for CORS handling). All calend
 ### Technical Questions
 
 **Q: Why are my calendar times wrong?**
-A: Make sure you have the latest version (v3.26.1+) which fixes EST/EDT timezone transitions.
+A: Make sure you have the latest version (v3.27.1+) which fixes the CalDAV date range calculation and EST/EDT timezone transitions.
 
 **Q: Can I customize the weather commentary?**
 A: Yes! Edit `weather-narrative-engine.js` to modify the 106 built-in weather comments (including 50 R-rated ones!).
