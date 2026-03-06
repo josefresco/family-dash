@@ -1,17 +1,26 @@
-# Family Dashboard - v3.29.0 🏠
+# Family Dashboard - v3.30.0 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 hilarious comments including 100 R-rated additions**, extreme weather alert overlays, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 hilarious comments including 100 R-rated additions**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ---
 
 ## 🎉 Latest Updates
 
-### New Release (v3.29.0) - Weather UI Overhaul & Alert System
+### New Release (v3.30.0) - Weather & Calendar Intelligence
+- **Temperature Shift Alert**: Orange "WARM ALERT!" or blue "COLD ALERT!" pill when any day in the 5-day forecast swings ≥15°F from today's high
+- **Upcoming Birthdays & Holidays**: New box below "This Weekend" — scans 30 days across all calendar accounts, detects birthdays, anniversaries, and major holidays
+- **Sunrise / Sunset Toggle**: Sun pill switches automatically from Sunset to Sunrise after dark
+- **Larger Temperature**: Now 96px for maximum across-the-room readability
+- **Plain-English "Later" Sentence**: Replaced raw high/low/wind/humidity data with a single readable sentence (e.g. "Later it will be warm and rainy."), moved below the narrative
+- **Calendar Name on Events**: Each event card now shows the calendar account name in light grey
+- **Gmail CalDAV Fix**: Personal Gmail 401 errors resolved with fallback endpoint chain supporting App Passwords
+- **Alarm Notification Bug Fixed**: `VALARM` sub-component fields no longer overwrite event titles
+
+### Previous Release (v3.29.0) - Weather UI Overhaul & Alert System
 - **Extreme Weather Alerts**: Full-screen overlay (orange / red / animated rainbow) for warning, severe, and extreme conditions — alternates with normal dashboard every 15 minutes
 - **Two-Color Narrative**: Forecast text renders in dark blue; R-rated commentary renders in deep red italic — glanceable at a distance
 - **Prominent Sunset**: Upgraded from a tiny 14px badge to a clear 18px pill below the panel header
 - **Larger Temperature**: 72px (today) and 60px (tomorrow) for across-the-room readability
-- **Richer "Later Today" Box**: Now shows high/low, wind speed, humidity, and precipitation hours
 - **Icon Removed**: Eliminated the redundant large emoji icon above the temperature
 
 ### Previous Release (v3.28.1) - Comedian Weather Comments

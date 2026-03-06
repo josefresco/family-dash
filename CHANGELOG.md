@@ -5,6 +5,30 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.30.0] - 2026-03-06
+
+### Added
+- **Temperature shift alert pill** — orange "WARM ALERT!" or blue "COLD ALERT!" pill appears below "Later" when any day in the 5-day forecast is ≥15°F warmer or cooler than today's high; hidden when no qualifying shift exists
+- **Upcoming Birthdays & Holidays box** — new section in the left column below "This Weekend"; scans next 30 days across all CalDAV accounts via a single range query; detects birthdays, anniversaries, and major holidays by keyword
+- **Sunrise / Sunset toggle** — sun pill in weather panel automatically switches from "Sunset: X:XX PM" to "Sunrise: X:XX AM" after sunset each day
+
+### Changed
+- **Temperature font** — increased from 72px → 96px (today panel) for maximum wall-display readability
+- **Condition label removed** — one-word weather description next to temperature removed; forecast detail lives in narrative box
+- **"Later" box** — replaced structured high/low/wind/humidity data with a single plain-English sentence (e.g. "Later it will be warm and rainy."); repositioned below the narrative box; hidden in tomorrow mode
+- **Calendar name on event cards** — account label or calendar name shown in small light grey text (11px) on the right side of each event's time row
+- **Panel headers cleaned up** — removed emoji icons from "RIGHT NOW", "TOMORROW", and the sunset/sunrise pill
+- **`api-client.js`** — `processCurrentWeatherWithForecast()` now extracts `upcoming_daily_highs` from the 5-day forecast list and includes it in the weather data payload
+- **`api/calendar.js`** — new `upcoming-30` dateParam mode: 30-day CalDAV time window, events returned sorted rather than filtered to a single day
+- **`caldav-client.js`** — new `getUpcomingSpecialEvents()` method fans out the `upcoming-30` query across all accounts
+
+### Fixed
+- **VALARM parsing bug** — `SUMMARY:Alarm notification` inside `BEGIN:VALARM` blocks was overwriting the actual event title; parser now skips all lines inside VALARM, VTODO, VJOURNAL, and VFREEBUSY sub-components
+- **Personal Gmail CalDAV 401** — `apidata.googleusercontent.com` rejects App Passwords for personal Gmail; backend now tries `calendar.google.com` and `www.google.com/calendar/dav` as fallbacks
+- **Setup App Password instructions** — updated with direct link to `myaccount.google.com/apppasswords`, removed outdated "Select Mail" step, added explicit 401 guidance
+
+---
+
 ## [3.29.0] - 2026-03-06
 
 ### Added

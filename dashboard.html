@@ -6,13 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Daily Dashboard">
-    <title>Daily Dashboard - v3.29.0</title>
+    <title>Daily Dashboard - v3.30.0</title>
 
     <!-- Preload only critical resources for FCP -->
-    <link rel="preload" href="logger.js?v=3.29" as="script">
-    <link rel="preload" href="error-handler.js?v=3.29" as="script">
-    <link rel="preload" href="config.js?v=3.29" as="script">
-    <link rel="preload" href="app-client.js?v=3.29" as="script">
+    <link rel="preload" href="logger.js?v=3.30" as="script">
+    <link rel="preload" href="error-handler.js?v=3.30" as="script">
+    <link rel="preload" href="config.js?v=3.30" as="script">
+    <link rel="preload" href="app-client.js?v=3.30" as="script">
 
     <!-- Preconnect to external APIs for faster connections -->
     <link rel="dns-prefetch" href="https://api.openweathermap.org">
@@ -1025,17 +1025,17 @@
 
     <!-- Load the enhanced JavaScript application -->
     <!-- Load utility modules first - defer for better FCP/TTI -->
-    <script defer src="logger.js?v=3.29"></script>
-    <script defer src="error-handler.js?v=3.29"></script>
-    <script defer src="date-utils.js?v=3.29"></script>
-    <script defer src="weather-narrative-engine.js?v=3.29"></script>
+    <script defer src="logger.js?v=3.30"></script>
+    <script defer src="error-handler.js?v=3.30"></script>
+    <script defer src="date-utils.js?v=3.30"></script>
+    <script defer src="weather-narrative-engine.js?v=3.30"></script>
 
     <!-- Load configuration and API clients -->
-    <script defer src="config.js?v=3.29"></script>
-    <script defer src="module-loader.js?v=3.29"></script>
-    <script defer src="api-client.js?v=3.29"></script>
+    <script defer src="config.js?v=3.30"></script>
+    <script defer src="module-loader.js?v=3.30"></script>
+    <script defer src="api-client.js?v=3.30"></script>
     <!-- CalDAV client is now lazy-loaded on-demand via module-loader.js -->
-    <script defer src="app-client.js?v=3.29"></script>
+    <script defer src="app-client.js?v=3.30"></script>
 
     <script>
         // Global error handler to catch external script errors (like h1-check.js)
