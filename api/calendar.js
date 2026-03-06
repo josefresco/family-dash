@@ -157,13 +157,25 @@ module.exports = async (req, res) => {
 
     const urlsToTry = [caldavUrl];
 
-    if (provider === 'google' && !username.endsWith('@gmail.com') && !username.endsWith('@googlemail.com')) {
-      urlsToTry.push(
-        providerConfig.workspaceEndpoint + `${username}/user/`,
-        `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
-        providerConfig.workspaceEndpoint + `${username}/`,
-        providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
-      );
+    if (provider === 'google') {
+      const isGmail = username.endsWith('@gmail.com') || username.endsWith('@googlemail.com');
+      if (isGmail) {
+        // Personal Gmail: apidata endpoint often rejects App Passwords — try calendar.google.com too
+        urlsToTry.push(
+          `https://calendar.google.com/calendar/dav/${username}/events/`,
+          `https://calendar.google.com/calendar/dav/${username}/user/`,
+          `https://www.google.com/calendar/dav/${username}/events/`,
+          `https://apidata.googleusercontent.com/caldav/v2/${username}/user/`
+        );
+      } else {
+        // Workspace accounts
+        urlsToTry.push(
+          providerConfig.workspaceEndpoint + `${username}/user/`,
+          `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
+          providerConfig.workspaceEndpoint + `${username}/`,
+          providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
+        );
+      }
     }
 
     let response;
