@@ -202,6 +202,31 @@ class APIClient {
         // Calculate daily summary from current data and forecasts
         const dailySummary = this.createDailySummary(currentData, forecastData, hourlyForecasts);
 
+        // Build per-day high temps for the next 5 days (excluding today)
+        const upcomingDailyHighs = [];
+        if (forecastData?.list?.length) {
+            const tz = this.config.get('settings.timezone') || 'America/New_York';
+            const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+            const dailyMap = {};
+            for (const item of forecastData.list) {
+                const itemDate = new Date(item.dt * 1000);
+                const dateStr = itemDate.toLocaleDateString('en-CA', { timeZone: tz });
+                if (dateStr === todayStr) continue;
+                if (!dailyMap[dateStr]) dailyMap[dateStr] = { high: -999, itemDate };
+                const temp = Math.round(item.main.temp_max || item.main.temp);
+                if (temp > dailyMap[dateStr].high) dailyMap[dateStr].high = temp;
+            }
+            for (const [dateStr, val] of Object.entries(dailyMap).sort()) {
+                upcomingDailyHighs.push({
+                    dateStr,
+                    dayName: val.itemDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: tz }),
+                    month: val.itemDate.toLocaleDateString('en-US', { month: 'long', timeZone: tz }),
+                    dayNum: parseInt(val.itemDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: tz })),
+                    high: val.high
+                });
+            }
+        }
+
         return {
             temperature: Math.round(currentData.main.temp),
             description: currentData.weather[0].description,
@@ -213,6 +238,7 @@ class APIClient {
             date_requested: date_param,
             hourly_forecasts: hourlyForecasts,
             daily_summary: dailySummary,
+            upcoming_daily_highs: upcomingDailyHighs,
             source: 'live_openweather_current'
         };
     }

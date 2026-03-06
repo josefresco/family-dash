@@ -1031,6 +1031,28 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         return { icon: '🌇', label: 'Sunset', time: this.sunData.sunset };
     }
 
+    getTempShiftAlert(data) {
+        const todayHigh = data.daily_summary?.high_temp;
+        const upcoming = data.upcoming_daily_highs;
+        if (!todayHigh || !upcoming?.length) return null;
+
+        const ordinal = (n) => {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        };
+
+        for (const day of upcoming) {
+            const diff = day.high - todayHigh;
+            if (Math.abs(diff) >= 15) {
+                const label = `${day.dayName}, ${day.month} ${ordinal(day.dayNum)}`;
+                if (diff > 0) return `WARM ALERT! ${label} it will be ${day.high}°F.`;
+                return `COLD ALERT! ${label} it will be ${day.high}°F.`;
+            }
+        }
+        return null;
+    }
+
     getLaterTodaySentence(data) {
         const high = data.daily_summary.high_temp;
         const condition = (data.daily_summary.description || '').toLowerCase();
@@ -1058,6 +1080,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
         const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
         const laterSentence = this.getLaterTodaySentence(data);
+        const tempAlert = this.getTempShiftAlert(data);
         const sunPill = this.getSunPillInfo();
 
         return `
@@ -1128,6 +1151,22 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     ${laterSentence}
                 </div>
+
+                ${tempAlert ? `
+                <!-- Temperature Shift Alert -->
+                <div style="
+                    background: ${tempAlert.startsWith('WARM') ? 'linear-gradient(135deg, #ff6b35, #f7931e)' : 'linear-gradient(135deg, #4facfe, #00c9ff)'};
+                    color: #ffffff;
+                    border-radius: 10px;
+                    padding: 10px 16px;
+                    margin-top: 8px;
+                    font-size: 18px;
+                    font-weight: 700;
+                    text-align: center;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                ">
+                    ${tempAlert}
+                </div>` : ''}
             </div>
         `;
     }
