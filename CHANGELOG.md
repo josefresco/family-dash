@@ -5,6 +5,19 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.27.2] - 2026-03-06
+
+### Removed
+- **Repository cleanup** - Removed 19 AI-generated/artifact files that accumulated from agent sessions:
+  - 14 stale markdown reports (optimization reports, PR descriptions, release notes, test file)
+  - 4 build artifacts and debug files (`lighthouse-report-optimized.report.html`, `test-caldav-debug.html`, `dashboard-bundled.html`, `optimize-images.js`)
+  - `PERFORMANCE_SUMMARY.txt` (point-in-time audit output)
+
+### Fixed
+- **README**: Removed broken references to deleted files, updated troubleshooting links to point to `setup.html` debug tools
+
+---
+
 ## [3.27.1] - 2026-03-06
 
 ### Fixed

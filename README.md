@@ -232,8 +232,7 @@ family-dash/
 ├── 📄 Core Application Files
 │   ├── index.html              # Smart entry point with config detection
 │   ├── dashboard.html          # Main dashboard interface
-│   ├── setup.html              # Comprehensive setup wizard
-│   └── test-caldav-debug.html  # CalDAV debugging interface
+│   └── setup.html              # Comprehensive setup wizard
 │
 ├── ⚡ JavaScript Modules (ES2015+)
 │   ├── 🛠️ Utility Modules (v3.26)
@@ -259,9 +258,7 @@ family-dash/
 │
 └── 📚 Documentation
     ├── README.md               # This file
-    ├── CHANGELOG.md            # Detailed version history
-    ├── RELEASE_NOTES_v3.26.0.md # v3.26 release details
-    └── PR_DESCRIPTION.md       # Pull request template
+    └── CHANGELOG.md            # Detailed version history
 ```
 
 ### Browser Compatibility
@@ -309,7 +306,7 @@ npm run stats
 | weather-narrative-engine.js | 17.18 KB | 8.88 KB | 48.34% |
 | Other utilities | 30.93 KB | 9.86 KB | 68.12% |
 
-See [BUNDLE_OPTIMIZATION.md](BUNDLE_OPTIMIZATION.md) for complete details.
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 🎯 Use Cases & Smart Home Integration
 
@@ -405,7 +402,7 @@ See [BUNDLE_OPTIMIZATION.md](BUNDLE_OPTIMIZATION.md) for complete details.
 ### Common Issues & Solutions
 
 #### 📅 Calendar Not Loading
-- **Check CalDAV Config**: Use `test-caldav-debug.html` for detailed diagnostics
+- **Check CalDAV Config**: Use the debug tools in `setup.html` for detailed diagnostics
 - **Verify Credentials**: Ensure App Password is correctly entered
 - **Network Issues**: Check browser Network tab for CORS/connection errors
 - **Provider Issues**: Try different CalDAV endpoints if using Google Workspace
@@ -436,7 +433,6 @@ See [BUNDLE_OPTIMIZATION.md](BUNDLE_OPTIMIZATION.md) for complete details.
   - 🌤️ **Weather Debug**: Shows concise API responses, rate limits, and key validation
   - 📅 **CalDAV Debug**: Comprehensive connection testing with exportable logs
   - 📋 **Copy/Export Functions**: Save debug data for troubleshooting
-- **CalDAV Debug Tool**: `test-caldav-debug.html` - Standalone calendar diagnostics
 - **Configuration Management**: View, edit, test, and remove existing configurations
 - **Browser Console**: Press F12 → Console for detailed error logging
 - **Network Inspector**: Monitor real-time API calls and responses
@@ -499,7 +495,7 @@ start http://localhost:8000  # Windows
   - Export logs: Use built-in debug export in setup.html
 - **Cross-Browser**: Test on target devices (tablets, smart displays)
 - **Performance**: Monitor memory usage during extended operation
-- **CalDAV Testing**: Use test-caldav-debug.html for connection diagnostics
+- **CalDAV Testing**: Use the built-in debug tools in setup.html for connection diagnostics
 
 ### Making Contributions
 When contributing to this project:
