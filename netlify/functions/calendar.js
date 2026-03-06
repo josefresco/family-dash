@@ -93,55 +93,60 @@ exports.handler = async (event, context) => {
     // Calculate date range - use Eastern timezone for proper date boundaries
     // Server runs in UTC but we need to calculate dates relative to Eastern timezone
     const now = new Date();
-    
-    // Get current Eastern time to determine the actual "today" and "tomorrow"
-    const easternNow = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    console.log('Current Eastern time:', easternNow.toLocaleString());
     console.log('Server UTC time:', now.toISOString());
-    
-    let targetDate;
-    
+
+    // Get the current date in Eastern timezone as a "YYYY-MM-DD" string.
+    // en-CA locale produces ISO-format dates, which avoids the pitfall of
+    // new Date(toLocaleString(...)) where JS parses the result as local/UTC
+    // rather than Eastern, producing a timestamp that is off by 4-5 hours.
+    const easternTodayStr = now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    console.log('Current Eastern date:', easternTodayStr);
+
+    let targetEasternDateStr;
+
     if (dateParam === 'tomorrow') {
-      targetDate = new Date(easternNow.getTime() + 24 * 60 * 60 * 1000);
+      // Increment the Eastern date by exactly 1 calendar day (DST-safe integer math)
+      const [y, m, d] = easternTodayStr.split('-').map(Number);
+      targetEasternDateStr = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().split('T')[0];
     } else if (dateParam === 'today') {
-      targetDate = easternNow;
+      targetEasternDateStr = easternTodayStr;
     } else if (dateParam.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      // Handle specific date strings like "2025-09-13"
       console.log('Processing specific date string:', dateParam);
-      const [year, month, day] = dateParam.split('-').map(Number);
-      targetDate = new Date(year, month - 1, day); // Create in local timezone
-      console.log('Parsed target date:', targetDate.toLocaleDateString());
+      targetEasternDateStr = dateParam;
     } else {
-      // Default fallback to today
       console.log('Unknown date parameter, defaulting to today:', dateParam);
-      targetDate = easternNow;
+      targetEasternDateStr = easternTodayStr;
     }
-    
-    // Create date boundaries in Eastern time, then convert to UTC
-    const startOfDayEastern = new Date(targetDate);
-    startOfDayEastern.setHours(0, 0, 0, 0);
-    
-    const endOfDayEastern = new Date(targetDate);
-    endOfDayEastern.setHours(23, 59, 59, 999); // Include full day
-    
-    // For all-day event compatibility, extend query to next day but filter on client side
-    const queryEndDate = new Date(endOfDayEastern.getTime() + 24 * 60 * 60 * 1000);
-    queryEndDate.setHours(12, 0, 0, 0); // Query until noon next day to capture all-day events
-    
-    // Convert Eastern boundaries to UTC for CalDAV query
-    const startOfDay = new Date(startOfDayEastern.toLocaleString("en-US", {timeZone: "UTC"}));
-    const queryEndDay = new Date(queryEndDate.toLocaleString("en-US", {timeZone: "UTC"}));
-    
-    const startTimeUTC = formatDateForCalDAV(startOfDay);
-    const endTimeUTC = formatDateForCalDAV(queryEndDay);
-    
+
+    console.log('Target Eastern date:', targetEasternDateStr);
+
+    // Determine the Eastern UTC offset for the target date.
+    // Use noon UTC of the target day as a DST-safe reference point.
+    // isEDT() is defined later in this file and handles the DST boundary.
+    const targetNoonUTC = new Date(targetEasternDateStr + 'T12:00:00Z');
+    const easternOffsetHours = isEDT(targetNoonUTC) ? 4 : 5; // EDT=UTC-4, EST=UTC-5
+
+    // Midnight Eastern in UTC = midnight UTC + offset hours
+    // e.g. 00:00 EST = 05:00 UTC; 00:00 EDT = 04:00 UTC
+    const startOfDayUTC = new Date(
+      new Date(targetEasternDateStr + 'T00:00:00Z').getTime() + easternOffsetHours * 3600000
+    );
+
+    // For all-day event compatibility, extend query to noon of the next Eastern day
+    const [ty, tm, td] = targetEasternDateStr.split('-').map(Number);
+    const nextEasternDayStr = new Date(Date.UTC(ty, tm - 1, td + 1)).toISOString().split('T')[0];
+    const queryEndUTC = new Date(
+      new Date(nextEasternDayStr + 'T12:00:00Z').getTime() + easternOffsetHours * 3600000
+    );
+
+    const startTimeUTC = formatDateForCalDAV(startOfDayUTC);
+    const endTimeUTC = formatDateForCalDAV(queryEndUTC);
+
     console.log('Date range for CalDAV query (Eastern timezone aware):');
     console.log('  Date parameter:', dateParam);
-    console.log('  Target date (Eastern):', targetDate.toLocaleDateString());
-    console.log('  Start Eastern:', startOfDayEastern.toLocaleString());
-    console.log('  Filter End Eastern:', endOfDayEastern.toLocaleString());
-    console.log('  Query End Eastern:', queryEndDate.toLocaleString());
-    console.log('  Start UTC:', startTimeUTC);
+    console.log('  Target Eastern date:', targetEasternDateStr);
+    console.log('  Eastern offset:', `UTC-${easternOffsetHours}`, isEDT(targetNoonUTC) ? '(EDT)' : '(EST)');
+    console.log('  Start UTC:', startTimeUTC, '=', startOfDayUTC.toISOString());
     console.log('  End UTC:', endTimeUTC);
     
     // CalDAV REPORT request body
@@ -297,20 +302,30 @@ exports.handler = async (event, context) => {
       }
     }
     
-    // Filter events to ensure all-day events only appear on their start date
+    // Filter events to the target Eastern date.
+    // The CalDAV query extends slightly past the day boundary (to capture all-day events),
+    // so we must drop any timed events whose Eastern date doesn't match the target.
     const filteredEvents = events.filter(event => {
-      if (!event.all_day) {
-        return true; // Keep all timed events
+      if (event.all_day) {
+        // all-day event.start is already "YYYY-MM-DD"; compare directly
+        const matches = event.start === targetEasternDateStr;
+        if (!matches) {
+          console.log(`🗓️ Filtering out all-day event "${event.summary}": event date=${event.start}, target=${targetEasternDateStr}`);
+        }
+        return matches;
       }
-      
-      // For all-day events, only show on their start date
-      const eventStartDate = new Date(event.start + 'T00:00:00');
-      const targetDateString = targetDate.toISOString().split('T')[0];
-      const eventDateString = eventStartDate.toISOString().split('T')[0];
-      
-      console.log(`🗓️ Filtering all-day event "${event.summary}": event date=${eventDateString}, target date=${targetDateString}`);
-      
-      return eventDateString === targetDateString;
+
+      // For timed events, convert the event's start to Eastern date and compare
+      try {
+        const eventEasternDateStr = new Date(event.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        const matches = eventEasternDateStr === targetEasternDateStr;
+        if (!matches) {
+          console.log(`🗓️ Filtering out timed event "${event.summary}": event Eastern date=${eventEasternDateStr}, target=${targetEasternDateStr}`);
+        }
+        return matches;
+      } catch (e) {
+        return true; // Keep event if date cannot be parsed
+      }
     });
     
     console.log(`📅 Events before filtering: ${events.length}, after filtering: ${filteredEvents.length}`);
@@ -344,7 +359,7 @@ exports.handler = async (event, context) => {
         date_range: {
           start_utc: startTimeUTC,
           end_utc: endTimeUTC,
-          target_date: targetDate.toISOString(),
+          target_date: targetEasternDateStr,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }
       }
