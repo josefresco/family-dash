@@ -1,4 +1,4 @@
-# Family Dashboard - v3.27.4 🏠
+# Family Dashboard - v3.28.0 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,7 +6,16 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.27.4) - Vercel Migration
+### New Release (v3.28.0) - Multi-Account CalDAV
+- **Multi-Account Calendar**: Connect up to 3 CalDAV accounts simultaneously — Google Workspace, Gmail, iCloud, Outlook, or any generic CalDAV server
+- **Per-Account Colors**: Each account gets a distinct color that carries through to event cards and weekend previews
+- **Accounts Management UI**: Colored account cards with individual Test and Remove buttons; 3-account limit enforced in UI
+- **Auto-Migration**: Existing single-account configs silently migrate to the new multi-account storage format on first load
+- **Generic CalDAV Fixed**: `api/calendar.js` now correctly handles custom CalDAV server endpoints end-to-end
+- **Partial Failure Resilience**: If one account fails, events from the other accounts still load
+- **Timezone Fix**: Weekend event date filtering now uses the configured timezone consistently, not the browser locale
+
+### Previous Release (v3.27.4) - Vercel Migration
 - **Migrated**: CalDAV proxy from Netlify to Vercel (`api/calendar.js`)
 - **Removed**: `netlify.toml` and `netlify/` directory
 - **Fixed**: Calendar proxy URL now correctly routes through Vercel functions
@@ -29,15 +38,14 @@ A sophisticated, room-readable personal dashboard application designed for alway
 ## ✨ Key Features
 
 ### 📅 Universal Calendar Integration
-- **CalDAV Support**: Google Calendar, iCloud, Outlook, and any CalDAV server
-- **Multi-Account Management**: Connect personal, work, and family calendars
+- **CalDAV Support**: Google Calendar, iCloud, Outlook, and any generic CalDAV server
+- **Multi-Account**: Connect up to 3 accounts simultaneously — personal, work, and family calendars each with a distinct color
 - **Weekend Events Preview**: Dedicated section showing upcoming Saturday/Sunday events
-- **Accurate Timezone Handling**: Automatic EST/EDT transitions for correct event times
+- **Accurate Timezone Handling**: Automatic EST/EDT transitions for correct event times; weekend filter uses configured timezone, not browser locale
 - **Serverless Backend**: Vercel functions handle authentication and CORS
-- **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues
+- **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues; partial account failures don't block healthy accounts
 - **All-Day Event Fix**: All-day events now display on correct single day only
-- **Enhanced Setup**: Current configuration management with edit/debug capabilities
-- **Connection Testing**: Built-in CalDAV connection testing and diagnostics
+- **Connection Testing**: Built-in per-account CalDAV connection testing
 - **Room-Readable Display**: Large fonts and high-contrast design for wall displays
 - **iPad Optimized**: Responsive layout optimized for 1080x810 tablet displays
 
@@ -325,7 +333,15 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 📈 Version History & Evolution
 
-### v3.27.4 - Vercel Migration (Latest)
+### v3.28.0 - Multi-Account CalDAV (Latest)
+- **Multi-Account Calendar**: Up to 3 CalDAV accounts with per-account color coding
+- **Generic CalDAV Fixed**: Custom CalDAV server endpoints now work end-to-end
+- **Partial Failure Resilience**: One bad account doesn't block the others
+- **Timezone Fix**: Weekend event date filter uses configured timezone consistently
+- **XSS Fix**: Account labels and usernames sanitized before HTML rendering
+- **Setup UX**: Account cards with Test/Remove, 3-account limit enforced, skip button restored correctly
+
+### v3.27.4 - Vercel Migration
 - **Migrated**: CalDAV proxy from Netlify functions to Vercel (`api/calendar.js`)
 - **Cleaned**: Removed all Netlify config files and references
 
@@ -541,7 +557,7 @@ A: Yes! Edit `weather-narrative-engine.js` to modify the 106 built-in weather co
 A: Partially. The service worker caches static files, but weather and calendar data require an internet connection.
 
 **Q: Can I add more calendar accounts?**
-A: Currently supports one CalDAV connection. Multi-account support would require code modifications.
+A: Yes! Up to 3 CalDAV accounts can be configured simultaneously (v3.28.0+). Each account gets a distinct color shown on event cards. Add accounts from the Calendar section in setup.html.
 
 **Q: What tablets work best for this?**
 A: Optimized for iPad displays (1080x810), but responsive design works on most tablets and smart displays.

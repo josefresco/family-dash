@@ -1,13 +1,14 @@
 // CalDAV client for always-on dashboard calendar integration
 // Eliminates OAuth token refresh issues by using basic auth
+// v2: Multi-account support with fan-out fetch
+
+const COLOR_PALETTE = ['#4285f4', '#ea4335', '#34a853', '#ff9800', '#9c27b0', '#00bcd4'];
 
 class CalDAVClient {
     constructor(config) {
         this.config = config;
-        this.storageKey = 'dashboard-caldav-config';
-        this.isConfigured = false;
-        this.credentials = null;
-        
+        this.accounts = [];
+
         // CalDAV endpoints for major providers
         this.providers = {
             google: {
@@ -32,199 +33,138 @@ class CalDAVClient {
                 instructions: 'Enter your CalDAV server URL, username, and password'
             }
         };
-        
-        this.loadSavedConfig();
+
+        this.loadAccounts();
     }
-    
-    // Load saved CalDAV configuration
-    loadSavedConfig() {
+
+    get isConfigured() {
+        return this.accounts.length > 0;
+    }
+
+    // Load accounts from new or legacy storage
+    loadAccounts() {
         try {
-            const saved = localStorage.getItem(this.storageKey);
-            if (saved) {
-                const config = JSON.parse(saved);
-                if (config.provider && config.username && config.password) {
-                    this.credentials = {
-                        ...config,
-                        password: atob(config.password) // Decode the base64 password
+            // Try new multi-account key first
+            const newData = localStorage.getItem('dashboard-caldav-accounts');
+            if (newData) {
+                const parsed = JSON.parse(newData);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    this.accounts = parsed.map(acc => ({
+                        ...acc,
+                        password: atob(acc.password)
+                    }));
+                    console.log('CalDAV accounts loaded:', this.accounts.length);
+                    return;
+                }
+            }
+
+            // Fall through: migrate legacy single-account key
+            const legacyData = localStorage.getItem('dashboard-caldav-config');
+            if (legacyData) {
+                const legacy = JSON.parse(legacyData);
+                if (legacy.provider && legacy.username && legacy.password) {
+                    const migrated = {
+                        id: 'acc_' + (legacy.savedAt || Date.now()),
+                        label: '',
+                        provider: legacy.provider,
+                        username: legacy.username,
+                        password: atob(legacy.password),
+                        customEndpoint: legacy.customEndpoint || '',
+                        color: COLOR_PALETTE[0],
+                        savedAt: legacy.savedAt || Date.now()
                     };
-                    this.isConfigured = true;
-                    console.log('CalDAV configuration loaded for provider:', config.provider);
+                    this.accounts = [migrated];
+                    this._persistAccounts();
+                    localStorage.removeItem('dashboard-caldav-config');
+                    console.log('CalDAV config migrated from legacy key');
                 }
             }
         } catch (error) {
-            console.error('Failed to load CalDAV configuration:', error);
+            console.error('Failed to load CalDAV accounts:', error);
+            this.accounts = [];
         }
     }
-    
-    // Save CalDAV configuration (with basic encryption)
-    saveConfig(provider, username, password, customEndpoint = '') {
+
+    // Add or update an account
+    addAccount(provider, username, password, customEndpoint = '', label = '') {
         try {
-            const config = {
-                provider,
-                username,
-                password: btoa(password), // Basic encoding (not secure, but better than plain text)
-                customEndpoint,
-                savedAt: Date.now()
-            };
-            
-            localStorage.setItem(this.storageKey, JSON.stringify(config));
-            this.credentials = {
-                ...config,
-                password: password // Keep unencoded for use
-            };
-            this.isConfigured = true;
-            console.log('CalDAV configuration saved for provider:', provider);
-            
+            const existing = this.accounts.findIndex(
+                a => a.username === username && a.provider === provider
+            );
+
+            if (existing >= 0) {
+                // Update in place
+                this.accounts[existing] = {
+                    ...this.accounts[existing],
+                    password,
+                    customEndpoint,
+                    label,
+                    savedAt: Date.now()
+                };
+                console.log('CalDAV account updated:', username);
+            } else {
+                const idx = this.accounts.length;
+                this.accounts.push({
+                    id: 'acc_' + Date.now(),
+                    label,
+                    provider,
+                    username,
+                    password,
+                    customEndpoint,
+                    color: COLOR_PALETTE[idx % COLOR_PALETTE.length],
+                    savedAt: Date.now()
+                });
+                console.log('CalDAV account added:', username);
+            }
+
+            this._persistAccounts();
             return true;
         } catch (error) {
-            console.error('Failed to save CalDAV configuration:', error);
+            console.error('Failed to add CalDAV account:', error);
             return false;
         }
     }
-    
-    // Clear CalDAV configuration
+
+    // Remove an account by id
+    removeAccount(id) {
+        this.accounts = this.accounts.filter(a => a.id !== id);
+        this._persistAccounts();
+        console.log('CalDAV account removed:', id);
+    }
+
+    // Persist accounts array to localStorage (passwords re-encoded)
+    _persistAccounts() {
+        try {
+            const toStore = this.accounts.map(acc => ({
+                ...acc,
+                password: btoa(acc.password)
+            }));
+            localStorage.setItem('dashboard-caldav-accounts', JSON.stringify(toStore));
+        } catch (error) {
+            console.error('Failed to persist CalDAV accounts:', error);
+        }
+    }
+
+    // Legacy wrapper — used by testCalDAVConnection() in setup.html
+    saveConfig(provider, username, password, customEndpoint = '') {
+        this.accounts = [];
+        return this.addAccount(provider, username, password, customEndpoint, '');
+    }
+
+    // Clear all accounts
     clearConfig() {
-        localStorage.removeItem(this.storageKey);
-        this.credentials = null;
-        this.isConfigured = false;
+        this.accounts = [];
+        localStorage.removeItem('dashboard-caldav-accounts');
+        localStorage.removeItem('dashboard-caldav-config');
         console.log('CalDAV configuration cleared');
     }
-    
-    // Get CalDAV URL for the configured provider
-    getCalDAVUrl() {
-        if (!this.credentials) return null;
-        
-        const provider = this.providers[this.credentials.provider];
-        if (!provider) return null;
-        
-        if (this.credentials.provider === 'generic') {
-            return this.credentials.customEndpoint;
-        }
-        
-        let url = provider.endpoint;
-        
-        // Build provider-specific URLs
-        switch (this.credentials.provider) {
-            case 'google':
-                // Detect Google Workspace vs Gmail accounts
-                const isWorkspaceAccount = !this.credentials.username.endsWith('@gmail.com') && !this.credentials.username.endsWith('@googlemail.com');
-                
-                if (isWorkspaceAccount) {
-                    url = provider.workspaceEndpoint + `${this.credentials.username}/events/`;
-                } else {
-                    url += `${this.credentials.username}/events/`;
-                }
-                break;
-            case 'apple':
-                const appleUser = this.credentials.username.split('@')[0];
-                url += `${appleUser}/calendars/`;
-                break;
-            case 'outlook':
-                url += `${this.credentials.username}/`;
-                break;
-        }
-        
-        return url;
-    }
-    
-    // Make CalDAV request with authentication
-    async makeCalDAVRequest(method, url, body = null) {
-        if (!this.credentials) {
-            throw new Error('CalDAV not configured');
-        }
-        
-        const authHeader = 'Basic ' + btoa(`${this.credentials.username}:${this.credentials.password}`);
-        
-        const options = {
-            method,
-            headers: {
-                'Authorization': authHeader,
-                'Content-Type': 'application/xml; charset=utf-8',
-                'Depth': '1'
-            }
-        };
-        
-        if (body) {
-            options.body = body;
-        }
-        
-        try {
-            console.log(`CalDAV ${method} request to:`, url.replace(/\/\/[^@]*@/, '//***:***@'));
-            
-            const response = await fetch(url, options);
-            
-            console.log('CalDAV response:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('CalDAV Error Response:', errorText);
-                throw new Error(`CalDAV ${method} failed: ${response.status} ${response.statusText}`);
-            }
-            
-            return await response.text();
-        } catch (error) {
-            console.error(`CalDAV ${method} request failed:`, error);
-            throw error;
-        }
-    }
-    
-    // Test CalDAV connection via Vercel function
-    async testConnection() {
-        if (!this.credentials) {
-            return { success: false, error: 'No CalDAV configuration found' };
-        }
-        
-        try {
-            console.log('Testing CalDAV connection via proxy...');
-            
-            // Use the Vercel function to test connection
-            const proxyUrl = this.getProxyUrl();
-            const response = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    provider: this.credentials.provider,
-                    username: this.credentials.username,
-                    password: this.credentials.password,
-                    dateParam: 'today'
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Connection test failed' }));
-                return { 
-                    success: false, 
-                    error: errorData.error || `HTTP ${response.status}: ${response.statusText}`
-                };
-            }
-            
-            const data = await response.json();
-            
-            return { 
-                success: true, 
-                message: `Successfully connected to ${this.providers[this.credentials.provider].name} via proxy` 
-            };
-            
-        } catch (error) {
-            return { 
-                success: false, 
-                error: `Connection test failed: ${error.message}` 
-            };
-        }
-    }
-    
-    // Get calendar events for a specific date
+
+    // Get calendar events — fan-out across all accounts
     async getCalendarEvents(date = 'today') {
         console.log('=== CALDAV CALENDAR REQUEST ===');
         console.log('Date requested:', date);
-        console.log('CalDAV configured:', this.isConfigured);
-        
+        console.log('CalDAV configured:', this.isConfigured, '— accounts:', this.accounts.length);
+
         if (!this.isConfigured) {
             return {
                 calendars: [],
@@ -238,177 +178,156 @@ class CalDAVClient {
                 message: 'CalDAV calendar not configured. Please set up your calendar connection.'
             };
         }
-        
-        try {
-            // Calculate date range - use precise boundaries to avoid overlapping days
-            const now = new Date();
-            let targetDate;
-            
-            if (date === 'tomorrow') {
-                targetDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-            } else if (date === 'today') {
-                targetDate = now;
-            } else if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                // Handle specific date strings like "2025-09-13"
-                const [year, month, day] = date.split('-').map(Number);
-                targetDate = new Date(year, month - 1, day); // Create in local timezone
-            } else {
-                // Default fallback to today
-                targetDate = now;
-            }
-            
-            const startOfDay = new Date(targetDate);
-            startOfDay.setHours(0, 0, 0, 0);
-            
-            // End at 22:59:59 to avoid timezone boundary issues that catch next day events
-            const endOfDay = new Date(targetDate);
-            endOfDay.setHours(22, 59, 59, 999);
-            
-            console.log('Fetching CalDAV events for date range (adjusted to prevent next-day overlap):', {
-                start: startOfDay.toISOString(),
-                end: endOfDay.toISOString(),
-                targetDateLocal: targetDate.toLocaleDateString()
-            });
-            
-            // Fetch events via Vercel function
-            const proxyUrl = this.getProxyUrl();
-            const response = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    provider: this.credentials.provider,
-                    username: this.credentials.username,
-                    password: this.credentials.password,
-                    dateParam: date
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(`CalDAV proxy failed: ${errorData.error || response.statusText}`);
-            }
-            
-            const calendarData = await response.json();
-            console.log('CalDAV proxy response:', calendarData);
-            
-            return calendarData;
-            
-        } catch (error) {
-            console.error('CalDAV calendar request failed:', error);
-            
-            return {
-                calendars: [],
-                connected_users: [],
-                total_accounts: 1,
-                successful_accounts: 0,
-                failed_accounts: 1,
-                total_events: 0,
-                date_requested: date,
-                source: 'caldav_error',
-                message: `CalDAV error: ${error.message}`
-            };
-        }
-    }
-    
-    // Fetch events for a specific date range using Vercel function
-    async fetchEventsForDateRange(startDate, endDate) {
-        if (!this.credentials) {
-            throw new Error('CalDAV credentials not configured');
-        }
-        
-        const dateParam = startDate.toDateString() === new Date().toDateString() ? 'today' : 'tomorrow';
-        
-        try {
-            console.log('Using Vercel CalDAV function for:', this.credentials.provider);
 
-            // Use Vercel serverless function to avoid CORS issues
-            const proxyUrl = this.getProxyUrl();
-            const response = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    provider: this.credentials.provider,
-                    username: this.credentials.username,
-                    password: this.credentials.password,
-                    dateParam: dateParam
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(`Proxy request failed: ${errorData.error || response.statusText}`);
+        const proxyUrl = this.getProxyUrl();
+        const results = await Promise.allSettled(
+            this.accounts.map(acc => this._fetchAccountEvents(acc, date, proxyUrl))
+        );
+
+        const calendars = [];
+        let successful = 0;
+        let failed = 0;
+
+        results.forEach((result, i) => {
+            const acc = this.accounts[i];
+            if (result.status === 'fulfilled') {
+                const data = result.value;
+                // Inject account color into each calendar returned
+                if (data.calendars) {
+                    data.calendars.forEach(cal => {
+                        cal.color = acc.color;           // override API's hardcoded color
+                        cal.account_color = acc.color;   // also kept for future use
+                        cal.account_label = acc.label || acc.username;
+                        calendars.push(cal);
+                    });
+                }
+                successful++;
+            } else {
+                console.warn(`CalDAV account ${acc.username} failed:`, result.reason);
+                failed++;
             }
-            
-            const data = await response.json();
-            console.log('Proxy response:', data);
-            
-            // Return events from the proxy response
-            return data.calendars?.[0]?.events || [];
-            
+        });
+
+        const totalEvents = calendars.reduce((sum, cal) => sum + (cal.events?.length || 0), 0);
+
+        return {
+            calendars,
+            connected_users: this.accounts.map(a => a.label || a.username),
+            total_accounts: this.accounts.length,
+            successful_accounts: successful,
+            failed_accounts: failed,
+            total_events: totalEvents,
+            date_requested: date,
+            source: 'caldav',
+            message: failed > 0
+                ? `${successful} of ${this.accounts.length} accounts loaded successfully`
+                : `Loaded events from ${successful} account(s)`
+        };
+    }
+
+    // Fetch events for a single account via Vercel proxy
+    async _fetchAccountEvents(account, date, proxyUrl) {
+        const response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                provider: account.provider,
+                username: account.username,
+                password: account.password,
+                customEndpoint: account.customEndpoint || '',
+                dateParam: date
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(`CalDAV proxy failed for ${account.username}: ${err.error || response.statusText}`);
+        }
+
+        return response.json();
+    }
+
+    // Test connection for a specific account (by id) or first account if null
+    async testConnection(accountId = null) {
+        const account = accountId
+            ? this.accounts.find(a => a.id === accountId)
+            : this.accounts[0];
+
+        if (!account) {
+            return { success: false, error: 'No CalDAV account found' };
+        }
+
+        try {
+            console.log('Testing CalDAV connection via proxy for:', account.username);
+            await this._fetchAccountEvents(account, 'today', this.getProxyUrl());
+            return {
+                success: true,
+                message: `Successfully connected to ${this.providers[account.provider]?.name || account.provider}`
+            };
         } catch (error) {
-            console.error('Failed to fetch CalDAV events via proxy:', error);
-            throw error;
+            return { success: false, error: `Connection test failed: ${error.message}` };
         }
     }
-    
+
+    // Get configuration status for UI
+    getConfigStatus() {
+        if (!this.isConfigured) {
+            return { configured: false, message: 'CalDAV calendar not configured' };
+        }
+
+        return {
+            configured: true,
+            accounts: this.accounts.map(a => ({
+                id: a.id,
+                label: a.label,
+                username: a.username,
+                provider: a.provider,
+                color: a.color
+            })),
+            message: `${this.accounts.length} account(s) configured`
+        };
+    }
+
     // Get the Vercel function URL
     getProxyUrl() {
         return window.location.origin + '/api/calendar';
     }
-    
-    // Alternative: Use direct CalDAV with a working CORS proxy
-    getCalDAVProxyUrl() {
-        return 'https://cors-anywhere.herokuapp.com/';
-    }
-    
+
     // Format date for CalDAV time-range queries
     formatDateForCalDAV(date) {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     }
-    
+
     // Parse CalDAV XML response and extract events
     parseCalDAVResponse(xmlResponse) {
         const events = [];
-        
+
         try {
-            // Simple XML parsing for CalDAV responses
-            // This is a basic implementation - could be enhanced with a proper XML parser
-            
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlResponse, 'text/xml');
-            
             const responses = xmlDoc.querySelectorAll('response');
-            
+
             responses.forEach(response => {
                 const calendarData = response.querySelector('calendar-data');
                 if (calendarData) {
-                    const icsData = calendarData.textContent;
-                    const parsedEvents = this.parseICSData(icsData);
-                    events.push(...parsedEvents);
+                    events.push(...this.parseICSData(calendarData.textContent));
                 }
             });
-            
         } catch (error) {
             console.error('Failed to parse CalDAV XML response:', error);
-            // Try fallback ICS parsing if XML parsing fails
             if (xmlResponse.includes('BEGIN:VCALENDAR')) {
                 return this.parseICSData(xmlResponse);
             }
         }
-        
+
         return events;
     }
-    
+
     // Parse ICS (iCalendar) data to extract events
     parseICSData(icsData) {
         const events = [];
 
         try {
-            // Optimized: Split once and process without double-trimming
             const lines = icsData.split('\n');
             let currentEvent = null;
 
@@ -431,7 +350,6 @@ class CalDAVClient {
                     }
                     currentEvent = null;
                 } else if (currentEvent) {
-                    // Optimized: Use indexOf to avoid unnecessary split operations
                     const colonIndex = line.indexOf(':');
                     if (colonIndex === -1) continue;
 
@@ -444,7 +362,7 @@ class CalDAVClient {
                             break;
                         case 'DTSTART':
                             currentEvent.start = this.parseICSDate(value);
-                            if (value.length === 8) { // YYYYMMDD format = all-day
+                            if (value.length === 8) {
                                 currentEvent.all_day = true;
                             }
                             break;
@@ -460,62 +378,41 @@ class CalDAVClient {
                     }
                 }
             }
-
         } catch (error) {
             console.error('Failed to parse ICS data:', error);
         }
 
         return events;
     }
-    
+
     // Parse ICS date format to JavaScript Date
     parseICSDate(icsDate) {
         try {
-            // Handle different ICS date formats
             if (icsDate.length === 8) {
-                // YYYYMMDD format (all-day)
                 const year = icsDate.substring(0, 4);
                 const month = icsDate.substring(4, 6);
                 const day = icsDate.substring(6, 8);
                 return `${year}-${month}-${day}`;
             } else if (icsDate.includes('T')) {
-                // YYYYMMDDTHHMMSS format
                 const datePart = icsDate.split('T')[0];
                 const timePart = icsDate.split('T')[1].replace('Z', '');
-                
+
                 const year = datePart.substring(0, 4);
                 const month = datePart.substring(4, 6);
                 const day = datePart.substring(6, 8);
-                
+
                 const hour = timePart.substring(0, 2);
                 const minute = timePart.substring(2, 4);
                 const second = timePart.substring(4, 6);
-                
+
                 return `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
             }
-            
+
             return icsDate;
         } catch (error) {
             console.error('Failed to parse ICS date:', icsDate, error);
             return icsDate;
         }
-    }
-    
-    // Get configuration status for UI
-    getConfigStatus() {
-        if (!this.isConfigured) {
-            return {
-                configured: false,
-                message: 'CalDAV calendar not configured'
-            };
-        }
-        
-        return {
-            configured: true,
-            provider: this.providers[this.credentials.provider].name,
-            username: this.credentials.username,
-            message: `Connected to ${this.providers[this.credentials.provider].name}`
-        };
     }
 }
 

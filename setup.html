@@ -377,28 +377,13 @@
                 <div class="section-status missing" id="calendar-status">Optional</div>
             </div>
             
-            <!-- Current Configuration Display -->
-            <div id="current-caldav-config" style="display: none;">
-                <div style="background: #e3f2fd; border: 2px solid #2196f3; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="color: #1565c0; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                        <span>📋</span> Current Configuration
-                    </h4>
-                    <div id="current-config-details" style="margin-bottom: 15px;"></div>
-                    <div class="button-group">
-                        <button class="button" onclick="testCurrentConnection()">
-                            <span>🔍</span> Test Current Connection
-                        </button>
-                        <button class="button" onclick="debugConnection()">
-                            <span>🐛</span> Debug Connection
-                        </button>
-                        <button class="button secondary" onclick="editCurrentConfig()">
-                            <span>✏️</span> Edit Configuration
-                        </button>
-                        <button class="button danger" onclick="clearCurrentConfig()">
-                            <span>🗑️</span> Remove Configuration
-                        </button>
-                    </div>
-                </div>
+            <!-- Configured Accounts List -->
+            <div id="caldav-accounts-list" style="display: none;">
+                <h4 style="margin-bottom: 12px; color: #2c3e50;">Configured Accounts</h4>
+                <div id="accounts-container"></div>
+                <p id="accounts-limit-msg" style="display: none; color: #e74c3c; font-size: 14px; margin-top: 8px;">
+                    Maximum 3 accounts reached.
+                </p>
             </div>
             
             <div class="form-group">
@@ -413,6 +398,11 @@
             </div>
             
             <div id="caldav-fields">
+                <div class="form-group">
+                    <label for="caldav-label">Account Label (optional):</label>
+                    <input type="text" id="caldav-label" placeholder="e.g. Work, Personal">
+                </div>
+
                 <div class="form-group">
                     <label for="caldav-username">Email/Username:</label>
                     <input type="text" id="caldav-username" placeholder="your.email@gmail.com">
@@ -433,11 +423,11 @@
                     <button class="button" onclick="testCalDAVConnection()">
                         <span>🔍</span> Test Connection
                     </button>
-                    <button class="button success" onclick="saveCalDAVConfig()">
-                        <span>💾</span> Save Calendar
+                    <button class="button success" id="add-account-btn" onclick="addCalDAVAccount()">
+                        <span>💾</span> Add Account
                     </button>
                     <button class="button danger" onclick="clearCalDAVConfig()">
-                        <span>🗑️</span> Clear
+                        <span>🗑️</span> Clear All
                     </button>
                 </div>
             </div>
@@ -572,70 +562,76 @@
                 if (!caldavClient) {
                     caldavClient = new CalDAVClient(window.dashboardConfig);
                 }
-                
+
                 const status = caldavClient.getConfigStatus();
                 if (status.configured) {
                     completedSteps.calendar = true;
                     updateCalendarStatus('✅ ' + status.message, 'configured');
-                    showCurrentConfig(status);
+                    renderAccountsList(status.accounts);
                 } else {
-                    hideCurrentConfig();
+                    renderAccountsList([]);
                 }
             } catch (error) {
                 console.warn('Could not load CalDAV config:', error);
-                hideCurrentConfig();
+                renderAccountsList([]);
             }
         }
-        
-        function showCurrentConfig(status) {
-            try {
-                // Load from CalDAV client's localStorage
-                const saved = localStorage.getItem('dashboard-caldav-config');
-                if (!saved) {
-                    hideCurrentConfig();
-                    return;
-                }
-                
-                const config = JSON.parse(saved);
-                const provider = config.provider;
-                const username = config.username;
-                const endpoint = config.customEndpoint;
-                const savedAt = config.savedAt;
-                
-                let providerName = '';
-                switch(provider) {
-                    case 'google': providerName = 'Google Calendar'; break;
-                    case 'apple': providerName = 'Apple iCloud'; break;
-                    case 'outlook': providerName = 'Microsoft Outlook'; break;
-                    case 'generic': providerName = 'Custom CalDAV Server'; break;
-                    default: providerName = 'Unknown Provider';
-                }
-                
-                const configDate = savedAt ? new Date(savedAt).toLocaleString() : 'Unknown';
-                
-                const configDetails = document.getElementById('current-config-details');
-                configDetails.innerHTML = `
-                    <div style="display: grid; gap: 10px;">
-                        <div><strong>Provider:</strong> ${providerName}</div>
-                        <div><strong>Username:</strong> ${username || 'Not set'}</div>
-                        ${endpoint ? `<div><strong>Endpoint:</strong> ${endpoint}</div>` : ''}
-                        <div><strong>Status:</strong> ${status.message}</div>
-                        <div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
-                            Last configured: ${configDate}
-                        </div>
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function renderAccountsList(accounts) {
+            const listEl = document.getElementById('caldav-accounts-list');
+            const container = document.getElementById('accounts-container');
+            const limitMsg = document.getElementById('accounts-limit-msg');
+            const addBtn = document.getElementById('add-account-btn');
+
+            if (!accounts || accounts.length === 0) {
+                listEl.style.display = 'none';
+                document.getElementById('skip-calendar').style.display = 'block';
+                if (addBtn) addBtn.disabled = false;
+                return;
+            }
+
+            const providerNames = {
+                google: 'Google Calendar',
+                apple: 'Apple iCloud',
+                outlook: 'Microsoft Outlook',
+                generic: 'Custom CalDAV'
+            };
+
+            container.innerHTML = accounts.map(acc => {
+                const label = escapeHtml(acc.label || '');
+                const username = escapeHtml(acc.username);
+                const providerDisplay = escapeHtml(providerNames[acc.provider] || acc.provider);
+                return `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+                            border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 8px;
+                            border-left: 4px solid ${acc.color}; background: #fff;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong>${label ? label + ' — ' : ''}${username}</strong>
+                        <span style="color: #6c757d; font-size: 13px; margin-left: 6px;">
+                            (${providerDisplay})
+                        </span>
                     </div>
-                `;
-                
-                document.getElementById('current-caldav-config').style.display = 'block';
-                document.getElementById('skip-calendar').style.display = 'none';
-            } catch (error) {
-                console.warn('Error loading current config for display:', error);
-                hideCurrentConfig();
-            }
-        }
-        
-        function hideCurrentConfig() {
-            document.getElementById('current-caldav-config').style.display = 'none';
+                    <button class="button" style="padding: 6px 12px; font-size: 13px;"
+                            onclick="testAccount('${acc.id}', this)">Test</button>
+                    <button class="button danger" style="padding: 6px 12px; font-size: 13px;"
+                            onclick="removeAccount('${acc.id}')">Remove</button>
+                </div>`;
+            }).join('');
+
+            listEl.style.display = 'block';
+            document.getElementById('skip-calendar').style.display = 'none';
+
+            const atLimit = accounts.length >= 3;
+            limitMsg.style.display = atLimit ? 'block' : 'none';
+            if (addBtn) addBtn.disabled = atLimit;
         }
         
         function updateProgressIndicator() {
@@ -978,40 +974,40 @@
             const username = document.getElementById('caldav-username').value.trim();
             const password = document.getElementById('caldav-password').value.trim();
             const customEndpoint = document.getElementById('caldav-endpoint').value.trim();
-            
+
             if (!provider || !username || !password) {
                 showStatus('Please fill in all required fields.', 'error');
                 return;
             }
-            
+
             if (provider === 'generic' && !customEndpoint) {
                 showStatus('Please enter the CalDAV server URL.', 'error');
                 return;
             }
-            
+
             const testBtn = document.querySelector('button[onclick="testCalDAVConnection()"]');
             const originalHTML = testBtn.innerHTML;
             testBtn.disabled = true;
             testBtn.innerHTML = '<div class="loading"><div class="spinner"></div> Testing...</div>';
-            
+
             try {
                 showStatus('Testing CalDAV connection...', 'info');
-                
-                if (!caldavClient) {
-                    caldavClient = new CalDAVClient(window.dashboardConfig);
-                }
-                
-                // Save config temporarily for testing
-                caldavClient.saveConfig(provider, username, password, customEndpoint);
-                
-                const result = await caldavClient.testConnection();
-                
-                if (result.success) {
+
+                // POST directly to proxy — avoids wiping saved accounts via saveConfig()
+                const proxyUrl = window.location.origin + '/api/calendar';
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider, username, password, dateParam: 'today' })
+                });
+
+                if (response.ok) {
                     showStatus('✅ CalDAV connection successful!', 'success');
                 } else {
-                    showStatus(`❌ Connection failed: ${result.error}`, 'error');
+                    const err = await response.json().catch(() => ({ error: response.statusText }));
+                    showStatus(`❌ Connection failed: ${err.error || response.statusText}`, 'error');
                 }
-                
+
             } catch (error) {
                 showStatus(`❌ Connection test failed: ${error.message}`, 'error');
             } finally {
@@ -1019,41 +1015,60 @@
                 testBtn.innerHTML = originalHTML;
             }
         }
-        
-        async function saveCalDAVConfig() {
+
+        async function addCalDAVAccount() {
             const provider = document.getElementById('caldav-provider').value;
             const username = document.getElementById('caldav-username').value.trim();
             const password = document.getElementById('caldav-password').value.trim();
             const customEndpoint = document.getElementById('caldav-endpoint').value.trim();
-            
+            const label = document.getElementById('caldav-label').value.trim();
+
             if (!provider || !username || !password) {
                 showStatus('Please fill in all required fields.', 'error');
                 return;
             }
-            
-            const saveBtn = document.querySelector('button[onclick="saveCalDAVConfig()"]');
+
+            if (provider === 'generic' && !customEndpoint) {
+                showStatus('Please enter the CalDAV server URL.', 'error');
+                return;
+            }
+
+            if (caldavClient && caldavClient.accounts.length >= 3) {
+                showStatus('Maximum 3 accounts reached.', 'error');
+                return;
+            }
+
+            const saveBtn = document.getElementById('add-account-btn');
             const originalHTML = saveBtn.innerHTML;
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="loading"><div class="spinner"></div> Saving...</div>';
-            
+
             try {
                 if (!caldavClient) {
                     caldavClient = new CalDAVClient(window.dashboardConfig);
                 }
-                
-                const saved = caldavClient.saveConfig(provider, username, password, customEndpoint);
-                
+
+                const saved = caldavClient.addAccount(provider, username, password, customEndpoint, label);
+
                 if (saved) {
                     completedSteps.calendar = true;
                     updateProgressIndicator();
                     updateSectionStates();
-                    
-                    showStatus('✅ Calendar configuration saved successfully!', 'success');
-                    updateCalendarStatus('✅ Configured', 'configured');
+
+                    // Clear form
+                    document.getElementById('caldav-provider').value = '';
+                    document.getElementById('caldav-label').value = '';
+                    document.getElementById('caldav-username').value = '';
+                    document.getElementById('caldav-password').value = '';
+                    document.getElementById('caldav-endpoint').value = '';
+                    toggleCalDAVFields();
+
+                    showStatus('✅ Account added successfully!', 'success');
+                    loadCalDAVConfig();
                 } else {
-                    showStatus('❌ Failed to save calendar configuration.', 'error');
+                    showStatus('❌ Failed to save account.', 'error');
                 }
-                
+
             } catch (error) {
                 showStatus(`❌ Save error: ${error.message}`, 'error');
             } finally {
@@ -1071,27 +1086,76 @@
         }
         
         function clearCalDAVConfig() {
-            if (confirm('Clear calendar configuration?')) {
+            if (confirm('Clear all calendar accounts?')) {
                 if (!caldavClient) {
                     caldavClient = new CalDAVClient(window.dashboardConfig);
                 }
-                
+
                 caldavClient.clearConfig();
-                
+
                 // Clear form
                 document.getElementById('caldav-provider').value = '';
+                document.getElementById('caldav-label').value = '';
                 document.getElementById('caldav-username').value = '';
                 document.getElementById('caldav-password').value = '';
                 document.getElementById('caldav-endpoint').value = '';
                 toggleCalDAVFields();
-                
+
                 completedSteps.calendar = false;
                 updateProgressIndicator();
                 updateSectionStates();
                 updateCalendarStatus('Not Configured', 'missing');
-                
+                renderAccountsList([]);
+
                 showStatus('Calendar configuration cleared.', 'info');
             }
+        }
+
+        async function testAccount(id, btn) {
+            if (!caldavClient) return;
+
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+
+            try {
+                showStatus('Testing account connection...', 'info');
+                const result = await caldavClient.testConnection(id);
+
+                if (result.success) {
+                    showStatus('✅ Account connection successful!', 'success');
+                } else {
+                    showStatus(`❌ Connection failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Test failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function removeAccount(id) {
+            if (!confirm('Remove this calendar account?')) return;
+
+            if (!caldavClient) {
+                caldavClient = new CalDAVClient(window.dashboardConfig);
+            }
+
+            caldavClient.removeAccount(id);
+
+            const remaining = caldavClient.accounts.length;
+            if (remaining === 0) {
+                completedSteps.calendar = false;
+                updateProgressIndicator();
+                updateSectionStates();
+                updateCalendarStatus('Not Configured', 'missing');
+            } else {
+                updateCalendarStatus(`✅ ${remaining} account(s) configured`, 'configured');
+            }
+
+            loadCalDAVConfig();
+            showStatus('Account removed.', 'info');
         }
         
         function updateCalendarStatus(text, className) {
@@ -1202,36 +1266,7 @@
             }
         }
         
-        // New Management Functions
-        async function testCurrentConnection() {
-            if (!caldavClient) {
-                showStatus('No calendar configuration found.', 'error');
-                return;
-            }
-            
-            const testBtn = document.querySelector('button[onclick="testCurrentConnection()"]');
-            const originalHTML = testBtn.innerHTML;
-            testBtn.disabled = true;
-            testBtn.innerHTML = '<div class="loading"><div class="spinner"></div> Testing...</div>';
-            
-            try {
-                showStatus('Testing current CalDAV connection...', 'info');
-                
-                const result = await caldavClient.testConnection();
-                
-                if (result.success) {
-                    showStatus('✅ Current connection is working properly!', 'success');
-                } else {
-                    showStatus(`❌ Connection failed: ${result.error}`, 'error');
-                }
-                
-            } catch (error) {
-                showStatus(`❌ Connection test failed: ${error.message}`, 'error');
-            } finally {
-                testBtn.disabled = false;
-                testBtn.innerHTML = originalHTML;
-            }
-        }
+        // Management Functions
         
         async function debugConnection() {
             if (!caldavClient) {
@@ -1248,15 +1283,9 @@
                 showStatus('Gathering debug information...', 'info');
                 
                 // Create comprehensive debug information
-                const config = window.dashboardConfig;
                 const debugInfo = {
                     timestamp: new Date().toISOString(),
-                    configuration: {
-                        provider: config.get('caldav.provider'),
-                        username: config.get('caldav.username'),
-                        endpoint: config.get('caldav.endpoint'),
-                        hasPassword: !!config.get('caldav.password')
-                    },
+                    configuration: caldavClient.getConfigStatus(),
                     browser: {
                         userAgent: navigator.userAgent,
                         platform: navigator.platform,
@@ -1274,11 +1303,12 @@
                 
                 // Try to get calendar events for debugging
                 try {
-                    const events = await caldavClient.getCalendarEvents('today');
+                    const calData = await caldavClient.getCalendarEvents('today');
                     debugInfo.eventTest = {
                         success: true,
-                        eventCount: events.length,
-                        sampleEvent: events[0] || null
+                        totalEvents: calData.total_events,
+                        accounts: calData.total_accounts,
+                        message: calData.message
                     };
                 } catch (error) {
                     debugInfo.eventTest = { error: error.message };
@@ -1299,73 +1329,6 @@
             }
         }
         
-        function editCurrentConfig() {
-            try {
-                // Load from CalDAV client's localStorage (not dashboardConfig)
-                const saved = localStorage.getItem('dashboard-caldav-config');
-                if (!saved) {
-                    showStatus('No saved configuration found.', 'error');
-                    return;
-                }
-                
-                const config = JSON.parse(saved);
-                const provider = config.provider;
-                const username = config.username;
-                const endpoint = config.customEndpoint;
-                
-                // Populate form with current values
-                document.getElementById('caldav-provider').value = provider || '';
-                document.getElementById('caldav-username').value = username || '';
-                document.getElementById('caldav-endpoint').value = endpoint || '';
-                // Don't populate password for security - user will need to re-enter
-                
-                // Show the form
-                toggleCalDAVFields();
-                
-                // Scroll to form
-                document.getElementById('caldav-fields').scrollIntoView({ behavior: 'smooth' });
-                
-                if (provider === 'google') {
-                    showStatus('📝 Configuration loaded. You\'ll need to re-enter your Google App Password (see instructions below).', 'info');
-                } else {
-                    showStatus('Configuration loaded for editing. Please re-enter your password and save.', 'info');
-                }
-                
-                // Focus on password field since that needs to be re-entered
-                setTimeout(() => {
-                    document.getElementById('caldav-password').focus();
-                }, 500);
-                
-            } catch (error) {
-                showStatus(`Error loading configuration: ${error.message}`, 'error');
-            }
-        }
-        
-        function clearCurrentConfig() {
-            if (confirm('This will remove your calendar configuration. Are you sure?')) {
-                if (!caldavClient) {
-                    caldavClient = new CalDAVClient(window.dashboardConfig);
-                }
-                
-                caldavClient.clearConfig();
-                
-                // Clear form
-                document.getElementById('caldav-provider').value = '';
-                document.getElementById('caldav-username').value = '';
-                document.getElementById('caldav-password').value = '';
-                document.getElementById('caldav-endpoint').value = '';
-                toggleCalDAVFields();
-                
-                // Update state
-                completedSteps.calendar = false;
-                updateProgressIndicator();
-                updateSectionStates();
-                updateCalendarStatus('Not Configured', 'missing');
-                hideCurrentConfig();
-                
-                showStatus('Calendar configuration removed.', 'info');
-            }
-        }
         
         // Debug Panel Functions
         function hideDebugInfo() {

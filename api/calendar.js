@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
 
   try {
     const body = req.body || {};
-    const { provider, username, password, dateParam = 'today' } = body;
+    const { provider, username, password, dateParam = 'today', customEndpoint = '' } = body;
 
     console.log('Calendar request:', { provider, username: username ? 'provided' : 'missing', dateParam });
 
@@ -40,12 +40,21 @@ module.exports = async (req, res) => {
       outlook: {
         name: 'Microsoft Outlook',
         endpoint: 'https://outlook.office365.com/owa/calendar/'
+      },
+      generic: {
+        name: 'Generic CalDAV Server',
+        endpoint: ''
       }
     };
 
     const providerConfig = providers[provider];
     if (!providerConfig) {
       res.status(400).json({ error: `Unsupported provider: ${provider}` });
+      return;
+    }
+
+    if (provider === 'generic' && !customEndpoint) {
+      res.status(400).json({ error: 'Custom endpoint URL is required for generic CalDAV servers' });
       return;
     }
 
@@ -68,6 +77,9 @@ module.exports = async (req, res) => {
         break;
       case 'outlook':
         caldavUrl += `${username}/`;
+        break;
+      case 'generic':
+        caldavUrl = customEndpoint;
         break;
     }
 

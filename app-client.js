@@ -214,13 +214,15 @@ class DashboardApp {
             // Check if CalDAV is configured
             if (window.caldavClient.isConfigured) {
                 console.log('📅 Using CalDAV client with Vercel functions');
+                // Always set client — getCalendarEvents() handles per-account failures via Promise.allSettled
+                this.activeCalendarClient = window.caldavClient;
+                this.calendarType = 'caldav';
+
                 const testResult = await window.caldavClient.testConnection();
                 if (testResult.success) {
                     console.log('✅ CalDAV connection verified:', testResult.message);
-                    this.activeCalendarClient = window.caldavClient;
-                    this.calendarType = 'caldav';
                 } else {
-                    console.warn('⚠️ CalDAV connection issue:', testResult.error);
+                    console.warn('⚠️ CalDAV connection issue (will retry on fetch):', testResult.error);
                 }
             } else {
                 console.log('📅 CalDAV not configured - calendar will show setup option');
@@ -686,28 +688,12 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     } else {
                         // Use cached parsed date
                         const eventDate = event._parsedStart;
-                        console.log(`🕐 Debug event time conversion for "${event.summary}":`, {
-                            raw_start: event.start,
-                            raw_end: event.end,
-                            parsed_start_date: eventDate,
-                            timezone: this.config.location.timezone,
-                            event_date_string: eventDate.toLocaleDateString('en-US', {
-                                timeZone: this.config.location.timezone,
-                                weekday: 'long',
-                                month: 'short',
-                                day: 'numeric'
-                            }),
-                            current_display_mode: this.displayMode
-                        });
-
                         startTime = eventDate.toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
                             hour12: true,
                             timeZone: this.config.location.timezone
                         });
-
-                        console.log(`🕐 Converted time for "${event.summary}": ${startTime}`);
                     }
                 } catch (e) {
                     startTime = 'Time TBD';
@@ -765,25 +751,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 this.loadEventsForDate(nextSunday)
             ]);
 
-            console.log('Saturday events:', saturdayEvents.length);
-            saturdayEvents.forEach((event, i) => {
-                console.log(`Saturday event ${i}:`, {
-                    summary: event.summary,
-                    start: event.start,
-                    end: event.end,
-                    all_day: event.all_day
-                });
-            });
-            
-            console.log('Sunday events:', sundayEvents.length);
-            sundayEvents.forEach((event, i) => {
-                console.log(`Sunday event ${i}:`, {
-                    summary: event.summary,
-                    start: event.start,
-                    end: event.end,
-                    all_day: event.all_day
-                });
-            });
+            console.log(`Weekend events loaded — Saturday: ${saturdayEvents.length}, Sunday: ${sundayEvents.length}`);
 
             // Combine and render weekend events
             const allWeekendEvents = [
@@ -806,19 +774,14 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     async loadEventsForDate(date) {
         try {
-            // Format date for API call - use local date string to avoid timezone issues
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            
-            console.log('loadEventsForDate called with:', date.toDateString(), 'formatted as:', dateStr);
-            
+            const tz = this.config.location.timezone;
+
+            // Format date for API using configured timezone (avoids local-vs-configured mismatch)
+            const dateStr = date.toLocaleDateString('en-CA', { timeZone: tz });
+
             // Call the calendar API directly with the specific date
             const data = await this.activeCalendarClient.getCalendarEvents(dateStr);
-            
-            console.log('API response for', dateStr, ':', data);
-            
+
             if (!data?.calendars?.length) {
                 console.log('No calendars found in response for', dateStr);
                 return [];
@@ -827,38 +790,21 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             // Collect all events from all calendars
             const allEvents = data.calendars
                 .filter(calendar => calendar.events?.length > 0)
-                .flatMap(calendar => 
+                .flatMap(calendar =>
                     calendar.events.map(event => ({
                         ...event,
                         calendarColor: calendar.color || '#ff9800'
                     }))
                 );
 
-            // Filter events to only include those that actually fall on the requested date
-            // Backend CalDAV function has been fixed, but keep filtering as a safeguard
-            const targetYear = date.getFullYear();
-            const targetMonth = date.getMonth();
-            const targetDate = date.getDate();
-            
+            // Filter to the target date using the configured timezone consistently
+            // all-day events have a plain YYYY-MM-DD start; timed events have UTC ISO strings
             const filteredEvents = allEvents.filter(event => {
                 try {
-                    const eventStart = new Date(event.start);
-                    const eventYear = eventStart.getFullYear();
-                    const eventMonth = eventStart.getMonth();
-                    const eventDate = eventStart.getDate();
-                    
-                    const isMatchingDate = eventYear === targetYear && 
-                                         eventMonth === targetMonth && 
-                                         eventDate === targetDate;
-                    
-                    console.log(`Event "${event.summary}" date check:`, {
-                        requestedDate: date.toDateString(),
-                        eventStart: event.start,
-                        eventStartParsed: eventStart.toDateString(),
-                        isMatchingDate
-                    });
-                    
-                    return isMatchingDate;
+                    const eventDateStr = event.all_day
+                        ? event.start
+                        : new Date(event.start).toLocaleDateString('en-CA', { timeZone: tz });
+                    return eventDateStr === dateStr;
                 } catch (e) {
                     console.warn('Error filtering event by date:', e, event);
                     return false;

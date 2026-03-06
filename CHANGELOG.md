@@ -5,6 +5,38 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.28.0] - 2026-03-06
+
+### Added
+- **Multi-account CalDAV support** — connect up to 3 calendar accounts simultaneously (Google Workspace, Gmail, iCloud, Outlook, or any generic CalDAV server)
+  - New storage key `dashboard-caldav-accounts` replaces `dashboard-caldav-config`
+  - Automatic one-time migration: existing single-account config is silently converted on first load; old key deleted
+  - Each account gets a distinct color from a 6-color palette (`#4285f4`, `#ea4335`, `#34a853`, `#ff9800`, `#9c27b0`, `#00bcd4`)
+  - Optional account label field (e.g. "Work", "Personal") displayed in the accounts list and on event cards
+- **Generic CalDAV server support** — `api/calendar.js` now handles the `generic` provider using the `customEndpoint` URL sent from the client; returns a descriptive 400 if endpoint is missing
+- **Accounts management UI** in `setup.html` — colored account cards with per-account Test and Remove buttons; "Add Account" button disables at the 3-account limit with an inline message; "Skip" button correctly restores when all accounts are removed
+
+### Changed
+- `caldav-client.js` rewritten around `this.accounts[]` array instead of a single `this.credentials` object
+  - `isConfigured` is now a computed getter (`accounts.length > 0`)
+  - `getCalendarEvents()` fans out via `Promise.allSettled()` — partial failures (one bad account) do not block events from working accounts
+  - `getConfigStatus()` returns `accounts[]` array for UI rendering
+  - `saveConfig()` kept as a legacy no-op wrapper (called internally during connection testing only)
+- `caldav-client.js` → `_fetchAccountEvents()` now includes `customEndpoint` in the POST body so generic CalDAV accounts reach the correct server
+- `app-client.js` → `initializeCalDAV()` sets `activeCalendarClient` before the connection test — a failed test no longer blocks all calendar fetches
+- `app-client.js` → `loadEventsForDate()` date filter now uses `toLocaleDateString('en-CA', { timeZone })` consistently for both the target date and event date comparison, eliminating timezone mismatch when browser locale differs from configured timezone; all-day events (plain `YYYY-MM-DD` start) are compared directly without `Date` parsing
+- `setup.html` → account cards HTML-escaped (`escapeHtml()` helper) before insertion into `innerHTML`
+- Removed ~20 per-event debug `console.log` calls from `renderMultiAccountCalendar` and `loadEventsForDate` that fired on every refresh cycle
+
+### Fixed
+- **Account colors**: per-account colors (`COLOR_PALETTE`) now correctly reach `renderMultiAccountCalendar` and `renderWeekendEvents` — previously all events rendered with the API's hardcoded `#4285f4` regardless of account
+- **Test connection wipes accounts**: `testCalDAVConnection()` in setup.html previously called `saveConfig()` which cleared all saved accounts before testing; it now POSTs directly to `/api/calendar` without touching client state
+- **Skip button stuck hidden**: removing the last calendar account now correctly restores the "Skip Calendar Setup" button
+- **XSS in account cards**: user-supplied label and username values are now HTML-escaped before rendering
+- **Generic CalDAV**: selecting the `generic` provider no longer returns `400 Unsupported provider` from the Vercel function
+
+---
+
 ## [3.27.4] - 2026-03-06
 
 ### Changed
