@@ -5,6 +5,28 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.29.0] - 2026-03-06
+
+### Added
+- **Extreme weather alert system** — full-screen overlay when severe conditions are detected:
+  - **Orange** (Warning): thunderstorm, freezing rain, high winds ≥ 35 mph, heat ≥ 100°F, cold ≤ 0°F
+  - **Red** (Severe): severe thunderstorm, blizzard, hail, winds ≥ 50 mph, heat ≥ 105°F, cold ≤ −10°F
+  - **Animated rainbow** (Extreme): tornado or hurricane warning, winds ≥ 73 mph
+  - Alternates between full-screen warning and normal dashboard on a 15-minute cycle with countdown timer
+  - Alert clears automatically when weather data no longer meets thresholds
+
+### Changed
+- **Sunset time** — upgraded from tiny absolute-positioned badge (14px) to a prominent inline pill below the panel header (18px, bold, dark background)
+- **Temperature font** — increased from 48px → 72px (today) and 36px → 60px (tomorrow); ultra-light weight for clean readability
+- **"Later Today" box** — expanded from 2 data points to 4: high/low temps, wind speed, humidity, and precipitation hours; font increased from 14px → 17px with dedicated header
+- **Forecast/commentary split** — weather narrative now renders in two visually distinct sections:
+  - Forecast text in **dark blue** (`#1a237e`) — serious, factual
+  - R-rated commentary in **deep red** (`#b71c1c`) italic — clearly separated humor
+- **Weather icon removed** — eliminated the large 60–70px emoji icon above the temperature (redundant with the colored background theme)
+- `weather-narrative-engine.js` — added `createTodayNarrativeParts()` and `createWeatherNarrativeParts()` returning `{ forecast, commentary }` objects
+
+---
+
 ## [3.28.1] - 2026-03-06
 
 ### Added

@@ -349,6 +349,82 @@ class WeatherNarrativeEngine {
     }
 
     /**
+     * Create today's narrative split into { forecast, commentary } for two-color rendering
+     */
+    createTodayNarrativeParts(data) {
+        if (data.daily_summary?.summary) {
+            return {
+                forecast: data.daily_summary.summary,
+                commentary: this.getWeatherEncouragement(data.daily_summary, data.precipitation)
+            };
+        }
+
+        const temp = data.temperature || data.daily_summary?.current_temp || data.daily_summary?.high_temp || 70;
+        const condition = (data.description || data.daily_summary?.description || 'partly cloudy').toLowerCase();
+        const humidity = data.humidity || 50;
+        const windSpeed = data.windSpeed || 0;
+
+        let forecast = '';
+        if (temp >= 80) forecast = "It's hot out there! ";
+        else if (temp >= 70) forecast = "Beautiful weather right now! ";
+        else if (temp >= 60) forecast = "Pleasant conditions today! ";
+        else if (temp >= 40) forecast = "A bit cool - jacket weather! ";
+        else forecast = "Bundle up - it's chilly! ";
+
+        if (condition.includes('rain') || condition.includes('shower')) forecast += "Rain in the area. ";
+        else if (condition.includes('snow')) forecast += "Snow is falling! ";
+        else if (condition.includes('clear') || condition.includes('sunny')) forecast += "Clear and bright! ";
+        else if (condition.includes('cloud')) forecast += "Overcast skies. ";
+
+        if (humidity > 70) forecast += "Feeling humid. ";
+        else if (humidity < 30) forecast += "Nice and dry. ";
+        if (windSpeed > 15) forecast += "Quite breezy today. ";
+        else if (windSpeed > 8) forecast += "Light breeze. ";
+
+        const fallbackSummary = { high_temp: temp, description: condition };
+        const fallbackPrecip = condition.includes('rain') || condition.includes('snow') ? { expected: true } : null;
+
+        return { forecast: forecast.trim(), commentary: this.getWeatherEncouragement(fallbackSummary, fallbackPrecip) };
+    }
+
+    /**
+     * Create tomorrow's narrative split into { forecast, commentary } for two-color rendering
+     */
+    createWeatherNarrativeParts(data) {
+        const summary = data.daily_summary;
+
+        if (summary?.summary) {
+            return {
+                forecast: summary.summary,
+                commentary: this.getWeatherEncouragement(summary, data.precipitation)
+            };
+        }
+
+        const temp = summary.high_temp;
+        const condition = summary.description.toLowerCase();
+        const precipitation = data.precipitation;
+
+        let forecast = '';
+        if (temp >= 80) forecast = "It's going to be a hot one! ";
+        else if (temp >= 70) forecast = "Perfect weather ahead! ";
+        else if (temp >= 60) forecast = "Pleasant temperatures expected! ";
+        else if (temp >= 40) forecast = "Pack a jacket - it'll be cool! ";
+        else forecast = "Bundle up - it's going to be chilly! ";
+
+        if (condition.includes('rain') || condition.includes('shower')) forecast += "Keep an umbrella handy. ";
+        else if (condition.includes('snow')) forecast += "Snow is in the forecast! ";
+        else if (condition.includes('clear') || condition.includes('sunny')) forecast += "Clear skies all day! ";
+        else if (condition.includes('cloud')) forecast += "Cloudy but dry conditions. ";
+
+        if (precipitation && precipitation.expected) {
+            const precipType = precipitation.hours[0]?.type || 'precipitation';
+            forecast += `Expect ${precipitation.total_hours}h of ${precipType}. `;
+        }
+
+        return { forecast: forecast.trim(), commentary: this.getWeatherEncouragement(summary, precipitation) };
+    }
+
+    /**
      * Generate a simple weather summary (used by API client)
      * @param {Object} currentData - Current weather data
      * @param {number} highTemp - High temperature

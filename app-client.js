@@ -39,6 +39,8 @@ class DashboardApp {
         this.sunData = null;
         this.displayMode = 'today'; // 'today' or 'tomorrow'
         this.abortController = null; // For cancelling requests
+        this.alertCycleTimer = null;
+        this._alertCountdownTimer = null;
     }
 
     async init() {
@@ -918,15 +920,25 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         
         // Update favicon
         this.updateFavicon(mainIcon);
+
+        // Check for extreme weather alerts
+        const alertInfo = this.checkWeatherAlerts(data);
+        if (alertInfo) {
+            this.startAlertCycle(alertInfo);
+        } else {
+            this.stopAlertCycle();
+        }
     }
-    
+
     renderTodayWeather(data, colors, mainIcon) {
         const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
         const condition = data.description || data.daily_summary.description;
-        
-        // Create today's narrative using available data
-        const todayNarrative = this.createTodayNarrative(data);
-        
+        const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
+
+        const windStr = data.windSpeed ? `💨 ${data.windSpeed} mph` : '';
+        const humidityStr = data.humidity ? `💧 ${data.humidity}%` : '';
+        const detailLine = [windStr, humidityStr].filter(Boolean).join(' &nbsp;•&nbsp; ');
+
         return `
             <!-- Today's Main Display - Full Height -->
             <div style="
@@ -939,75 +951,77 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 height: 100%;
                 display: flex;
                 flex-direction: column;
-                position: relative;
             ">
-                <div style="
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    font-size: 14px;
-                    font-weight: 500;
-                    background: rgba(0,0,0,0.2);
-                    padding: 4px 8px;
-                    border-radius: 8px;
-                ">
-                    🌇 ${this.sunData?.sunset || 'N/A'}
-                </div>
-                <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">
+                <div style="font-size: 22px; font-weight: 700; margin-bottom: 4px;">
                     🏠 RIGHT NOW
                 </div>
-                <div style="font-size: 60px; margin: 8px 0;">${mainIcon}</div>
-                <div style="font-size: 48px; font-weight: 300; margin: 5px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                <div style="
+                    font-size: 18px;
+                    font-weight: 600;
+                    background: rgba(0,0,0,0.25);
+                    border-radius: 10px;
+                    padding: 6px 16px;
+                    margin: 0 auto 8px;
+                    display: inline-block;
+                ">
+                    🌇 Sunset: ${this.sunData?.sunset || 'N/A'}
+                </div>
+                <div style="font-size: 72px; font-weight: 200; margin: 2px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.1;">
                     ${currentTemp}°F
                 </div>
-                <div style="font-size: 20px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 8px;">
+                <div style="font-size: 22px; font-weight: 600; text-transform: capitalize; opacity: 0.95; margin-bottom: 8px;">
                     ${condition}
                 </div>
-                
-                <!-- Later Today Forecast - Compact -->
+
+                <!-- Later Today Forecast -->
                 <div style="
                     background: ${colors.secondary};
                     color: ${colors.secondaryText};
                     border-radius: 10px;
-                    padding: 8px;
+                    padding: 12px 14px;
                     margin-bottom: 10px;
-                    font-size: 14px;
-                    line-height: 1.2;
+                    font-size: 17px;
+                    line-height: 1.6;
+                    text-align: left;
                 ">
-                    📈 Later: High <strong>${data.daily_summary.high_temp}°F</strong> • Low <strong>${data.daily_summary.low_temp}°F</strong>
-                    ${data.precipitation && data.precipitation.expected ? 
-                        `<br>🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected` : ''
+                    <div style="font-weight: 700; text-align: center; margin-bottom: 4px;">📈 LATER TODAY</div>
+                    <div>🌡️ High <strong>${data.daily_summary.high_temp}°F</strong> &nbsp;•&nbsp; Low <strong>${data.daily_summary.low_temp}°F</strong></div>
+                    ${detailLine ? `<div>${detailLine}</div>` : ''}
+                    ${data.precipitation && data.precipitation.expected ?
+                        `<div>🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected</div>` : ''
                     }
                 </div>
-                
-                <!-- Today's Weather Summary - Expandable -->
+
+                <!-- Today's Weather Summary - two-color -->
                 <div style="
                     background: #ffffff;
-                    color: #4a148c;
                     border-radius: 15px;
                     padding: 20px;
-                    font-size: clamp(24px, 6vw, 42px);
-                    line-height: 1.3;
-                    font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
                     flex: 1;
                     overflow-y: auto;
                     display: flex;
+                    flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     text-align: center;
+                    gap: 12px;
                 ">
-                    ${todayNarrative}
+                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #1a237e;">
+                        ${parts.forecast}
+                    </div>
+                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #b71c1c; font-style: italic;">
+                        ${parts.commentary}
+                    </div>
                 </div>
             </div>
         `;
     }
     
     renderTomorrowWeather(data, colors, mainIcon) {
-        // Create a compelling narrative for tomorrow
-        const narrative = this.createWeatherNarrative(data);
-        
+        const parts = window.weatherNarrativeEngine.createWeatherNarrativeParts(data);
+
         return `
             <!-- Tomorrow's Main Display -->
             <div style="
@@ -1020,59 +1034,60 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 height: 100%;
                 display: flex;
                 flex-direction: column;
-                position: relative;
             ">
-                <div style="
-                    position: absolute;
-                    top: 18px;
-                    right: 18px;
-                    font-size: 14px;
-                    font-weight: 500;
-                    background: rgba(0,0,0,0.2);
-                    padding: 4px 8px;
-                    border-radius: 8px;
-                ">
-                    🌇 ${this.sunData?.sunset || 'N/A'}
-                </div>
-                <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
+                <div style="font-size: 22px; font-weight: 700; margin-bottom: 4px;">
                     🌅 TOMORROW
                 </div>
-                <div style="font-size: 70px; margin: 10px 0;">${mainIcon}</div>
                 <div style="
-                    font-size: 36px; 
-                    font-weight: 300; 
-                    margin: 8px 0; 
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    font-size: 18px;
+                    font-weight: 600;
+                    background: rgba(0,0,0,0.25);
+                    border-radius: 10px;
+                    padding: 6px 16px;
+                    margin: 0 auto 8px;
+                    display: inline-block;
                 ">
-                    ${data.daily_summary.low_temp}° - ${data.daily_summary.high_temp}°F
+                    🌇 Sunset: ${this.sunData?.sunset || 'N/A'}
                 </div>
                 <div style="
-                    font-size: 18px; 
-                    font-weight: 500; 
-                    text-transform: capitalize; 
+                    font-size: 60px;
+                    font-weight: 200;
+                    margin: 2px 0;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    line-height: 1.1;
+                ">
+                    ${data.daily_summary.low_temp}° – ${data.daily_summary.high_temp}°F
+                </div>
+                <div style="
+                    font-size: 22px;
+                    font-weight: 600;
+                    text-transform: capitalize;
                     opacity: 0.95;
-                    margin-bottom: 10px;
+                    margin-bottom: 12px;
                 ">
                     ${data.daily_summary.description}
                 </div>
                 <div style="
                     background: #ffffff;
-                    color: #4a148c;
                     border-radius: 15px;
                     padding: 25px;
-                    font-size: clamp(26px, 7vw, 40px);
-                    line-height: 1.3;
-                    font-weight: 700;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
                     border: 3px solid #4a148c;
                     flex: 1;
                     overflow-y: auto;
                     display: flex;
+                    flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     text-align: center;
+                    gap: 12px;
                 ">
-                    ${narrative}
+                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #1a237e;">
+                        ${parts.forecast}
+                    </div>
+                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #b71c1c; font-style: italic;">
+                        ${parts.commentary}
+                    </div>
                 </div>
             </div>
         `;
@@ -1091,6 +1106,139 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     getWeatherEncouragement(summary, precipitation) {
         // Use WeatherNarrativeEngine for consistent weather encouragement
         return window.weatherNarrativeEngine.getWeatherEncouragement(summary, precipitation);
+    }
+
+    checkWeatherAlerts(data) {
+        const condition = (data.daily_summary?.description || data.description || '').toLowerCase();
+        const temp = data.daily_summary?.high_temp || data.temperature || 70;
+        const windSpeed = data.windSpeed || 0;
+        const conditions = [];
+        let level = null;
+
+        // Extreme tier (rainbow): tornado, hurricane, or sustained 73+ mph winds
+        if (condition.includes('tornado') || condition.includes('hurricane') || windSpeed >= 73) {
+            level = 'extreme';
+            if (condition.includes('tornado')) conditions.push('🌪️ TORNADO WARNING');
+            else if (condition.includes('hurricane')) conditions.push('🌀 HURRICANE WARNING');
+            else conditions.push(`💨 EXTREME WINDS: ${windSpeed} MPH`);
+        }
+        // Severe tier (red)
+        else if (condition.includes('severe') || condition.includes('blizzard') ||
+                 condition.includes('hail') || windSpeed >= 50 || temp >= 105 || temp <= -10) {
+            level = 'severe';
+            if (condition.includes('severe')) conditions.push('⛈️ SEVERE THUNDERSTORM');
+            if (condition.includes('blizzard')) conditions.push('❄️ BLIZZARD WARNING');
+            if (condition.includes('hail')) conditions.push('🧊 HAIL WARNING');
+            if (windSpeed >= 50) conditions.push(`💨 DANGEROUS WINDS: ${windSpeed} MPH`);
+            if (temp >= 105) conditions.push(`🔥 EXTREME HEAT: ${temp}°F`);
+            if (temp <= -10) conditions.push(`🥶 EXTREME COLD: ${temp}°F`);
+        }
+        // Warning tier (orange)
+        else if (condition.includes('thunderstorm') || condition.includes('freezing rain') ||
+                 windSpeed >= 35 || temp >= 100 || temp <= 0) {
+            level = 'warning';
+            if (condition.includes('thunderstorm')) conditions.push('⛈️ THUNDERSTORM');
+            if (condition.includes('freezing rain')) conditions.push('🌊 FREEZING RAIN');
+            if (windSpeed >= 35 && windSpeed < 50) conditions.push(`💨 HIGH WINDS: ${windSpeed} MPH`);
+            if (temp >= 100 && temp < 105) conditions.push(`🔥 EXTREME HEAT: ${temp}°F`);
+            if (temp <= 0 && temp > -10) conditions.push(`🥶 EXTREME COLD: ${temp}°F`);
+        }
+
+        if (!level || conditions.length === 0) return null;
+        return { level, conditions };
+    }
+
+    startAlertCycle(alertInfo) {
+        this.stopAlertCycle();
+
+        // Inject rainbow keyframe animation once
+        if (!document.getElementById('weather-alert-styles')) {
+            const style = document.createElement('style');
+            style.id = 'weather-alert-styles';
+            style.textContent = `
+                @keyframes weather-rainbow {
+                    0%   { background-color: #e53935; }
+                    17%  { background-color: #e65100; }
+                    33%  { background-color: #f9a825; }
+                    50%  { background-color: #2e7d32; }
+                    67%  { background-color: #1565c0; }
+                    83%  { background-color: #6a1b9a; }
+                    100% { background-color: #e53935; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        let overlay = document.getElementById('weather-alert-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'weather-alert-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        const { level, conditions } = alertInfo;
+        const icon = level === 'extreme' ? '🌪️' : level === 'severe' ? '🚨' : '⚠️';
+        const title = level === 'extreme' ? '⚠️ EXTREME WEATHER EMERGENCY ⚠️'
+                    : level === 'severe'  ? '🚨 SEVERE WEATHER WARNING 🚨'
+                    :                       '⚠️ WEATHER ALERT ⚠️';
+
+        const baseStyle = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            color: #ffffff;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999; text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+        `;
+
+        if (level === 'extreme') {
+            overlay.style.cssText = baseStyle + 'animation: weather-rainbow 3s linear infinite;';
+        } else if (level === 'severe') {
+            overlay.style.cssText = baseStyle + 'background: #b71c1c;';
+        } else {
+            overlay.style.cssText = baseStyle + 'background: #e65100;';
+        }
+
+        overlay.innerHTML = `
+            <div style="font-size: 80px; margin-bottom: 16px;">${icon}</div>
+            <div style="font-size: 48px; font-weight: 900; margin-bottom: 24px;">${title}</div>
+            ${conditions.map(c => `<div style="font-size: 34px; font-weight: 700; margin: 8px 0;">${c}</div>`).join('')}
+            <div style="font-size: 22px; margin-top: 40px; opacity: 0.85;">
+                Dashboard resumes in <span id="alert-countdown">15:00</span>
+            </div>
+        `;
+
+        const CYCLE_MS = 15 * 60 * 1000;
+        let showingAlert = true;
+        let secondsLeft = CYCLE_MS / 1000;
+
+        const countdownEl = overlay.querySelector('#alert-countdown');
+        this._alertCountdownTimer = setInterval(() => {
+            secondsLeft = Math.max(0, secondsLeft - 1);
+            const m = Math.floor(secondsLeft / 60);
+            const s = secondsLeft % 60;
+            if (countdownEl) countdownEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        this.alertCycleTimer = setInterval(() => {
+            showingAlert = !showingAlert;
+            overlay.style.display = showingAlert ? 'flex' : 'none';
+            secondsLeft = CYCLE_MS / 1000;
+        }, CYCLE_MS);
+    }
+
+    stopAlertCycle() {
+        if (this.alertCycleTimer) {
+            clearInterval(this.alertCycleTimer);
+            this.alertCycleTimer = null;
+        }
+        if (this._alertCountdownTimer) {
+            clearInterval(this._alertCountdownTimer);
+            this._alertCountdownTimer = null;
+        }
+        const overlay = document.getElementById('weather-alert-overlay');
+        if (overlay) overlay.style.display = 'none';
     }
     
     getImprovedWeatherColors(data) {
@@ -1491,7 +1639,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
-            [this.refreshTimer, this.timeCheckTimer].forEach(timer => {
+            [this.refreshTimer, this.timeCheckTimer, this.alertCycleTimer, this._alertCountdownTimer].forEach(timer => {
                 if (timer) clearInterval(timer);
             });
             

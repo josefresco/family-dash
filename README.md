@@ -1,12 +1,20 @@
-# Family Dashboard - v3.28.1 🏠
+# Family Dashboard - v3.29.0 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 hilarious comments including 100 R-rated additions**, extreme weather alert overlays, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ---
 
 ## 🎉 Latest Updates
 
-### New Release (v3.28.1) - Comedian Weather Comments
+### New Release (v3.29.0) - Weather UI Overhaul & Alert System
+- **Extreme Weather Alerts**: Full-screen overlay (orange / red / animated rainbow) for warning, severe, and extreme conditions — alternates with normal dashboard every 15 minutes
+- **Two-Color Narrative**: Forecast text renders in dark blue; R-rated commentary renders in deep red italic — glanceable at a distance
+- **Prominent Sunset**: Upgraded from a tiny 14px badge to a clear 18px pill below the panel header
+- **Larger Temperature**: 72px (today) and 60px (tomorrow) for across-the-room readability
+- **Richer "Later Today" Box**: Now shows high/low, wind speed, humidity, and precipitation hours
+- **Icon Removed**: Eliminated the redundant large emoji icon above the temperature
+
+### Previous Release (v3.28.1) - Comedian Weather Comments
 - **156 Total Weather Comments**: Added 50 comedian-inspired R-rated comments (up from 106)
 - **18 Comedians**: Carlin, Pryor, Robin Williams, Dangerfield, Joan Rivers, Bill Burr, Chappelle, Mulaney, Norm Macdonald, Mitch Hedberg, Amy Schumer, Wanda Sykes, Don Rickles, Jeselnik, Sarah Silverman, Jeff Ross, Phyllis Diller, Henny Youngman
 
