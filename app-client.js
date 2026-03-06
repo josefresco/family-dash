@@ -774,6 +774,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     async loadEventsForDate(date) {
         try {
+            if (!this.activeCalendarClient) return [];
+
             const tz = this.config.location.timezone;
 
             // Format date for API using configured timezone (avoids local-vs-configured mismatch)
@@ -873,30 +875,13 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         const weatherDiv = document.getElementById('current-weather');
         
         try {
-            console.log('=== DASHBOARD WEATHER LOADING ===');
-            console.log('Display mode:', this.displayMode);
-            console.log('API Client:', this.apiClient);
-            console.log('Config object:', this.appConfig);
-            console.log('Weather API key configured:', !!this.appConfig.get('openweather_api_key'));
-            console.log('Location:', {
-                lat: this.appConfig.get('location.lat'),
-                lon: this.appConfig.get('location.lon'),
-                city: this.appConfig.get('location.city')
-            });
-            
             const timeContext = this.displayMode === 'tomorrow' ? 'tomorrow\'s' : 'today\'s';
             weatherDiv.innerHTML = this.getLoadingHTML(`Loading ${timeContext} weather forecast...`);
-            
-            console.log('Making API request for weather...');
+
             const data = await this.makeApiRequest('weather');
-            console.log('Weather API response:', data);
-            
-            if (!data) {
-                console.log('Request was cancelled');
-                return; // Request was cancelled
-            }
-            
-            console.log('Rendering weather data...');
+
+            if (!data) return; // Request was cancelled
+
             this.weatherData = data; // Store weather data for later use
             this.renderWeatherData(data);
             console.log('Weather data rendered successfully');
