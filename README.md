@@ -1,4 +1,4 @@
-# Family Dashboard - v3.27.1 🏠
+# Family Dashboard - v3.27.3 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
