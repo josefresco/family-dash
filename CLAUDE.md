@@ -1,17 +1,23 @@
 # family-dash — Project Instructions for Claude
 
-## Release Workflow (REQUIRED before every push)
+## Release Workflow (REQUIRED — update docs BEFORE every commit and push)
 
-Every code change that gets pushed must include:
+**This is non-negotiable.** Every code change — no matter how small — must include a version bump and docs update in the SAME commit. Never commit code without updating these files first.
 
+### Files to update on every release:
 1. **CHANGELOG.md** — add a new `## [x.y.z] - YYYY-MM-DD` entry at the top with Added / Changed / Fixed sections
-2. **README.md** — bump the version number in the `# Family Dashboard - vX.Y.Z` title, add a bullet in "Latest Updates", and add a line in the "Version History" table at the bottom
-3. **Version bump rules**:
-   - `patch` (x.y.**Z**) — bug fixes, comment additions, copy changes
-   - `minor` (x.**Y**.0) — new features, new UI, new API support
-   - `major` (**X**.0.0) — breaking changes or full rewrites
+2. **README.md** — bump title `# Family Dashboard - vX.Y.Z`, update "Latest Updates" (demote current to "Previous Release", add new entry), update the description line if wording has changed
+3. **`package.json`** — bump `"version"`
+4. **`sw.js`** — bump `CACHE_NAME` (`dashboard-vX.Y.Z`)
+5. **`dashboard.html`** — bump `<title>` and ALL `?v=X.Y` query strings on script/preload tags
+6. **`module-loader.js`** — bump `?v=X.Y` query string in `loadCalDAV()`
 
-Do not wait to be reminded. Update CHANGELOG and README as part of every task, before committing.
+### Version bump rules:
+- `patch` (x.y.**Z**) — bug fixes, copy/content changes, comment edits
+- `minor` (x.**Y**.0) — new features, new UI sections, new API support
+- `major` (**X**.0.0) — breaking changes or full rewrites
+
+**Do not wait to be asked.** If you pushed code without updating docs, immediately create a follow-up commit with the version bump and doc updates.
 
 ## Project Overview
 

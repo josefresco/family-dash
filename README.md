@@ -1,12 +1,16 @@
-# Family Dashboard - v3.30.0 🏠
+# Family Dashboard - v3.30.1 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 hilarious comments including 100 R-rated additions**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 family-friendly comedian quotes**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ---
 
 ## 🎉 Latest Updates
 
-### New Release (v3.30.0) - Weather & Calendar Intelligence
+### New Release (v3.30.1) - Family-Friendly Comedian Edition
+- **Clean Weather Commentary**: Removed all R-rated and profanity-containing comments; all 156 quotes are now family-friendly
+- **Expanded Comedian Roster**: Added ~13 new quotes per category from Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, and Bob Newhart
+
+### Previous Release (v3.30.0) - Weather & Calendar Intelligence
 - **Temperature Shift Alert**: Orange "WARM ALERT!" or blue "COLD ALERT!" pill when any day in the 5-day forecast swings ≥15°F from today's high
 - **Upcoming Birthdays & Holidays**: New box below "This Weekend" — scans 30 days across all calendar accounts, detects birthdays, anniversaries, and major holidays
 - **Sunrise / Sunset Toggle**: Sun pill switches automatically from Sunset to Sunrise after dark

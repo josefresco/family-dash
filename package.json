@@ -1,6 +1,6 @@
 {
   "name": "family-dashboard",
-  "version": "3.30.0",
+  "version": "3.30.1",
   "description": "A sophisticated, room-readable personal dashboard application designed for always-on displays",
   "private": true,
   "scripts": {

@@ -5,6 +5,15 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.30.1] - 2026-03-06
+
+### Changed
+- **Weather commentary** — removed all R-rated and profanity-containing comments; replaced with family-friendly alternatives
+- **Expanded comedian quotes** — added ~13 new clean quotes per weather category from Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, and Bob Newhart; dropped Louis C.K.
+- Total commentary: 156 quotes across all four categories, now fully family-friendly
+
+---
+
 ## [3.30.0] - 2026-03-06
 
 ### Added
