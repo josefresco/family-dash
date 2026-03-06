@@ -930,6 +930,31 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
     }
 
+    getSunPillInfo() {
+        if (!this.sunData) return { icon: '🌇', label: 'Sunset', time: 'N/A' };
+
+        const parseAmPm = (str) => {
+            if (!str || str === 'N/A') return -1;
+            const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!m) return -1;
+            let h = parseInt(m[1]);
+            const min = parseInt(m[2]);
+            if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+            if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+            return h * 60 + min;
+        };
+
+        const tz = this.config.location.timezone;
+        const nowStr = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
+        const nowMinutes = parseAmPm(nowStr);
+        const sunsetMinutes = parseAmPm(this.sunData.sunset);
+
+        if (sunsetMinutes > 0 && nowMinutes >= sunsetMinutes) {
+            return { icon: '🌅', label: 'Sunrise', time: this.sunData.sunrise };
+        }
+        return { icon: '🌇', label: 'Sunset', time: this.sunData.sunset };
+    }
+
     getLaterTodaySentence(data) {
         const high = data.daily_summary.high_temp;
         const condition = (data.daily_summary.description || '').toLowerCase();
@@ -958,6 +983,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         const condition = data.description || data.daily_summary.description;
         const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
         const laterSentence = this.getLaterTodaySentence(data);
+        const sunPill = this.getSunPillInfo();
 
         return `
             <!-- Today's Main Display - Full Height -->
@@ -984,7 +1010,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     margin: 0 auto 8px;
                     display: inline-block;
                 ">
-                    🌇 Sunset: ${this.sunData?.sunset || 'N/A'}
+                    ${sunPill.icon} ${sunPill.label}: ${sunPill.time}
                 </div>
                 <div style="font-size: 72px; font-weight: 200; margin: 2px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.1;">
                     ${currentTemp}°F
@@ -1036,6 +1062,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     
     renderTomorrowWeather(data, colors, mainIcon) {
         const parts = window.weatherNarrativeEngine.createWeatherNarrativeParts(data);
+        const sunPill = this.getSunPillInfo();
 
         return `
             <!-- Tomorrow's Main Display -->
@@ -1062,7 +1089,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     margin: 0 auto 8px;
                     display: inline-block;
                 ">
-                    🌇 Sunset: ${this.sunData?.sunset || 'N/A'}
+                    ${sunPill.icon} ${sunPill.label}: ${sunPill.time}
                 </div>
                 <div style="
                     font-size: 60px;
