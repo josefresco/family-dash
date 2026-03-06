@@ -930,14 +930,34 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
     }
 
+    getLaterTodaySentence(data) {
+        const high = data.daily_summary.high_temp;
+        const condition = (data.daily_summary.description || '').toLowerCase();
+        const windSpeed = data.windSpeed || 0;
+        const precipExpected = data.precipitation && data.precipitation.expected;
+        const precipType = data.precipitation?.hours?.[0]?.type || 'rain';
+
+        let tempDesc = high >= 85 ? 'hot' : high >= 72 ? 'warm' : high >= 60 ? 'mild' : high >= 45 ? 'cool' : 'cold';
+
+        let condDesc = '';
+        if (condition.includes('thunderstorm') || condition.includes('storm')) condDesc = 'stormy';
+        else if (condition.includes('snow') || condition.includes('blizzard')) condDesc = 'snowy';
+        else if (precipExpected || condition.includes('rain') || condition.includes('shower')) condDesc = precipType === 'snow' ? 'snowy' : 'rainy';
+        else if (condition.includes('clear') || condition.includes('sunny')) condDesc = 'sunny';
+        else if (condition.includes('cloud') || condition.includes('overcast')) condDesc = 'cloudy';
+        else if (windSpeed >= 20) condDesc = 'breezy';
+
+        if (condDesc === 'stormy') return `Later expect ${tempDesc}, stormy conditions.`;
+        if (condDesc === 'rainy' || condDesc === 'snowy') return `Later expect ${condDesc} and ${tempDesc}.`;
+        if (!condDesc) return `Later it will be ${tempDesc}.`;
+        return `Later it will be ${tempDesc} and ${condDesc}.`;
+    }
+
     renderTodayWeather(data, colors, mainIcon) {
         const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
         const condition = data.description || data.daily_summary.description;
         const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
-
-        const windStr = data.windSpeed ? `💨 ${data.windSpeed} mph` : '';
-        const humidityStr = data.humidity ? `💧 ${data.humidity}%` : '';
-        const detailLine = [windStr, humidityStr].filter(Boolean).join(' &nbsp;•&nbsp; ');
+        const laterSentence = this.getLaterTodaySentence(data);
 
         return `
             <!-- Today's Main Display - Full Height -->
@@ -978,18 +998,13 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     background: ${colors.secondary};
                     color: ${colors.secondaryText};
                     border-radius: 10px;
-                    padding: 12px 14px;
+                    padding: 12px 16px;
                     margin-bottom: 10px;
-                    font-size: 17px;
-                    line-height: 1.6;
-                    text-align: left;
+                    font-size: 20px;
+                    font-weight: 600;
+                    text-align: center;
                 ">
-                    <div style="font-weight: 700; text-align: center; margin-bottom: 4px;">📈 LATER TODAY</div>
-                    <div>🌡️ High <strong>${data.daily_summary.high_temp}°F</strong> &nbsp;•&nbsp; Low <strong>${data.daily_summary.low_temp}°F</strong></div>
-                    ${detailLine ? `<div>${detailLine}</div>` : ''}
-                    ${data.precipitation && data.precipitation.expected ?
-                        `<div>🌧️ ${data.precipitation.total_hours}h of ${data.precipitation.hours[0]?.type || 'precipitation'} expected</div>` : ''
-                    }
+                    ${laterSentence}
                 </div>
 
                 <!-- Today's Weather Summary - two-color -->
