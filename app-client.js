@@ -660,10 +660,11 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             // Collect all events from all calendars using modern array methods
             const allEvents = data.calendars
                 .filter(calendar => calendar.events?.length > 0)
-                .flatMap(calendar => 
+                .flatMap(calendar =>
                     calendar.events.map(event => ({
                         ...event,
-                        calendarColor: calendar.color || '#3498db'
+                        calendarColor: calendar.color || '#3498db',
+                        calendarName: calendar.account_label || calendar.name || ''
                     }))
                 );
             
@@ -704,7 +705,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
                 return `
                     <div class="event-compact" style="border-left-color: ${event.calendarColor};">
-                        <div class="event-time-compact">${startTime}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                            <div class="event-time-compact">${startTime}</div>
+                            ${event.calendarName ? `<div style="font-size: 11px; color: #b0b0b0; font-weight: 500; white-space: nowrap; margin-left: 8px;">${event.calendarName}</div>` : ''}
+                        </div>
                         <div class="event-title-compact">${event.summary || 'Untitled Event'}</div>
                     </div>
                 `;
