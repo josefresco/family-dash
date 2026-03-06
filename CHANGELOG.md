@@ -5,6 +5,18 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.28.1] - 2026-03-06
+
+### Added
+- **50 comedian-inspired weather comments** — 156 total (up from 106), across all four weather categories:
+  - Sunny outdoor: 28 → 41 comments (+13)
+  - Cloudy outdoor: 22 → 34 comments (+12)
+  - Rainy indoor: 29 → 42 comments (+13)
+  - Cold indoor: 27 → 39 comments (+12)
+- Comedians represented: George Carlin, Richard Pryor, Robin Williams, Rodney Dangerfield, Joan Rivers, Bill Burr, Dave Chappelle, John Mulaney, Norm Macdonald, Mitch Hedberg, Amy Schumer, Wanda Sykes, Don Rickles, Anthony Jeselnik, Sarah Silverman, Jeff Ross, Phyllis Diller, Henny Youngman
+
+---
+
 ## [3.28.0] - 2026-03-06
 
 ### Added

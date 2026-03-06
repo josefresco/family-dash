@@ -1,4 +1,4 @@
-# Family Dashboard - v3.28.0 🏠
+# Family Dashboard - v3.28.1 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,7 +6,11 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.28.0) - Multi-Account CalDAV
+### New Release (v3.28.1) - Comedian Weather Comments
+- **156 Total Weather Comments**: Added 50 comedian-inspired R-rated comments (up from 106)
+- **18 Comedians**: Carlin, Pryor, Robin Williams, Dangerfield, Joan Rivers, Bill Burr, Chappelle, Mulaney, Norm Macdonald, Mitch Hedberg, Amy Schumer, Wanda Sykes, Don Rickles, Jeselnik, Sarah Silverman, Jeff Ross, Phyllis Diller, Henny Youngman
+
+### Previous Release (v3.28.0) - Multi-Account CalDAV
 - **Multi-Account Calendar**: Connect up to 3 CalDAV accounts simultaneously — Google Workspace, Gmail, iCloud, Outlook, or any generic CalDAV server
 - **Per-Account Colors**: Each account gets a distinct color that carries through to event cards and weekend previews
 - **Accounts Management UI**: Colored account cards with individual Test and Remove buttons; 3-account limit enforced in UI
@@ -333,7 +337,11 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 📈 Version History & Evolution
 
-### v3.28.0 - Multi-Account CalDAV (Latest)
+### v3.28.1 - Comedian Weather Comments (Latest)
+- **156 Weather Comments**: 50 comedian-inspired additions across all four weather categories
+- **18 Comedians**: Carlin, Pryor, Robin Williams, Dangerfield, Joan Rivers, Bill Burr, Chappelle, Mulaney, Norm MacDonald, Mitch Hedberg, Amy Schumer, and more
+
+### v3.28.0 - Multi-Account CalDAV
 - **Multi-Account Calendar**: Up to 3 CalDAV accounts with per-account color coding
 - **Generic CalDAV Fixed**: Custom CalDAV server endpoints now work end-to-end
 - **Partial Failure Resilience**: One bad account doesn't block the others
