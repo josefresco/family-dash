@@ -5,6 +5,17 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.27.4] - 2026-03-06
+
+### Changed
+- **Hosting migration**: CalDAV proxy function migrated from Netlify to Vercel
+  - `netlify/functions/calendar.js` → `api/calendar.js` (Vercel `(req, res)` handler format)
+  - `caldav-client.js` proxy URL updated from `/.netlify/functions/calendar` to `/api/calendar`
+  - `vercel.json` simplified (Vercel auto-discovers the `api/` directory)
+- **Removed**: `netlify.toml`, `netlify/` directory
+
+---
+
 ## [3.27.3] - 2026-03-06
 
 ### Changed

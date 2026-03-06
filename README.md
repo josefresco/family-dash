@@ -1,4 +1,4 @@
-# Family Dashboard - v3.27.3 🏠
+# Family Dashboard - v3.27.4 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **106 hilarious comments including 50 R-rated additions**, modular architecture with utility modules, weekend event previews, and multi-account calendar integration with **accurate timezone handling** and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,7 +6,12 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.27.3) - ZIP Code Location
+### New Release (v3.27.4) - Vercel Migration
+- **Migrated**: CalDAV proxy from Netlify to Vercel (`api/calendar.js`)
+- **Removed**: `netlify.toml` and `netlify/` directory
+- **Fixed**: Calendar proxy URL now correctly routes through Vercel functions
+
+### Previous Release (v3.27.3) - ZIP Code Location
 - **Simplified Setup**: Single ZIP code field replaces city + state inputs — one field, no abbreviations
 - **Smarter Auto-Detect**: Geolocation button kept; on success it populates ZIP automatically via reverse geocode; fails gracefully on locked-down iPads
 - **Unambiguous Geocoding**: OpenWeatherMap zip endpoint eliminates city name conflicts (Springfield, IL vs MO etc.)
@@ -28,7 +33,7 @@ A sophisticated, room-readable personal dashboard application designed for alway
 - **Multi-Account Management**: Connect personal, work, and family calendars
 - **Weekend Events Preview**: Dedicated section showing upcoming Saturday/Sunday events
 - **Accurate Timezone Handling**: Automatic EST/EDT transitions for correct event times
-- **Serverless Backend**: Netlify functions handle authentication and CORS
+- **Serverless Backend**: Vercel functions handle authentication and CORS
 - **Always-On Reliability**: Basic auth eliminates OAuth token refresh issues
 - **All-Day Event Fix**: All-day events now display on correct single day only
 - **Enhanced Setup**: Current configuration management with edit/debug capabilities
@@ -63,7 +68,7 @@ A sophisticated, room-readable personal dashboard application designed for alway
 ### ⚡ Technical Excellence
 - **Modern JavaScript**: ES2015+ features, async/await, destructuring
 - **GitHub Pages Ready**: Pure client-side application, no server required
-- **Netlify Functions**: Optional serverless backend for enhanced calendar features
+- **Vercel Functions**: Serverless backend for CalDAV calendar integration
 - **Service Worker**: Offline capability and performance optimization
 - **LocalStorage Config**: Secure, browser-based configuration management
 - **Optimized Bundle**: 57% smaller with advanced minification (160 KB → 68 KB)
@@ -158,14 +163,13 @@ A sophisticated, room-readable personal dashboard application designed for alway
 4. **Configure APIs** using the built-in setup interface (setup.html)
 5. **Note**: GitHub Pages works great for weather but has limited CalDAV support due to CORS restrictions
 
-### Option 2: Netlify (Recommended for Full Features)
-1. **Deploy to Netlify** for full CalDAV functionality:
+### Option 2: Vercel (Recommended for Full Features)
+1. **Deploy to Vercel** for full CalDAV functionality:
    - Connect your GitHub repository
-   - Build settings are pre-configured in netlify.toml
-   - Deploy directory: `.` (root)
-2. **Serverless functions** handle calendar authentication automatically
+   - No build command required — deploy directory: `.` (root)
+2. **Serverless functions** in `api/` handle calendar authentication automatically
 3. **Custom domains** and SSL certificates included free
-4. **Better calendar integration** with CORS handling via Netlify functions
+4. **Better calendar integration** with CORS handling via Vercel functions
 5. **Instant deployments** on every git push
 
 ### Option 3: Local Development
@@ -178,7 +182,7 @@ A sophisticated, room-readable personal dashboard application designed for alway
    - PHP: `php -S localhost:8000`
 4. Open browser: `http://localhost:8000`
 5. Configure APIs through the setup interface
-6. **Note**: CalDAV features require deploying to Netlify or a server with function support
+6. **Note**: CalDAV features require deploying to Vercel or a server with function support
 
 ## 🔧 Configuration
 
@@ -241,12 +245,12 @@ family-dash/
 │   │   └── weather-narrative-engine.js  # Weather commentary - 106 comments (50 R-rated!)
 │   ├── config.js               # LocalStorage configuration management
 │   ├── api-client.js           # Direct external API integration
-│   ├── caldav-client.js        # CalDAV client with Netlify proxy
+│   ├── caldav-client.js        # CalDAV client with Vercel proxy
 │   └── app-client.js           # Main application logic
 │
 ├── 🔧 Deployment & Services
-│   ├── netlify.toml            # Netlify configuration with functions
-│   ├── netlify/functions/      # Serverless backend
+│   ├── vercel.json             # Vercel configuration
+│   ├── api/                    # Vercel serverless functions
 │   │   └── calendar.js         # CalDAV proxy with timezone fixes
 │   ├── sw.js                   # Service worker for PWA features
 │   └── favicon.svg             # Dynamic weather-based favicon
@@ -321,7 +325,11 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 📈 Version History & Evolution
 
-### v3.27.3 - ZIP Code Location (Latest)
+### v3.27.4 - Vercel Migration (Latest)
+- **Migrated**: CalDAV proxy from Netlify functions to Vercel (`api/calendar.js`)
+- **Cleaned**: Removed all Netlify config files and references
+
+### v3.27.3 - ZIP Code Location
 - **Simplified Setup**: Single ZIP code field replaces city + state inputs
 - **Smarter Auto-Detect**: Geolocation now populates ZIP directly; fails gracefully on restricted devices
 - **More Reliable Geocoding**: Uses OpenWeatherMap's zip-based endpoint (unambiguous, single field)
@@ -369,7 +377,7 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 - **💾 Configuration Management**: Edit existing settings without reconfiguration
 
 ### v3.23 - Production CalDAV Edition
-- **🔄 Complete CalDAV Overhaul**: Netlify functions eliminate CORS issues
+- **🔄 Complete CalDAV Overhaul**: Serverless functions eliminate CORS issues
 - **🎨 Enhanced Weather Narratives**: Personality-driven weather stories
 - **🕐 Intelligent Time Switching**: Eastern timezone awareness
 - **🔍 Advanced Debugging**: CalDAV diagnostic tools and logging
@@ -406,7 +414,7 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 - **Verify Credentials**: Ensure App Password is correctly entered
 - **Network Issues**: Check browser Network tab for CORS/connection errors
 - **Provider Issues**: Try different CalDAV endpoints if using Google Workspace
-- **Deployment Required**: CalDAV features require Netlify deployment (not available on GitHub Pages)
+- **Deployment Required**: CalDAV features require Vercel deployment (not available on GitHub Pages)
 
 #### ⏰ Calendar Times Are Wrong
 - **Timezone Issues**: Events showing 1 hour off? This was fixed in v3.26.1
@@ -440,7 +448,7 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 #### Advanced Troubleshooting
 - **LocalStorage Inspector**: Check `Application → Local Storage` in DevTools
 - **Service Worker**: `Application → Service Workers` for cache debugging
-- **Netlify Functions**: Check function logs for CalDAV proxy issues
+- **Vercel Functions**: Check function logs in the Vercel dashboard for CalDAV proxy issues
 - **External APIs**: Test endpoints directly in browser or Postman
 
 ### Performance Optimization
@@ -510,16 +518,16 @@ When contributing to this project:
 ### General Questions
 
 **Q: Do I need a server to run this?**
-A: No! You can deploy to GitHub Pages (free) for weather-only, or Netlify (free) for full calendar features.
+A: No! You can deploy to GitHub Pages (free) for weather-only, or Vercel (free) for full calendar features.
 
 **Q: What does this cost to run?**
-A: $0! All APIs used have free tiers, and hosting on GitHub Pages or Netlify is free.
+A: $0! All APIs used have free tiers, and hosting on GitHub Pages or Vercel is free.
 
 **Q: Can I use this with my existing calendar?**
 A: Yes! Works with Google Calendar, iCloud, Outlook, and any CalDAV-compatible calendar.
 
 **Q: Will my calendar data be sent to any servers?**
-A: Only to Netlify functions if you deploy there (for CORS handling). All calendar credentials are stored locally in your browser.
+A: Only to Vercel functions (for CORS handling). All calendar credentials are stored locally in your browser.
 
 ### Technical Questions
 
@@ -541,9 +549,9 @@ A: Optimized for iPad displays (1080x810), but responsive design works on most t
 ### GitHub Token Management
 If you receive a notification that your GitHub Personal Access Token is expiring:
 1. **Regenerate**: Click the regeneration link in the GitHub email
-2. **Auto-Update**: GitHub automatically updates connected apps (Netlify)
+2. **Auto-Update**: GitHub automatically updates connected apps (Vercel)
 3. **Verify**: Make a test commit to confirm deployment still works
-4. **No Manual Entry**: Netlify uses OAuth, so no token entry required
+4. **No Manual Entry**: Vercel uses OAuth, so no token entry required
 
 ## 📄 License & Credits
 
