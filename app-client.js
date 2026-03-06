@@ -1019,20 +1019,6 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     ${condition}
                 </div>
 
-                <!-- Later Today Forecast -->
-                <div style="
-                    background: ${colors.secondary};
-                    color: ${colors.secondaryText};
-                    border-radius: 10px;
-                    padding: 12px 16px;
-                    margin-bottom: 10px;
-                    font-size: 20px;
-                    font-weight: 600;
-                    text-align: center;
-                ">
-                    ${laterSentence}
-                </div>
-
                 <!-- Today's Weather Summary - two-color -->
                 <div style="
                     background: #ffffff;
@@ -1056,10 +1042,24 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                         ${parts.commentary}
                     </div>
                 </div>
+
+                <!-- Later Today Forecast -->
+                <div style="
+                    background: ${colors.secondary};
+                    color: ${colors.secondaryText};
+                    border-radius: 10px;
+                    padding: 12px 16px;
+                    margin-top: 10px;
+                    font-size: 20px;
+                    font-weight: 600;
+                    text-align: center;
+                ">
+                    ${laterSentence}
+                </div>
             </div>
         `;
     }
-    
+
     renderTomorrowWeather(data, colors, mainIcon) {
         const parts = window.weatherNarrativeEngine.createWeatherNarrativeParts(data);
         const sunPill = this.getSunPillInfo();
