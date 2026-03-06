@@ -251,10 +251,6 @@ family-dash/
 │   ├── sw.js                   # Service worker for PWA features
 │   └── favicon.svg             # Dynamic weather-based favicon
 │
-├── 🎨 Assets
-│   ├── functions.png           # Setup interface screenshot
-│   └── settings.png            # Configuration screenshot
-│
 └── 📚 Documentation
     ├── README.md               # This file
     └── CHANGELOG.md            # Detailed version history
