@@ -62,48 +62,45 @@ class APIClient {
     }
     
     // Weather API - Direct call to OpenWeatherMap
-    // Geocode city, state to coordinates using OpenWeatherMap Geocoding API (with caching)
-    async geocodeLocation(city, state) {
+    // Geocode zip code to coordinates using OpenWeatherMap Geocoding API (with caching)
+    async geocodeLocation(zip) {
         const apiKey = this.config.get('openweather_api_key');
         if (!apiKey) {
             throw new Error('OpenWeatherMap API key required for geocoding');
         }
 
-        // Check cache first (optimization: avoid repeated API calls for same location)
-        const cacheKey = `${city},${state}`;
-        if (this.geocodeCache.has(cacheKey)) {
-            console.log('Using cached geocoding result for:', { city, state });
-            return this.geocodeCache.get(cacheKey);
+        // Check cache first
+        if (this.geocodeCache.has(zip)) {
+            console.log('Using cached geocoding result for zip:', zip);
+            return this.geocodeCache.get(zip);
         }
 
         try {
-            // Use OpenWeatherMap's Geocoding API (more reliable than external services)
-            const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)},${encodeURIComponent(state)},US&limit=1&appid=${apiKey}`;
-            console.log('Geocoding location:', { city, state });
+            const geocodeUrl = `https://api.openweathermap.org/geo/1.0/zip?zip=${encodeURIComponent(zip)},US&appid=${apiKey}`;
+            console.log('Geocoding zip:', zip);
 
             const response = await this.makeRequest(geocodeUrl, {});
 
-            if (!response || response.length === 0) {
-                throw new Error(`Location not found: ${city}, ${state}`);
+            if (!response || !response.lat) {
+                throw new Error(`Location not found for zip: ${zip}`);
             }
 
-            const location = response[0];
             const coords = {
-                lat: location.lat,
-                lon: location.lon,
-                name: location.name,
-                state: location.state,
-                country: location.country
+                lat: response.lat,
+                lon: response.lon,
+                name: response.name,
+                state: response.state || '',
+                country: response.country
             };
 
             // Cache the result
-            this.geocodeCache.set(cacheKey, coords);
+            this.geocodeCache.set(zip, coords);
             console.log('Geocoded and cached coordinates:', coords);
             return coords;
 
         } catch (error) {
             console.error('Geocoding error:', error);
-            throw new Error(`Failed to geocode ${city}, ${state}: ${error.message}`);
+            throw new Error(`Failed to geocode zip ${zip}: ${error.message}`);
         }
     }
 
@@ -113,19 +110,18 @@ class APIClient {
             throw new Error('OpenWeatherMap API key not configured');
         }
         
-        // Get location from city/state, then geocode to coordinates
-        const city = this.config.get('location.city');
-        const state = this.config.get('location.state');
-        
-        if (!city || !state) {
-            throw new Error('Location city and state not configured');
+        // Get location from zip, then geocode to coordinates
+        const zip = this.config.get('location.zip');
+
+        if (!zip) {
+            throw new Error('Location zip code not configured');
         }
-        
+
         try {
-            console.log('Weather API request params:', { date_param, city, state, hasApiKey: !!apiKey });
-            
-            // Geocode city/state to coordinates
-            const coords = await this.geocodeLocation(city, state);
+            console.log('Weather API request params:', { date_param, zip, hasApiKey: !!apiKey });
+
+            // Geocode zip to coordinates
+            const coords = await this.geocodeLocation(zip);
             const { lat, lon } = coords;
             
             if (date_param === 'today') {
@@ -348,13 +344,12 @@ class APIClient {
     // Tide API - Direct call to NOAA
     async getTideData(date_param = 'today') {
         // Get user's location to determine appropriate tide stations
-        const userCity = this.config.get('location.city') || 'New York';
-        const userState = this.config.get('location.state') || 'NY';
-        
+        const zip = this.config.get('location.zip') || '10001';
+
         let stations;
-        
-        // Determine stations based on location (using city/state instead of coordinates)
-        if (userCity.toLowerCase().includes('eastham') || userState === 'MA') {
+
+        // Determine stations based on zip prefix (026xx = Cape Cod/MA)
+        if (zip.startsWith('026')) {
             // Cape Cod / Massachusetts stations
             stations = [
                 { id: '8447930', name: 'Woods Hole, MA' },
@@ -450,11 +445,8 @@ class APIClient {
     }
     
     getFallbackTideData(date_param) {
-        // Get user location for appropriate fallback station name
-        const userCity = this.config.get('location.city') || 'New York';
-        const userState = this.config.get('location.state') || 'NY';
-        
-        const isCapeCod = userCity.toLowerCase().includes('eastham') || userState === 'MA';
+        const zip = this.config.get('location.zip') || '10001';
+        const isCapeCod = zip.startsWith('026');
         const stationName = isCapeCod ? 'Cape Cod Bay (Estimated)' : 'New York Harbor (Estimated)';
         
         // Simple fallback based on typical tide patterns
@@ -536,24 +528,23 @@ class APIClient {
     
     // Sunrise/Sunset API
     async getSunriseSunsetData(date_param = 'today') {
-        // Get location from city/state, then geocode to coordinates
-        const city = this.config.get('location.city');
-        const state = this.config.get('location.state');
-        
-        if (!city || !state) {
-            throw new Error('Location city and state not configured');
+        // Get location from zip, then geocode to coordinates
+        const zip = this.config.get('location.zip');
+
+        if (!zip) {
+            throw new Error('Location zip code not configured');
         }
-        
+
         const now = new Date();
         const targetDate = date_param === 'tomorrow'
             ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
             : now;
-        
+
         const dateStr = targetDate.toISOString().split('T')[0];
-        
+
         try {
-            // Geocode city/state to coordinates
-            const coords = await this.geocodeLocation(city, state);
+            // Geocode zip to coordinates
+            const coords = await this.geocodeLocation(zip);
             const { lat, lon } = coords;
             
             const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&date=${dateStr}&formatted=0`;

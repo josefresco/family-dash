@@ -466,15 +466,9 @@
             </div>
             
             <div class="form-group">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
-                    <div>
-                        <label for="location-city">City:</label>
-                        <input type="text" id="location-city" placeholder="New York">
-                    </div>
-                    <div>
-                        <label for="location-state">State:</label>
-                        <input type="text" id="location-state" placeholder="NY" maxlength="2" style="text-transform: uppercase;">
-                    </div>
+                <div>
+                    <label for="location-zip">ZIP Code:</label>
+                    <input type="text" id="location-zip" placeholder="10001" maxlength="5" inputmode="numeric" pattern="[0-9]{5}" style="max-width: 140px;">
                 </div>
             </div>
             
@@ -545,7 +539,7 @@
             updateSectionStates();
             
             // Auto-detect location for new users
-            if (!config.get('location.city') || config.get('location.city') === 'New York') {
+            if (!config.get('location.zip') || config.get('location.zip') === '10001') {
                 setTimeout(detectLocation, 1000);
             }
         }
@@ -561,13 +555,11 @@
             }
             
             // Load location
-            const city = config.get('location.city') || 'New York';
-            const state = config.get('location.state') || 'NY';
-            document.getElementById('location-city').value = city;
-            document.getElementById('location-state').value = state;
-            
+            const zip = config.get('location.zip') || '';
+            document.getElementById('location-zip').value = zip;
+
             // Update the location status display
-            document.getElementById('location-status').textContent = `${city}, ${state}`;
+            document.getElementById('location-status').textContent = zip || 'Not set';
             
             completedSteps.location = true;
             
@@ -796,8 +788,7 @@
                 showStatus('Gathering weather debug information...', 'info');
                 
                 // Get current location for weather testing
-                const city = document.getElementById('location-city').value || 'New York';
-                const state = document.getElementById('location-state').value || 'NY';
+                const zip = document.getElementById('location-zip').value || '10001';
                 
                 // Create concise weather debug info
                 const debugInfo = {
@@ -807,7 +798,7 @@
                 
                 // Test 1: Current weather API
                 try {
-                    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},US&appid=${apiKey}&units=imperial`;
+                    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&appid=${apiKey}&units=imperial`;
                     console.log('Testing current weather API:', currentWeatherUrl.replace(apiKey, '[API_KEY]'));
                     
                     const currentResponse = await fetch(currentWeatherUrl);
@@ -837,7 +828,7 @@
                 
                 // Test 2: 5-day forecast API (used by dashboard)
                 try {
-                    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city},${state},US&appid=${apiKey}&units=imperial`;
+                    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?zip=${zip},US&appid=${apiKey}&units=imperial`;
                     console.log('Testing forecast API:', forecastUrl.replace(apiKey, '[API_KEY]'));
                     
                     const forecastResponse = await fetch(forecastUrl);
@@ -874,7 +865,7 @@
                     successful_tests: debugInfo.tests.filter(t => t.success).length,
                     failed_tests: debugInfo.tests.filter(t => !t.success).length,
                     api_key_status: apiKey.length === 32 ? 'Valid length (32 chars)' : `Invalid length (${apiKey.length} chars, should be 32)`,
-                    location_tested: `${city}, ${state}`,
+                    location_tested: `ZIP ${zip}`,
                     dashboard_config: {
                         update_frequency: '30 minutes',
                         typical_daily_calls: '~48 calls/day',
@@ -1139,13 +1130,15 @@
                 const data = await response.json();
                 
                 const address = data.address || {};
-                const city = address.city || address.town || address.village || 'Unknown City';
-                const state = getStateAbbreviation(address.state || address.region || 'NY');
-                
+                const zip = address.postcode ? address.postcode.substring(0, 5) : '';
+
+                if (!zip || !/^\d{5}$/.test(zip)) {
+                    throw new Error('Could not determine ZIP code from location. Please enter it manually.');
+                }
+
                 // Update form
-                document.getElementById('location-city').value = city;
-                document.getElementById('location-state').value = state;
-                
+                document.getElementById('location-zip').value = zip;
+
                 await saveLocationConfig();
                 
             } catch (error) {
@@ -1170,51 +1163,32 @@
         }
         
         async function saveLocationConfig() {
-            const city = document.getElementById('location-city').value.trim();
-            const state = document.getElementById('location-state').value.trim().toUpperCase();
-            
-            if (!city || !state) {
-                showStatus('Please enter both city and state.', 'error');
+            const zip = document.getElementById('location-zip').value.trim();
+
+            if (!/^\d{5}$/.test(zip)) {
+                showStatus('Please enter a valid 5-digit ZIP code.', 'error');
                 return;
             }
-            
+
             try {
                 const config = window.dashboardConfig;
-                config.set('location.city', city);
-                config.set('location.state', state);
-                
+                config.set('location.zip', zip);
+
                 completedSteps.location = true;
                 updateProgressIndicator();
                 updateSectionStates();
-                
+
                 // Update status display
-                document.getElementById('location-status').textContent = `${city}, ${state}`;
-                
-                showStatus(`✅ Location set to ${city}, ${state}`, 'success');
-                
+                document.getElementById('location-status').textContent = zip;
+
+                showStatus(`✅ Location set to ZIP ${zip}`, 'success');
+
             } catch (error) {
                 showStatus(`❌ Failed to save location: ${error.message}`, 'error');
             }
         }
         
         // Utility Functions
-        function getStateAbbreviation(stateName) {
-            const stateMap = {
-                'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
-                'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
-                'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
-                'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
-                'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
-                'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
-                'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
-                'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
-                'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
-                'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
-            };
-            
-            return stateMap[stateName] || stateName;
-        }
-        
         function showStatus(message, type) {
             const status = document.getElementById('status');
             status.textContent = message;
