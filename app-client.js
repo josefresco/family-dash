@@ -999,7 +999,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 flex-direction: column;
             ">
                 <div style="font-size: 22px; font-weight: 700; margin-bottom: 4px;">
-                    🏠 RIGHT NOW
+                    RIGHT NOW
                 </div>
                 <div style="
                     font-size: 18px;
@@ -1010,7 +1010,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     margin: 0 auto 8px;
                     display: inline-block;
                 ">
-                    ${sunPill.icon} ${sunPill.label}: ${sunPill.time}
+                    ${sunPill.label}: ${sunPill.time}
                 </div>
                 <div style="font-size: 72px; font-weight: 200; margin: 2px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.1;">
                     ${currentTemp}°F
@@ -1078,7 +1078,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 flex-direction: column;
             ">
                 <div style="font-size: 22px; font-weight: 700; margin-bottom: 4px;">
-                    🌅 TOMORROW
+                    TOMORROW
                 </div>
                 <div style="
                     font-size: 18px;
@@ -1089,7 +1089,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     margin: 0 auto 8px;
                     display: inline-block;
                 ">
-                    ${sunPill.icon} ${sunPill.label}: ${sunPill.time}
+                    ${sunPill.label}: ${sunPill.time}
                 </div>
                 <div style="
                     font-size: 60px;
