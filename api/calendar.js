@@ -93,12 +93,16 @@ module.exports = async (req, res) => {
     console.log('Current Eastern date:', easternTodayStr);
 
     let targetEasternDateStr;
+    let isRangeQuery = false;
 
     if (dateParam === 'tomorrow') {
       const [y, m, d] = easternTodayStr.split('-').map(Number);
       targetEasternDateStr = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().split('T')[0];
     } else if (dateParam === 'today') {
       targetEasternDateStr = easternTodayStr;
+    } else if (dateParam === 'upcoming-30') {
+      targetEasternDateStr = easternTodayStr;
+      isRangeQuery = true;
     } else if (dateParam.match(/^\d{4}-\d{2}-\d{2}$/)) {
       console.log('Processing specific date string:', dateParam);
       targetEasternDateStr = dateParam;
@@ -107,7 +111,7 @@ module.exports = async (req, res) => {
       targetEasternDateStr = easternTodayStr;
     }
 
-    console.log('Target Eastern date:', targetEasternDateStr);
+    console.log('Target Eastern date:', targetEasternDateStr, isRangeQuery ? '(30-day range)' : '');
 
     const targetNoonUTC = new Date(targetEasternDateStr + 'T12:00:00Z');
     const easternOffsetHours = isEDT(targetNoonUTC) ? 4 : 5;
@@ -117,9 +121,10 @@ module.exports = async (req, res) => {
     );
 
     const [ty, tm, td] = targetEasternDateStr.split('-').map(Number);
-    const nextEasternDayStr = new Date(Date.UTC(ty, tm - 1, td + 1)).toISOString().split('T')[0];
+    const windowDays = isRangeQuery ? 31 : 1;
+    const windowEndDateStr = new Date(Date.UTC(ty, tm - 1, td + windowDays)).toISOString().split('T')[0];
     const queryEndUTC = new Date(
-      new Date(nextEasternDayStr + 'T12:00:00Z').getTime() + easternOffsetHours * 3600000
+      new Date(windowEndDateStr + 'T12:00:00Z').getTime() + easternOffsetHours * 3600000
     );
 
     const startTimeUTC = formatDateForCalDAV(startOfDayUTC);
@@ -271,27 +276,32 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Filter events to the target Eastern date
-    const filteredEvents = events.filter(event => {
-      if (event.all_day) {
-        const matches = event.start === targetEasternDateStr;
-        if (!matches) {
-          console.log(`Filtering out all-day event "${event.summary}": event date=${event.start}, target=${targetEasternDateStr}`);
+    // For range queries return all events sorted; for single-date queries filter to that day
+    let filteredEvents;
+    if (isRangeQuery) {
+      filteredEvents = events.sort((a, b) => new Date(a.start) - new Date(b.start));
+    } else {
+      filteredEvents = events.filter(event => {
+        if (event.all_day) {
+          const matches = event.start === targetEasternDateStr;
+          if (!matches) {
+            console.log(`Filtering out all-day event "${event.summary}": event date=${event.start}, target=${targetEasternDateStr}`);
+          }
+          return matches;
         }
-        return matches;
-      }
 
-      try {
-        const eventEasternDateStr = new Date(event.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-        const matches = eventEasternDateStr === targetEasternDateStr;
-        if (!matches) {
-          console.log(`Filtering out timed event "${event.summary}": event Eastern date=${eventEasternDateStr}, target=${targetEasternDateStr}`);
+        try {
+          const eventEasternDateStr = new Date(event.start).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+          const matches = eventEasternDateStr === targetEasternDateStr;
+          if (!matches) {
+            console.log(`Filtering out timed event "${event.summary}": event Eastern date=${eventEasternDateStr}, target=${targetEasternDateStr}`);
+          }
+          return matches;
+        } catch (e) {
+          return true;
         }
-        return matches;
-      } catch (e) {
-        return true;
-      }
-    });
+      });
+    }
 
     console.log(`Events before filtering: ${events.length}, after filtering: ${filteredEvents.length}`);
 

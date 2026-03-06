@@ -198,6 +198,76 @@
             min-height: 120px;
         }
 
+        /* === UPCOMING SPECIALS STYLES === */
+        .specials-section {
+            padding-top: 10px;
+            border-top: 2px solid #e9ecef;
+            flex-shrink: 0;
+            max-height: 180px;
+            min-height: 90px;
+        }
+
+        .specials-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            text-align: center;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+            border: 2px solid #e91e63;
+            border-radius: 8px;
+            padding: 6px;
+        }
+
+        .specials-content {
+            max-height: 120px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .special-event {
+            background: white;
+            border-left: 4px solid #e91e63;
+            padding: 6px 10px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .special-event-today {
+            border-left-color: #f44336;
+            background: #fff8f8;
+        }
+
+        .special-event-date {
+            font-size: 11px;
+            font-weight: 700;
+            color: #880e4f;
+            text-transform: uppercase;
+            white-space: nowrap;
+            min-width: 42px;
+        }
+
+        .special-event-title {
+            font-size: 13px;
+            color: #2c3e50;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .specials-empty {
+            text-align: center;
+            padding: 12px;
+            color: #7f8c8d;
+            font-size: 13px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
         .weekend-header {
             font-size: 14px;
             font-weight: 700;
@@ -878,6 +948,19 @@
                     <div class="loading">
                         <div class="spinner"></div>
                         Loading weekend events...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Birthdays & Holidays -->
+            <div class="specials-section">
+                <div class="specials-header">
+                    🎂 Birthdays &amp; Holidays
+                </div>
+                <div class="specials-content" id="specials-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading...
                     </div>
                 </div>
             </div>

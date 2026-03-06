@@ -247,6 +247,32 @@ class CalDAVClient {
         return response.json();
     }
 
+    // Fetch all events in the next 30 days across all accounts, return flattened
+    async getUpcomingSpecialEvents() {
+        if (!this.isConfigured) return [];
+
+        const proxyUrl = this.getProxyUrl();
+        const results = await Promise.allSettled(
+            this.accounts.map(acc => this._fetchAccountEvents(acc, 'upcoming-30', proxyUrl))
+        );
+
+        const events = [];
+        results.forEach((result, i) => {
+            const acc = this.accounts[i];
+            if (result.status === 'fulfilled' && result.value.calendars) {
+                result.value.calendars.forEach(cal => {
+                    (cal.events || []).forEach(event => {
+                        events.push({ ...event, calendarColor: acc.color, accountLabel: acc.label || acc.username });
+                    });
+                });
+            } else if (result.status === 'rejected') {
+                console.warn(`Upcoming specials: account ${acc.username} failed:`, result.reason);
+            }
+        });
+
+        return events;
+    }
+
     // Test connection for a specific account (by id) or first account if null
     async testConnection(accountId = null) {
         const account = accountId

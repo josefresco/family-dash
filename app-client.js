@@ -393,7 +393,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
             this.loadWeatherData(),
             this.loadTideData(),
             this.loadSunriseSunsetData(),
-            this.loadWeekendEvents()
+            this.loadWeekendEvents(),
+            this.loadUpcomingSpecialEvents()
         ];
 
         try {
@@ -871,6 +872,81 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }).join('');
 
         weekendContent.innerHTML = html;
+    }
+
+    async loadUpcomingSpecialEvents() {
+        const container = document.getElementById('specials-content');
+        if (!container) return;
+
+        if (!this.activeCalendarClient) {
+            container.innerHTML = '<div class="specials-empty">No calendar connected</div>';
+            return;
+        }
+
+        try {
+            const allEvents = await this.activeCalendarClient.getUpcomingSpecialEvents();
+            const keywords = [
+                'birthday', 'bday', 'b-day', 'anniversary',
+                'christmas', 'thanksgiving', 'halloween', "new year", 'easter',
+                "mother's day", "fathers day", "father's day", 'valentine',
+                'memorial day', 'labor day', 'independence day', '4th of july',
+                'hanukkah', 'kwanzaa', 'passover', 'eid', 'diwali',
+                'holiday', "st. patrick", 'cinco de mayo', 'veterans day',
+                'presidents day', 'martin luther king', 'groundhog'
+            ];
+
+            const specials = allEvents.filter(event => {
+                const summary = (event.summary || '').toLowerCase();
+                return keywords.some(kw => summary.includes(kw));
+            });
+
+            this.renderUpcomingSpecials(specials);
+        } catch (error) {
+            console.error('Failed to load upcoming special events:', error);
+            container.innerHTML = '<div class="specials-empty">Could not load</div>';
+        }
+    }
+
+    renderUpcomingSpecials(events) {
+        const container = document.getElementById('specials-content');
+        if (!container) return;
+
+        if (!events || events.length === 0) {
+            container.innerHTML = '<div class="specials-empty">No upcoming birthdays or holidays</div>';
+            return;
+        }
+
+        const tz = this.config.location.timezone;
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+
+        const html = events.map(event => {
+            let dateLabel = '';
+            try {
+                const dateStr = event.all_day ? event.start : new Date(event.start).toLocaleDateString('en-CA', { timeZone: tz });
+                if (dateStr === today) {
+                    dateLabel = 'Today';
+                } else {
+                    const d = event.all_day ? new Date(dateStr + 'T12:00:00') : new Date(event.start);
+                    dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: tz });
+                }
+            } catch (e) {
+                dateLabel = event.start || '';
+            }
+
+            const isToday = dateLabel === 'Today';
+            const isBirthday = (event.summary || '').toLowerCase().includes('birthday') ||
+                               (event.summary || '').toLowerCase().includes('bday');
+            const icon = isBirthday ? '🎂' : '🎉';
+
+            return `
+                <div class="special-event${isToday ? ' special-event-today' : ''}">
+                    <div class="special-event-date">${dateLabel}</div>
+                    <div class="special-event-title">${icon} ${event.summary || 'Untitled'}</div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
     }
 
     async loadWeatherData() {
