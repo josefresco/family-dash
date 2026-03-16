@@ -3,7 +3,6 @@
 
 class WeatherNarrativeEngine {
     constructor() {
-        // Weather-specific commentary arrays (156 total — comedian-edition, family-friendly)
         this.sunnyOutdoorComments = [
             // Classic one-liners
             "Perfect excuse to touch grass! 🌱",
@@ -21,7 +20,6 @@ class WeatherNarrativeEngine {
             "The sun woke up and chose excellence! ☀️👑",
             "Golden hour lasting all day vibes! 🌅",
             "Forecast: 100% chance of 'wow moments'! 🤩",
-            // Comedian-inspired
             "Carlin was right — gorgeous days are wasted on people who stay indoors! ☀️",
             "Richard Pryor wouldn't waste a day like this — get out there and make it count! 🌞🔥",
             "Rodney Dangerfield got no respect, but this weather respects YOU! ☀️👔",
@@ -62,7 +60,6 @@ class WeatherNarrativeEngine {
             "Perfect for those 'thoughtful walk' vibes! 🚶",
             "Clouds giving you that soft-focus glow! ✨",
             "Goldilocks weather: not too bright, just right! 🐻",
-            // Comedian-inspired
             "George Carlin: 'It's not the weather that's grey — it's your attitude!' ☁️",
             "Rodney Dangerfield cloudy day: still no respect, but at least no sunburn! ☁️👔",
             "Bill Burr: 'It's FINE. Stop being a baby about some clouds!' ☁️🎤",
@@ -107,7 +104,6 @@ class WeatherNarrativeEngine {
             "Productivity from bed: 100% acceptable! 🛏️✅",
             "Rainy day = guilt-free lazy day! 😌",
             "Rain check on life? Approved! ✓",
-            // Comedian-inspired
             "George Carlin on rain: 'It's not bad weather — it's nature's permission to cancel everything!' 🌧️",
             "Richard Pryor's rainy day plan: stay inside, pour a drink, be brilliant! 🥃🌧️",
             "Robin Williams: rainy days are nature's improv — embrace the beautiful chaos! 🌧️🎭",
@@ -151,7 +147,6 @@ class WeatherNarrativeEngine {
             "Brrr-illiant day to stay inside! 🥶🏠",
             "Cold outside, warm inside = perfection! 🎯",
             "Time for competitive coziness! 🏅",
-            // Comedian-inspired
             "George Carlin: 'The weather does not care about your plans — and honestly, fair enough!' ❄️",
             "Richard Pryor: 'It's colder than a politician's soul out there!' ❄️🎤",
             "Rodney Dangerfield: 'I asked the cold to give me some respect — it didn't!' ❄️👔",
