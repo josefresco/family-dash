@@ -1,10 +1,14 @@
-# Family Dashboard - v3.30.1 🏠
+# Family Dashboard - v3.30.2 🏠
 
-A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **156 family-friendly comedian quotes**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
+A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **clean, original commentary**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
 ---
 
 ## 🎉 Latest Updates
+
+### New Release (v3.30.2) - Clean Weather Commentary
+- **Removed Comedian Quotes**: All comedian-inspired weather commentary has been removed
+- **Clean Original Commentary**: Weather narratives now use only original, family-friendly one-liners (56 total)
 
 ### New Release (v3.30.1) - Family-Friendly Comedian Edition
 - **Clean Weather Commentary**: Removed all R-rated and profanity-containing comments; all 156 quotes are now family-friendly
