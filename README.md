@@ -358,36 +358,60 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ## 📈 Version History & Evolution
 
-### v3.28.1 - Comedian Weather Comments (Latest)
-- **156 Weather Comments**: 50 comedian-inspired additions across all four weather categories
-- **18 Comedians**: Carlin, Pryor, Robin Williams, Dangerfield, Joan Rivers, Bill Burr, Chappelle, Mulaney, Norm MacDonald, Mitch Hedberg, Amy Schumer, and more
+### v3.30.1 - Family-Friendly Comedian Edition (Latest)
+- **156 Family-Friendly Quotes**: All weather commentary is now clean and suitable for all ages
+- **Clean Comedian Roster**: Features Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, and Bob Newhart
+- **Removed**: All R-rated and profanity-containing comments
+
+### v3.30.0 - Weather & Calendar Intelligence
+- **Temperature Shift Alert**: Orange "WARM ALERT!" or blue "COLD ALERT!" pill when any day in the 5-day forecast swings ≥15°F from today's high
+- **Upcoming Birthdays & Holidays**: New box below "This Weekend" — scans 30 days across all calendar accounts, detects birthdays, anniversaries, and major holidays
+- **Sunrise / Sunset Toggle**: Sun pill switches automatically from Sunset to Sunrise after dark
+- **Larger Temperature**: Now 96px for maximum across-the-room readability
+- **Plain-English "Later" Sentence**: Replaced raw high/low/wind/humidity data with a single readable sentence
+- **Calendar Name on Events**: Each event card now shows the calendar account name in light grey
+- **Gmail CalDAV Fix**: Personal Gmail 401 errors resolved with fallback endpoint chain
+- **Alarm Notification Bug Fixed**: `VALARM` sub-component fields no longer overwrite event titles
+
+### v3.29.0 - Weather UI Overhaul & Alert System
+- **Extreme Weather Alerts**: Full-screen overlay (orange/red/animated rainbow) for warning, severe, and extreme conditions
+- **Two-Color Narrative**: Forecast text in dark blue; R-rated commentary in deep red italic
+- **Prominent Sunset**: Upgraded from 14px badge to 18px pill
+- **Larger Temperature**: 72px (today) and 60px (tomorrow)
+- **Icon Removed**: Eliminated redundant large emoji icon
+
+### v3.28.1 - Comedian Weather Comments
+- **156 Total Weather Comments**: Added 50 comedian-inspired comments
+- **18 Comedians**: Carlin, Pryor, Robin Williams, Dangerfield, Joan Rivers, Bill Burr, Chappelle, Mulaney, Norm Macdonald, Mitch Hedberg, Amy Schumer, Wanda Sykes, Don Rickles, Jeselnik, Sarah Silverman, Jeff Ross, Phyllis Diller, Henny Youngman
 
 ### v3.28.0 - Multi-Account CalDAV
-- **Multi-Account Calendar**: Up to 3 CalDAV accounts with per-account color coding
+- **Multi-Account Calendar**: Connect up to 3 CalDAV accounts simultaneously
+- **Per-Account Colors**: Each account gets a distinct color
+- **Accounts Management UI**: Colored account cards with individual Test and Remove buttons
+- **Auto-Migration**: Existing single-account configs silently migrate to new format
 - **Generic CalDAV Fixed**: Custom CalDAV server endpoints now work end-to-end
-- **Partial Failure Resilience**: One bad account doesn't block the others
-- **Timezone Fix**: Weekend event date filter uses configured timezone consistently
-- **XSS Fix**: Account labels and usernames sanitized before HTML rendering
-- **Setup UX**: Account cards with Test/Remove, 3-account limit enforced, skip button restored correctly
+- **Partial Failure Resilience**: If one account fails, events from other accounts still load
+- **Timezone Fix**: Weekend event date filtering uses configured timezone consistently
 
 ### v3.27.4 - Vercel Migration
-- **Migrated**: CalDAV proxy from Netlify functions to Vercel (`api/calendar.js`)
-- **Cleaned**: Removed all Netlify config files and references
+- **Migrated**: CalDAV proxy from Netlify to Vercel
+- **Removed**: `netlify.toml` and `netlify/` directory
+- **Fixed**: Calendar proxy URL now correctly routes through Vercel functions
 
 ### v3.27.3 - ZIP Code Location
 - **Simplified Setup**: Single ZIP code field replaces city + state inputs
-- **Smarter Auto-Detect**: Geolocation now populates ZIP directly; fails gracefully on restricted devices
-- **More Reliable Geocoding**: Uses OpenWeatherMap's zip-based endpoint (unambiguous, single field)
+- **Smarter Auto-Detect**: Geolocation button populates ZIP automatically via reverse geocode
+- **Unambiguous Geocoding**: OpenWeatherMap zip endpoint eliminates city name conflicts
 
 ### v3.27.1 - CalDAV Date Range Fix
-- **Bug Fix**: Previous-evening events no longer bleed into the next day's calendar view
-- **Correct UTC Boundaries**: Eastern midnight now computed accurately for both EST and EDT
+- **Bug Fix**: Previous-evening events no longer bleed into next day's calendar view
+- **Correct UTC Boundaries**: Eastern midnight computed accurately for both EST and EDT
 - **DST-Safe Tomorrow**: Day increment uses integer calendar arithmetic
-- **Post-Query Filter**: Timed events validated against the correct Eastern date
+- **Post-Query Filter**: Timed events validated against correct Eastern date
 
 ### v3.27.0 - Adults Only Weather Edition
 - **🤬 50 R-Rated Weather Comments**: Hilarious, uncensored adult humor
-- **😂 106 Total Comments**: Nearly doubled commentary variety (was 56)
+- **😂 106 Total Comments**: Nearly doubled commentary variety
 - **🍑 Spicy Additions**: All four weather categories got sassier
 - **💋 Mature Audiences**: Perfect for adults who like their weather with a side of laughs
 
