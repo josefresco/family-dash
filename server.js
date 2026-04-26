@@ -40,6 +40,9 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// Block setup page — config is managed via .env
+app.get('/setup.html', (req, res) => res.status(404).send('Not found'));
+
 // Calendar proxy — credentials looked up server-side by accountId
 app.post('/api/calendar', calendarRoute);
 
