@@ -609,7 +609,7 @@ function parseICSDateTime(icsDateTime, timezone = null) {
 
         if (timezone && timezone.includes('America/New_York')) {
           try {
-            const easternTimeString = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+            const easternTimeString = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
             const tempDate = new Date(easternTimeString);
             const offsetHours = isEDT(tempDate) ? 4 : 5;
             const utcDate = new Date(tempDate.getTime() + (offsetHours * 60 * 60 * 1000));
