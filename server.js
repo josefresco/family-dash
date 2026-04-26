@@ -31,8 +31,6 @@ app.get('/api/config', (req, res) => {
   }
   const location = {};
   if (process.env.LOCATION_ZIP)      location.zip = process.env.LOCATION_ZIP;
-  if (process.env.LOCATION_LAT)      location.lat = parseFloat(process.env.LOCATION_LAT);
-  if (process.env.LOCATION_LON)      location.lon = parseFloat(process.env.LOCATION_LON);
   if (process.env.LOCATION_TIMEZONE) location.timezone = process.env.LOCATION_TIMEZONE;
 
   res.json({
