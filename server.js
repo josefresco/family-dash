@@ -29,8 +29,15 @@ app.get('/api/config', (req, res) => {
     });
     i++;
   }
+  const location = {};
+  if (process.env.LOCATION_ZIP)      location.zip = process.env.LOCATION_ZIP;
+  if (process.env.LOCATION_LAT)      location.lat = parseFloat(process.env.LOCATION_LAT);
+  if (process.env.LOCATION_LON)      location.lon = parseFloat(process.env.LOCATION_LON);
+  if (process.env.LOCATION_TIMEZONE) location.timezone = process.env.LOCATION_TIMEZONE;
+
   res.json({
     openweather_api_key: process.env.OPENWEATHER_API_KEY,
+    location: Object.keys(location).length ? location : undefined,
     caldav_accounts: accounts,
   });
 });

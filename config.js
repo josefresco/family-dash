@@ -68,6 +68,12 @@ class AppConfig {
             if (data.openweather_api_key) {
                 this.config.openweather_api_key = data.openweather_api_key;
             }
+            if (data.location) {
+                this.config.location = { ...this.config.location, ...data.location };
+                if (data.location.timezone) {
+                    this.config.settings.timezone = data.location.timezone;
+                }
+            }
             if (Array.isArray(data.caldav_accounts)) {
                 window.serverCalDAVAccounts = data.caldav_accounts;
             }

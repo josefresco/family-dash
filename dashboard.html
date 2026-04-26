@@ -1102,25 +1102,19 @@
         window.scrollTo(0, 0);
         
         // Initialize dashboard when all scripts are loaded
-        window.addEventListener('load', function() {
+        window.addEventListener('load', async function() {
             console.log('=== DASHBOARD.HTML INITIALIZATION ===');
-            
+
             // Check configuration
             const config = window.dashboardConfig;
-            console.log('Config object:', config);
-            console.log('Config isConfigured:', config?.isConfigured());
-            
+
             if (!config) {
                 console.error('dashboardConfig not available');
-                window.location.href = 'index.html';
                 return;
             }
-            
-            if (!config.isConfigured()) {
-                console.warn('Configuration not complete, redirecting to index.html');
-                window.location.href = 'index.html';
-                return;
-            }
+
+            // Load config from server before checking isConfigured()
+            await config.loadFromServer();
             
             console.log('Configuration validated, creating API clients...');
             
