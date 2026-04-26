@@ -1132,7 +1132,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     border-radius: 15px;
                     padding: 20px;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                    border: 3px solid #4a148c;
+                    border: none;
                     flex: 1;
                     overflow-y: auto;
                     display: flex;
@@ -1237,7 +1237,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     border-radius: 15px;
                     padding: 25px;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                    border: 3px solid #4a148c;
+                    border: none;
                     flex: 1;
                     overflow-y: auto;
                     display: flex;
@@ -1607,7 +1607,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                         line-height: 1.4;
                         font-weight: 700;
                         box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                        border: 3px solid #4a148c;
+                        border: none;
                         max-height: 180px;
                         overflow-y: auto;
                     ">
