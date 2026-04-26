@@ -60,6 +60,23 @@ class AppConfig {
         this.saveConfig();
     }
     
+    async loadFromServer() {
+        try {
+            const res = await fetch('/api/config');
+            if (!res.ok) throw new Error(`/api/config returned ${res.status}`);
+            const data = await res.json();
+            if (data.openweather_api_key) {
+                this.config.openweather_api_key = data.openweather_api_key;
+            }
+            if (Array.isArray(data.caldav_accounts)) {
+                window.serverCalDAVAccounts = data.caldav_accounts;
+            }
+            console.log('Config loaded from server. CalDAV accounts:', (data.caldav_accounts || []).length);
+        } catch (error) {
+            console.warn('Failed to load config from server, falling back to localStorage:', error);
+        }
+    }
+
     isConfigured() {
         return !!(this.config.openweather_api_key);
     }

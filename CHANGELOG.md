@@ -5,6 +5,18 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.31.0] - 2026-04-26
+
+### Changed
+- **Self-hosted migration** — replaced Vercel deployment with an Express.js server (`server.js`) running on a Raspberry Pi at `dash.josefresco.com`
+- **Server-side credentials** — weather API key and CalDAV account credentials moved from browser localStorage to server `.env`; passwords never leave the server
+- **HTTP Basic Auth** — dashboard now requires a shared family password (HTTP Basic Auth prompt on first visit)
+- **CalDAV proxy** — `api/calendar.js` refactored from Vercel serverless format to Express route handler; client sends only `accountId`, server looks up credentials by index from environment variables
+- **Config endpoint** — new `GET /api/config` returns weather key and CalDAV account list (no passwords) to the client on init
+- **Removed public access** — Vercel deployment taken down; self-hosting required
+
+---
+
 ## [3.30.1] - 2026-03-06
 
 ### Changed

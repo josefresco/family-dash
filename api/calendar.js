@@ -1,28 +1,30 @@
-// Vercel serverless function for CalDAV calendar integration
-// Handles authentication and CORS for always-on dashboards
+// CalDAV calendar proxy — Express route handler
+// Credentials are loaded from server environment variables, never sent by the client
 
 module.exports = async (req, res) => {
-  console.log('Vercel calendar function called:', req.method, req.url);
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Content-Type', 'application/json');
-
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
 
   try {
     const body = req.body || {};
-    const { provider, username, password, dateParam = 'today', customEndpoint = '' } = body;
+    const { accountId, dateParam = 'today' } = body;
+
+    console.log('Calendar request:', { accountId, dateParam });
+
+    if (!accountId) {
+      res.status(400).json({ error: 'Missing required field: accountId' });
+      return;
+    }
+
+    const idx = accountId.replace('acc_', '');
+    const username = process.env[`CALDAV_${idx}_USERNAME`];
+    const password = process.env[`CALDAV_${idx}_PASSWORD`];
+    const provider = process.env[`CALDAV_${idx}_PROVIDER`] || 'google';
+    const customEndpoint = process.env[`CALDAV_${idx}_CUSTOM_ENDPOINT`] || '';
 
     console.log('Calendar request:', { provider, username: username ? 'provided' : 'missing', dateParam });
 
     if (!provider || !username || !password) {
-      res.status(400).json({ error: 'Missing required fields: provider, username, password' });
+      res.status(400).json({ error: `No credentials configured for account ${accountId}` });
       return;
     }
 
@@ -330,7 +332,7 @@ module.exports = async (req, res) => {
       failed_accounts: 0,
       total_events: filteredEvents.length,
       date_requested: dateParam,
-      source: 'vercel_caldav',
+      source: 'pi_caldav',
       message: filteredEvents.length > 0 ? `Found ${filteredEvents.length} events` : 'No events found for this date',
       debug: {
         caldav_url: caldavUrl.replace(username, '[username]'),
@@ -356,7 +358,7 @@ module.exports = async (req, res) => {
     console.error('Calendar function error:', error);
     res.status(500).json({
       error: 'Internal server error: ' + error.message,
-      source: 'vercel_function'
+      source: 'pi_calendar_route'
     });
   }
 };

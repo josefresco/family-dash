@@ -41,47 +41,14 @@ class CalDAVClient {
         return this.accounts.length > 0;
     }
 
-    // Load accounts from new or legacy storage
+    // Load accounts from server config (set by AppConfig.loadFromServer())
     loadAccounts() {
-        try {
-            // Try new multi-account key first
-            const newData = localStorage.getItem('dashboard-caldav-accounts');
-            if (newData) {
-                const parsed = JSON.parse(newData);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    this.accounts = parsed.map(acc => ({
-                        ...acc,
-                        password: atob(acc.password)
-                    }));
-                    console.log('CalDAV accounts loaded:', this.accounts.length);
-                    return;
-                }
-            }
-
-            // Fall through: migrate legacy single-account key
-            const legacyData = localStorage.getItem('dashboard-caldav-config');
-            if (legacyData) {
-                const legacy = JSON.parse(legacyData);
-                if (legacy.provider && legacy.username && legacy.password) {
-                    const migrated = {
-                        id: 'acc_' + (legacy.savedAt || Date.now()),
-                        label: '',
-                        provider: legacy.provider,
-                        username: legacy.username,
-                        password: atob(legacy.password),
-                        customEndpoint: legacy.customEndpoint || '',
-                        color: COLOR_PALETTE[0],
-                        savedAt: legacy.savedAt || Date.now()
-                    };
-                    this.accounts = [migrated];
-                    this._persistAccounts();
-                    localStorage.removeItem('dashboard-caldav-config');
-                    console.log('CalDAV config migrated from legacy key');
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load CalDAV accounts:', error);
+        if (window.serverCalDAVAccounts && window.serverCalDAVAccounts.length > 0) {
+            this.accounts = window.serverCalDAVAccounts;
+            console.log('CalDAV accounts loaded from server:', this.accounts.length);
+        } else {
             this.accounts = [];
+            console.log('No server CalDAV accounts available');
         }
     }
 
@@ -225,16 +192,13 @@ class CalDAVClient {
         };
     }
 
-    // Fetch events for a single account via Vercel proxy
+    // Fetch events for a single account via server proxy (credentials stay server-side)
     async _fetchAccountEvents(account, date, proxyUrl) {
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                provider: account.provider,
-                username: account.username,
-                password: account.password,
-                customEndpoint: account.customEndpoint || '',
+                accountId: account.id,
                 dateParam: date
             })
         });

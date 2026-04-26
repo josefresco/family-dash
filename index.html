@@ -94,18 +94,9 @@
         </div>
     </div>
     
-    <script src="config.js"></script>
     <script>
-        // Check if configuration is complete and redirect accordingly
-        document.addEventListener('DOMContentLoaded', function() {
-            const config = window.dashboardConfig;
-
-            if (config.isConfigured()) {
-                window.location.href = 'dashboard.html';
-            } else {
-                document.getElementById('config-needed').classList.remove('hidden');
-            }
-        });
+        // Server always provides config — redirect immediately
+        window.location.replace('dashboard.html');
     </script>
 </body>
 </html>

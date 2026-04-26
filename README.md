@@ -1,4 +1,4 @@
-# Family Dashboard - v3.30.2 🏠
+# Family Dashboard - v3.31.0 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **clean, original commentary**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,11 +6,13 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.30.2) - Clean Weather Commentary
-- **Removed Comedian Quotes**: All comedian-inspired weather commentary has been removed
-- **Clean Original Commentary**: Weather narratives now use only original, family-friendly one-liners (56 total)
+### New Release (v3.31.0) - Self-Hosted, Private
+- **Raspberry Pi hosting**: Express.js server at `dash.josefresco.com` replaces Vercel deployment
+- **Server-side credentials**: Weather API key and Google App Passwords stored in server `.env` — never exposed in the browser
+- **HTTP Basic Auth**: Dashboard requires a shared family password on first visit
+- **Vercel removed**: Public Vercel URL taken down; self-hosting required
 
-### New Release (v3.30.1) - Family-Friendly Comedian Edition
+### Previous Release (v3.30.2) - Clean Weather Commentary
 - **Clean Weather Commentary**: Removed all R-rated and profanity-containing comments; all 156 quotes are now family-friendly
 - **Expanded Comedian Roster**: Added ~13 new quotes per category from Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, and Bob Newhart
 

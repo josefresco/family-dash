@@ -58,6 +58,9 @@ class DashboardApp {
                 throw new Error('API Client not available. Check dashboard.html initialization.');
             }
             
+            // Load config from server (weather key + CalDAV accounts)
+            await this.appConfig.loadFromServer();
+
             // Check and auto-detect location if needed
             await this.checkAndDetectLocation();
             

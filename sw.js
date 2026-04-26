@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dashboard-v3.30.1';
+const CACHE_NAME = 'dashboard-v3.31.0';
 const urlsToCache = [
   '/',
   '/family-dash/',
