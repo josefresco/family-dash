@@ -21,25 +21,27 @@
 
 ## Project Overview
 
-Always-on family dashboard for wall-mounted tablet displays. Deployed on Vercel.
+Always-on family dashboard for wall-mounted tablet displays. Self-hosted on Raspberry Pi at `dash.josefresco.com` (HTTP Basic Auth required).
 
-- **Frontend**: `dashboard.html`, `setup.html`, `app-client.js`, `caldav-client.js`, `api-client.js`, `config.js`
-- **Backend**: `api/calendar.js` (Vercel serverless function — CalDAV proxy)
+- **Frontend**: `dashboard.html`, `app-client.js`, `caldav-client.js`, `api-client.js`, `config.js`
+- **Backend**: `server.js` (Express, port 3003), `api/calendar.js` (CalDAV proxy route)
 - **Utility modules**: `weather-narrative-engine.js`, `logger.js`, `error-handler.js`, `date-utils.js`
-- **Config**: stored in `localStorage` — never in code or `.env`
+- **Config**: all secrets in server `.env` — never exposed to the browser. Client receives only non-sensitive config (weather key, account labels/colors) via `GET /api/config`.
 
 ## Key Architecture Notes
 
-- **CalDAV storage key**: `dashboard-caldav-accounts` (array, max 3 accounts). Legacy key `dashboard-caldav-config` is auto-migrated on first load.
-- **Calendar data flow**: `caldav-client.js` → `Promise.allSettled` fan-out → `api/calendar.js` per account → merged `calendars[]` returned to `app-client.js` → `renderMultiAccountCalendar()`
+- **CalDAV credential flow**: client sends only `accountId` to `POST /api/calendar`; server looks up username/password from `.env` by index (`CALDAV_1_*`, `CALDAV_2_*`, etc.)
+- **Calendar data flow**: `caldav-client.js` → `Promise.allSettled` fan-out → `POST /api/calendar` per account → merged `calendars[]` returned to `app-client.js` → `renderMultiAccountCalendar()`
+- **Server init**: `dashboard.html` load handler is `async`; `await config.loadFromServer()` must complete before any data fetches
 - **Timezone**: always use `toLocaleDateString('en-CA', { timeZone: tz })` for date string comparisons. Never use `getDate()` / `getMonth()` for cross-timezone logic.
-- **Colors**: per-account colors come from `COLOR_PALETTE` in `caldav-client.js` and are injected as `cal.color` during the fan-out merge — they override the API's hardcoded value.
+- **ICS datetime parsing**: `parseICSDateTime()` in `api/calendar.js` appends `Z` to Eastern time strings before `new Date()` to force UTC parsing — prevents double timezone shift on non-UTC servers
+- **Colors**: per-account colors come from `CALDAV_N_COLOR` in `.env`; hex values must be quoted (unquoted `#` is treated as a dotenv comment)
 
 ## Do Not Modify (without explicit instruction)
 
-- `api/calendar.js` structure (Vercel handler format)
 - `dashboard.html` layout
 - `config.js`
+- `server.js` auth and config endpoint structure
 - Service worker (`sw.js`) caching strategy
 
 ## Commit Message Format
