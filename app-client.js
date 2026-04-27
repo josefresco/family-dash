@@ -1098,12 +1098,12 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         return `
             <!-- Today's Main Display - Full Height -->
             <div style="
-                background: ${colors.primary};
+                background: transparent;
                 color: ${colors.primaryText};
-                border-radius: 15px;
+                border-radius: 0;
                 padding: 15px;
                 text-align: center;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                box-shadow: none;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
@@ -1128,10 +1128,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
                 <!-- Today's Weather Summary - two-color -->
                 <div style="
-                    background: #ffffff;
+                    background: rgba(0,0,0,0.25);
                     border-radius: 15px;
                     padding: 20px;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    box-shadow: none;
                     border: none;
                     flex: 1;
                     overflow-y: auto;
@@ -1142,10 +1142,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     text-align: center;
                     gap: 12px;
                 ">
-                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #1a237e;">
+                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: ${colors.primaryText};">
                         ${parts.forecast}
                     </div>
-                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #b71c1c; font-style: italic;">
+                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: ${colors.primaryText}; font-style: italic; opacity: 0.85;">
                         ${parts.commentary}
                     </div>
                 </div>
@@ -1190,12 +1190,12 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         return `
             <!-- Tomorrow's Main Display -->
             <div style="
-                background: ${colors.primary};
+                background: transparent;
                 color: ${colors.primaryText};
-                border-radius: 15px;
+                border-radius: 0;
                 padding: 18px;
                 text-align: center;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                box-shadow: none;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
@@ -1233,10 +1233,10 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     ${data.daily_summary.description}
                 </div>
                 <div style="
-                    background: #ffffff;
+                    background: rgba(0,0,0,0.25);
                     border-radius: 15px;
                     padding: 25px;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    box-shadow: none;
                     border: none;
                     flex: 1;
                     overflow-y: auto;
@@ -1247,17 +1247,17 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     text-align: center;
                     gap: 12px;
                 ">
-                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #1a237e;">
+                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: ${colors.primaryText};">
                         ${parts.forecast}
                     </div>
-                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #b71c1c; font-style: italic;">
+                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: ${colors.primaryText}; font-style: italic; opacity: 0.85;">
                         ${parts.commentary}
                     </div>
                 </div>
             </div>
         `;
     }
-    
+
     createTodayNarrative(data) {
         // Use WeatherNarrativeEngine for consistent narrative generation
         return window.weatherNarrativeEngine.createTodayNarrative(data);

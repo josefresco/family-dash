@@ -1,4 +1,4 @@
-# Family Dashboard - v3.31.0 🏠
+# Family Dashboard - v3.31.4 🏠
 
 A sophisticated, room-readable personal dashboard application designed for always-on displays. Features real-time weather narratives with **clean, original commentary**, extreme weather alert overlays, temperature shift alerts, upcoming birthdays & holidays, multi-account calendar integration with **accurate timezone handling**, and intelligent time-based content switching. Built with modern ES2015+ JavaScript, optimized for 24/7 operation on wall-mounted displays and smart home setups.
 
@@ -6,7 +6,18 @@ A sophisticated, room-readable personal dashboard application designed for alway
 
 ## 🎉 Latest Updates
 
-### New Release (v3.31.0) - Self-Hosted, Private
+### New Release (v3.31.4) - Weather Card Panel Removed
+- **No more floating weather card**: weather content now sits directly on the body gradient; the lighter `colors.primary` card that created a visible panel effect is gone
+
+### Previous Release (v3.31.3) - Panel Backgrounds Corrected
+- **Calendar side**: white background restored
+- **Weather side**: remains transparent (no white panel)
+
+### Previous Release (v3.31.1) - Weather Panel Polish
+- **Weather panel white box removed**: Forecast/commentary section now uses a dark semi-transparent overlay matching the weather color theme instead of a white box
+- **Forecast text readable on all themes**: Text colors now follow the weather card's theme instead of hardcoded dark blue/red
+
+### Previous Release (v3.31.0) - Self-Hosted, Private
 - **Raspberry Pi hosting**: Express.js server at `dash.josefresco.com` replaces Vercel deployment
 - **Server-side credentials**: Weather API key and Google App Passwords stored in server `.env` — never exposed in the browser
 - **HTTP Basic Auth**: Dashboard requires a shared family password on first visit

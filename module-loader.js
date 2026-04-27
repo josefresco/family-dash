@@ -55,7 +55,7 @@ class ModuleLoader {
         if (window.CalDAVClient) {
             return Promise.resolve();
         }
-        return this.loadScript('caldav-client.js?v=3.31.0', 'caldav');
+        return this.loadScript('caldav-client.js?v=3.31.4', 'caldav');
     }
 
     /**
