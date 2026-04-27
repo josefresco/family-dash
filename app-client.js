@@ -1098,12 +1098,12 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         return `
             <!-- Today's Main Display - Full Height -->
             <div style="
-                background: ${colors.primary};
+                background: transparent;
                 color: ${colors.primaryText};
-                border-radius: 15px;
+                border-radius: 0;
                 padding: 15px;
                 text-align: center;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                box-shadow: none;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
@@ -1191,12 +1191,12 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         return `
             <!-- Tomorrow's Main Display -->
             <div style="
-                background: ${colors.primary};
+                background: transparent;
                 color: ${colors.primaryText};
-                border-radius: 15px;
+                border-radius: 0;
                 padding: 18px;
                 text-align: center;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+                box-shadow: none;
                 height: 100%;
                 display: flex;
                 flex-direction: column;

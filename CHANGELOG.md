@@ -5,10 +5,39 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.31.1] - 2026-04-27
+## [3.31.5] - 2026-04-27
 
 ### Fixed
-- **Weather summary contrast** — summary and "Later today" panels now use white background with black text regardless of weather theme color; removed dark-blue/red text in favor of high-contrast `#111111`/`#333333`; added subtle border to both panels for visual separation
+- **Weather summary contrast** — summary and "Later today" panels now use white background (`#ffffff`) with high-contrast black text (`#111111`/`#333333`); overrides the weather-theme color system for guaranteed readability; added subtle border for visual separation from the colored panel behind
+
+---
+
+## [3.31.4] - 2026-04-26
+
+### Fixed
+- **Weather card panel removed** — outer weather card div (`colors.primary` background, border-radius, box-shadow) now transparent; weather content floats directly on the body gradient with no visible floating panel
+
+---
+
+## [3.31.3] - 2026-04-26
+
+### Fixed
+- **Restored calendar panel white background** — reverted 3.31.2; calendar side keeps white background, weather side remains transparent
+
+---
+
+## [3.31.2] - 2026-04-26
+
+### Fixed
+- **Calendar panel white background removed** — `.calendar-panel` now transparent; individual event cards retain their own white backgrounds so content remains fully readable
+
+---
+
+## [3.31.1] - 2026-04-26
+
+### Fixed
+- **Weather panel white box** — removed white opaque background from the forecast/commentary section inside the weather card; now uses a dark semi-transparent overlay that matches the weather color theme
+- **Forecast text colors** — updated forecast and commentary text to use the weather card's primary text color instead of hardcoded dark blue/red (which were unreadable on non-white backgrounds)
 
 ---
 
