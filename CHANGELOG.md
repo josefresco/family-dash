@@ -5,6 +5,13 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.31.1] - 2026-04-27
+
+### Fixed
+- **Weather summary contrast** — summary and "Later today" panels now use white background with black text regardless of weather theme color; removed dark-blue/red text in favor of high-contrast `#111111`/`#333333`; added subtle border to both panels for visual separation
+
+---
+
 ## [3.31.0] - 2026-04-26
 
 ### Changed
