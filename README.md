@@ -19,7 +19,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 - **HTTP Basic Auth**: shared family password required on first visit
 - **Vercel removed**: self-hosting required; users must run their own instance
 
-### Previous Release (v3.30.2) - Clean Weather Commentary
+### Previous Release (v3.30.1) - Clean Weather Commentary
 - **Family-friendly quotes**: removed all R-rated content; 156 clean quotes across all weather categories
 - **Expanded comedians**: Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, Bob Newhart
 
