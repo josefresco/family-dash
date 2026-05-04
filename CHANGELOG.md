@@ -5,6 +5,16 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.31.6] - 2026-05-04
+
+### Fixed
+- **Weather comment count** — `weather-narrative-engine.js` internal comment and README Files section both incorrectly stated 156 comments; actual count is 56 (15 sunny + 10 cloudy + 16 rainy + 15 cold)
+- **Feature description** — "comedian commentary" removed from Key Features in README; comedian quotes were stripped in a prior commit (between v3.30.1 and v3.31.0) with no matching doc update
+- **Version reference** — README "Latest Updates" section referenced a non-existent v3.30.2; corrected to v3.30.1
+- **Broken changelog link** — removed `[Setup Guide](setup.html)` footer link; `setup.html` is blocked by the server (returns 404)
+
+---
+
 ## [3.31.5] - 2026-04-27
 
 ### Fixed
@@ -353,4 +363,4 @@ Family Dashboard uses semantic versioning:
 
 - [GitHub Repository](https://github.com/josefresco/family-dash)
 - [Documentation](README.md)
-- [Setup Guide](setup.html)
+- [Setup Guide](README.md#-self-hosting-required)

@@ -1,4 +1,4 @@
-# Family Dashboard - v3.31.5 🏠
+# Family Dashboard - v3.31.6 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather with narrative commentary, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,12 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.31.5) - Weather Summary Contrast Fix
+### New Release (v3.31.6) - Documentation Corrections
+- **Accurate comment count**: `weather-narrative-engine.js` now correctly documented as 56 comments (was incorrectly listed as 156)
+- **Feature list corrected**: comedian quotes were removed in a prior release; Key Features now reads "weather commentary" instead of "comedian commentary"
+- **Version reference fix**: "Previous Release v3.30.2" corrected to v3.30.1 (v3.30.2 never existed)
+
+### Previous Release (v3.31.5) - Weather Summary Contrast Fix
 - **High-contrast summary panels**: weather summary and "Later today" panels now always white with black text (`#111111`/`#333333`), regardless of weather theme color
 
 ### Previous Release (v3.31.4) - Weather Panel Polish
@@ -19,9 +24,9 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 - **HTTP Basic Auth**: shared family password required on first visit
 - **Vercel removed**: self-hosting required; users must run their own instance
 
-### Previous Release (v3.30.2) - Clean Weather Commentary
-- **Family-friendly quotes**: removed all R-rated content; 156 clean quotes across all weather categories
-- **Expanded comedians**: Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, Bob Newhart
+### Previous Release (v3.30.1) - Clean Weather Commentary
+- **Family-friendly quotes**: replaced R-rated content with clean, family-friendly weather commentary
+- **Expanded comedian roster**: added quotes from Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, and others; dropped Louis C.K.
 
 ### Previous Release (v3.30.0) - Weather & Calendar Intelligence
 - **Temperature Shift Alert**: "WARM ALERT!" / "COLD ALERT!" pill when any forecast day swings ≥15°F from today
@@ -40,7 +45,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 ## ✨ Key Features
 
 - **Multi-Account CalDAV**: up to 3 Google Calendar (or other CalDAV) accounts simultaneously, each with a distinct color
-- **Weather Narratives**: condition-matched color themes, narrative forecast, comedian commentary, extreme weather alerts
+- **Weather Narratives**: condition-matched color themes, narrative forecast, weather commentary, extreme weather alerts
 - **Weekend Preview**: dedicated Saturday/Sunday event section
 - **Birthdays & Holidays**: 30-day lookahead across all calendar accounts
 - **Time-Based Switching**: automatically shows tomorrow's view after 5 PM Eastern
@@ -168,7 +173,7 @@ family-dash/
 ├── config.js                      # Fetches /api/config on init
 ├── api-client.js                  # OpenWeatherMap API
 ├── api/calendar.js                # CalDAV proxy route
-├── weather-narrative-engine.js    # 156 weather comments
+├── weather-narrative-engine.js    # 56 weather comments
 ├── logger.js / error-handler.js / date-utils.js
 └── sw.js                          # Service worker (PWA)
 ```

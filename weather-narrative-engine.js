@@ -3,7 +3,7 @@
 
 class WeatherNarrativeEngine {
     constructor() {
-        // Weather-specific commentary arrays (60 total - family-friendly)
+        // Weather-specific commentary arrays (56 total - family-friendly)
         this.sunnyOutdoorComments = [
             // Classic one-liners
             "Perfect excuse to touch grass! 🌱",
