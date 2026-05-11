@@ -1,4 +1,4 @@
-# Family Dashboard - v3.31.5 🏠
+# Family Dashboard - v3.31.6 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather with narrative commentary, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,12 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.31.5) - Weather Summary Contrast Fix
+### New Release (v3.31.6) - Documentation Corrections
+- **CalDAV provider keys corrected**: iCloud uses `provider=apple`, not `provider=icloud`; Outlook provider documented; generic provider now documents `CALDAV_N_CUSTOM_ENDPOINT` env var
+- **Version history typo fixed**: v3.30.1 correctly labeled (was erroneously shown as v3.30.2)
+- **File tree updated**: `module-loader.js` added to architecture overview
+
+### Previous Release (v3.31.5) - Weather Summary Contrast Fix
 - **High-contrast summary panels**: weather summary and "Later today" panels now always white with black text (`#111111`/`#333333`), regardless of weather theme color
 
 ### Previous Release (v3.31.4) - Weather Panel Polish
@@ -19,7 +24,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 - **HTTP Basic Auth**: shared family password required on first visit
 - **Vercel removed**: self-hosting required; users must run their own instance
 
-### Previous Release (v3.30.2) - Clean Weather Commentary
+### Previous Release (v3.30.1) - Clean Weather Commentary
 - **Family-friendly quotes**: removed all R-rated content; 156 clean quotes across all weather categories
 - **Expanded comedians**: Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, Bob Newhart
 
@@ -138,8 +143,9 @@ All config lives in `.env` on the server. There is no browser-based setup UI.
 
 ### Supported CalDAV Providers
 - **Google** (`provider=google`) — uses `https://apidata.googleusercontent.com/caldav/v2/`
-- **iCloud** (`provider=icloud`) — uses `https://caldav.icloud.com/`
-- **Generic** (`provider=generic`) — requires a full CalDAV URL as username
+- **iCloud** (`provider=apple`) — uses `https://caldav.icloud.com/`
+- **Outlook** (`provider=outlook`) — uses `https://outlook.office365.com/owa/calendar/`
+- **Generic** (`provider=generic`) — requires `CALDAV_N_CUSTOM_ENDPOINT` set in `.env` with the full CalDAV server URL
 
 ---
 
@@ -169,6 +175,7 @@ family-dash/
 ├── api-client.js                  # OpenWeatherMap API
 ├── api/calendar.js                # CalDAV proxy route
 ├── weather-narrative-engine.js    # 156 weather comments
+├── module-loader.js               # Lazy-loads caldav-client.js on demand
 ├── logger.js / error-handler.js / date-utils.js
 └── sw.js                          # Service worker (PWA)
 ```

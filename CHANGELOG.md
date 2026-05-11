@@ -5,6 +5,17 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.31.6] - 2026-05-11
+
+### Fixed
+- **CalDAV provider key for iCloud** — README documented `provider=icloud`; correct key is `provider=apple` (matches `api/calendar.js`, `caldav-client.js`, and `.env.example`)
+- **Generic CalDAV description** — README incorrectly stated "requires a full CalDAV URL as username"; correct behavior is the server reads `CALDAV_N_CUSTOM_ENDPOINT` from `.env`
+- **Missing Outlook provider** — Outlook (`provider=outlook`) was omitted from the "Supported CalDAV Providers" table in README; now listed
+- **v3.30.1 version typo** — "Latest Updates" in README incorrectly showed `v3.30.2`; corrected to `v3.30.1`
+- **module-loader.js missing from file tree** — Architecture file listing now includes `module-loader.js`
+
+---
+
 ## [3.31.5] - 2026-04-27
 
 ### Fixed
