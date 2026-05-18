@@ -1,4 +1,4 @@
-# Family Dashboard - v3.31.5 🏠
+# Family Dashboard - v3.31.6 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather with narrative commentary, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,10 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.31.5) - Weather Summary Contrast Fix
+### New Release (v3.31.6) - Documentation Correction
+- **README version history fix**: corrected "v3.30.2" label to "v3.30.1" in Latest Updates — no code changes
+
+### Previous Release (v3.31.5) - Weather Summary Contrast Fix
 - **High-contrast summary panels**: weather summary and "Later today" panels now always white with black text (`#111111`/`#333333`), regardless of weather theme color
 
 ### Previous Release (v3.31.4) - Weather Panel Polish
@@ -19,7 +22,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 - **HTTP Basic Auth**: shared family password required on first visit
 - **Vercel removed**: self-hosting required; users must run their own instance
 
-### Previous Release (v3.30.2) - Clean Weather Commentary
+### Previous Release (v3.30.1) - Clean Weather Commentary
 - **Family-friendly quotes**: removed all R-rated content; 156 clean quotes across all weather categories
 - **Expanded comedians**: Jerry Seinfeld, Steven Wright, Jim Gaffigan, Kevin Hart, Ellen DeGeneres, Conan O'Brien, Steve Martin, Jay Leno, George Burns, Bob Hope, Kathleen Madigan, Mike Birbiglia, Demetri Martin, Bob Newhart
 
