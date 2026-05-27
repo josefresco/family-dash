@@ -157,98 +157,104 @@ module.exports = async (req, res) => {
 
     const authHeader = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 
-    // --- CalDAV Calendar Collection Discovery ---
-    console.log('Discovering calendar collections...');
-    const discoveredCollections = await discoverCalendarCollections(caldavUrl, authHeader);
-    console.log(`Discovered ${discoveredCollections.length} calendar collection(s)`);
-
     const reportHeaders = {
       'Authorization': authHeader,
       'Content-Type': 'application/xml; charset=utf-8',
       'Depth': '1'
     };
 
-    let allEvents = [];
-    let xmlData = '';
-    let anySucceeded = false;
+    // === Step 1: Primary calendar fetch (existing behavior, always runs first) ===
+    const primaryFallbackUrls = [caldavUrl];
+    if (provider === 'google') {
+      const isGmail = username.endsWith('@gmail.com') || username.endsWith('@googlemail.com');
+      if (isGmail) {
+        primaryFallbackUrls.push(
+          `https://calendar.google.com/calendar/dav/${username}/events/`,
+          `https://calendar.google.com/calendar/dav/${username}/user/`,
+          `https://www.google.com/calendar/dav/${username}/events/`,
+          `https://apidata.googleusercontent.com/caldav/v2/${username}/user/`
+        );
+      } else {
+        primaryFallbackUrls.push(
+          providerConfig.workspaceEndpoint + `${username}/user/`,
+          `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
+          providerConfig.workspaceEndpoint + `${username}/`,
+          providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
+        );
+      }
+    }
 
-    if (discoveredCollections.length > 0) {
-      // Query all discovered collections in parallel
-      const results = await Promise.allSettled(
-        discoveredCollections.map(async ({ url, name }) => {
+    let xmlData = '';
+    let lastError;
+
+    for (const url of primaryFallbackUrls) {
+      console.log(`Making CalDAV REPORT request to: ${url.replace(username, '[username]')}`);
+      try {
+        const response = await fetch(url, { method: 'REPORT', headers: reportHeaders, body: reportBody });
+        console.log(`CalDAV response status for ${url.replace(username, '[username]')}: ${response.status}`);
+        if (response.ok) {
+          console.log(`CalDAV connection succeeded: ${url.replace(username, '[username]')}`);
+          xmlData = await response.text();
+          break;
+        } else {
+          lastError = await response.text();
+          console.log(`Failed with ${url.replace(username, '[username]')}: ${response.status}`);
+        }
+      } catch (err) {
+        console.error(`Network error with ${url.replace(username, '[username]')}:`, err.message);
+        lastError = err.message;
+      }
+    }
+
+    if (!xmlData) {
+      console.error('All CalDAV endpoints failed');
+      res.status(502).json({
+        error: 'CalDAV request failed: All endpoints failed',
+        details: lastError ? lastError.substring(0, 200) : 'No additional details',
+        attempted_urls: primaryFallbackUrls.length
+      });
+      return;
+    }
+
+    // Parse primary calendar events
+    let allEvents = parseCalDAVResponseWithDebug(xmlData).events;
+    console.log('CalDAV response length:', xmlData.length);
+    console.log('CalDAV raw response (first 1000 chars):', xmlData.substring(0, 1000));
+    console.log('Primary calendar events:', allEvents.length);
+
+    // === Step 2: Calendar discovery — query additional collections (invited/shared calendars) ===
+    console.log('Discovering additional calendar collections...');
+    const discoveredCollections = await discoverCalendarCollections(caldavUrl, authHeader);
+
+    // Filter out any URLs already covered by the primary fetch to avoid double-counting
+    const extraCollections = discoveredCollections.filter(({ url }) => {
+      const norm = url.replace(/\/$/, '');
+      return !primaryFallbackUrls.some(pu => pu.replace(/\/$/, '') === norm);
+    });
+
+    if (extraCollections.length > 0) {
+      console.log(`Querying ${extraCollections.length} additional collection(s)...`);
+      const extraResults = await Promise.allSettled(
+        extraCollections.map(async ({ url, name }) => {
           console.log(`REPORT → "${name}" (${url.replace(username, '[username]')})`);
           const resp = await fetch(url, { method: 'REPORT', headers: reportHeaders, body: reportBody });
           if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
-          return { url, name, xml: await resp.text() };
+          return { name, xml: await resp.text() };
         })
       );
 
-      for (const r of results) {
+      for (const r of extraResults) {
         if (r.status === 'fulfilled') {
-          anySucceeded = true;
           const { name, xml } = r.value;
           console.log(`  "${name}": ${xml.length} bytes`);
-          if (!xmlData) xmlData = xml;
           allEvents.push(...parseCalDAVResponseWithDebug(xml).events);
         } else {
-          console.log(`  Collection REPORT failed: ${r.reason?.message}`);
+          console.log(`  Extra collection REPORT failed: ${r.reason?.message}`);
         }
       }
     }
 
-    // Fall back to hardcoded primary URL variants if discovery found nothing or all collections failed
-    if (!anySucceeded) {
-      console.log('Falling back to primary URL variants...');
-      const primaryFallbackUrls = [caldavUrl];
-      if (provider === 'google') {
-        const isGmail = username.endsWith('@gmail.com') || username.endsWith('@googlemail.com');
-        if (isGmail) {
-          primaryFallbackUrls.push(
-            `https://calendar.google.com/calendar/dav/${username}/events/`,
-            `https://calendar.google.com/calendar/dav/${username}/user/`,
-            `https://www.google.com/calendar/dav/${username}/events/`,
-            `https://apidata.googleusercontent.com/caldav/v2/${username}/user/`
-          );
-        } else {
-          primaryFallbackUrls.push(
-            providerConfig.workspaceEndpoint + `${username}/user/`,
-            `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
-            providerConfig.workspaceEndpoint + `${username}/`,
-            providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
-          );
-        }
-      }
-
-      let lastError;
-      for (const url of primaryFallbackUrls) {
-        console.log(`Trying: ${url.replace(username, '[username]')}`);
-        try {
-          const response = await fetch(url, { method: 'REPORT', headers: reportHeaders, body: reportBody });
-          console.log(`Status: ${response.status}`);
-          if (response.ok) {
-            xmlData = await response.text();
-            anySucceeded = true;
-            allEvents.push(...parseCalDAVResponseWithDebug(xmlData).events);
-            break;
-          } else {
-            lastError = await response.text();
-          }
-        } catch (err) {
-          console.error(`Error for ${url.replace(username, '[username]')}:`, err.message);
-          lastError = err.message;
-        }
-      }
-
-      if (!anySucceeded) {
-        res.status(502).json({
-          error: 'CalDAV request failed: All endpoints failed',
-          details: lastError ? lastError.substring(0, 200) : 'No additional details'
-        });
-        return;
-      }
-    }
-
-    // Deduplicate events that appear in multiple calendar collections (matched by UID)
+    // Deduplicate events by UID across all collections
     const events = deduplicateByUid(allEvents);
 
     console.log('CalDAV response length:', xmlData.length);
