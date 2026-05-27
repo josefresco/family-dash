@@ -1,4 +1,4 @@
-# Family Dashboard - v3.31.6 🏠
+# Family Dashboard - v3.32.0 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather with narrative commentary, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,12 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.31.6) - Documentation Corrections
+### New Release (v3.32.0) - CalDAV Calendar Discovery
+- **Full calendar collection discovery**: the server now performs a 3-step PROPFIND chain (current-user-principal → calendar-home-set → collection list) so all calendars in an account are queried — including events you've been invited to from other people's calendars, shared calendars, and secondary calendars
+- **Parallel collection fetch**: all discovered collections are queried concurrently; results are merged and deduplicated by UID
+- **Graceful fallback**: if discovery fails, the previous hardcoded primary-URL behavior is used unchanged
+
+### Previous Release (v3.31.6) - Documentation Corrections
 - **Accurate comment count**: `weather-narrative-engine.js` now correctly documented as 56 comments (was incorrectly listed as 156)
 - **Feature list corrected**: comedian quotes were removed in a prior release; Key Features now reads "weather commentary" instead of "comedian commentary"
 - **Version reference fix**: "Previous Release v3.30.2" corrected to v3.30.1 (v3.30.2 never existed)
