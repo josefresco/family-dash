@@ -368,7 +368,7 @@ module.exports = async (req, res) => {
         contains_calendar_data: xmlData.includes('calendar-data'),
         contains_error: xmlData.toLowerCase().includes('error'),
         parsing_attempted: events !== undefined,
-        parsing_debug: parseResult.debug,
+        parsed_event_count: events.length,
         date_range: {
           start_utc: startTimeUTC,
           end_utc: endTimeUTC,
@@ -574,7 +574,8 @@ function parseICSEvent(eventData) {
     calendar_name: 'CalDAV Calendar'
   };
 
-  const lines = eventData.split(/\r?\n/);
+  // Unfold ICS line continuations (RFC 5545 §3.1) before splitting
+  const lines = eventData.replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
   let inSubComponent = false; // skip VALARM, VTODO etc. nested blocks
 
   for (const line of lines) {
