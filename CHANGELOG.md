@@ -5,6 +5,16 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.32.0] - 2026-05-27
+
+### Added
+- **CalDAV calendar discovery**: `POST /api/calendar` now performs a 3-step PROPFIND chain (current-user-principal → calendar-home-set → collection list) before fetching events, so all calendar collections in an account are queried — including calendars where you are an invited attendee, shared calendars, and secondary calendars. Previously only the primary calendar collection was queried.
+- **Parallel collection REPORT**: once collections are discovered, events are fetched from all of them concurrently via `Promise.allSettled`
+- **UID-based deduplication**: events returned by multiple collections are deduplicated by their ICS `UID` field before filtering
+- **Graceful fallback**: if discovery fails or returns nothing, the existing hardcoded primary-URL fallback loop is used unchanged
+
+---
+
 ## [3.31.6] - 2026-05-04
 
 ### Fixed

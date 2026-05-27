@@ -157,79 +157,103 @@ module.exports = async (req, res) => {
 
     const authHeader = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 
-    const urlsToTry = [caldavUrl];
+    // --- CalDAV Calendar Collection Discovery ---
+    console.log('Discovering calendar collections...');
+    const discoveredCollections = await discoverCalendarCollections(caldavUrl, authHeader);
+    console.log(`Discovered ${discoveredCollections.length} calendar collection(s)`);
 
-    if (provider === 'google') {
-      const isGmail = username.endsWith('@gmail.com') || username.endsWith('@googlemail.com');
-      if (isGmail) {
-        // Personal Gmail: apidata endpoint often rejects App Passwords — try calendar.google.com too
-        urlsToTry.push(
-          `https://calendar.google.com/calendar/dav/${username}/events/`,
-          `https://calendar.google.com/calendar/dav/${username}/user/`,
-          `https://www.google.com/calendar/dav/${username}/events/`,
-          `https://apidata.googleusercontent.com/caldav/v2/${username}/user/`
-        );
-      } else {
-        // Workspace accounts
-        urlsToTry.push(
-          providerConfig.workspaceEndpoint + `${username}/user/`,
-          `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
-          providerConfig.workspaceEndpoint + `${username}/`,
-          providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
-        );
-      }
-    }
+    const reportHeaders = {
+      'Authorization': authHeader,
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Depth': '1'
+    };
 
-    let response;
-    let lastError;
+    let allEvents = [];
+    let xmlData = '';
+    let anySucceeded = false;
 
-    for (const url of urlsToTry) {
-      console.log(`Making CalDAV REPORT request to: ${url.replace(username, '[username]')}`);
+    if (discoveredCollections.length > 0) {
+      // Query all discovered collections in parallel
+      const results = await Promise.allSettled(
+        discoveredCollections.map(async ({ url, name }) => {
+          console.log(`REPORT → "${name}" (${url.replace(username, '[username]')})`);
+          const resp = await fetch(url, { method: 'REPORT', headers: reportHeaders, body: reportBody });
+          if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+          return { url, name, xml: await resp.text() };
+        })
+      );
 
-      try {
-        response = await fetch(url, {
-          method: 'REPORT',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/xml; charset=utf-8',
-            'Depth': '1'
-          },
-          body: reportBody
-        });
-
-        console.log(`CalDAV response status for ${url.replace(username, '[username]')}: ${response.status}`);
-
-        if (response.ok) {
-          console.log(`CalDAV connection succeeded: ${url.replace(username, '[username]')}`);
-          break;
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          anySucceeded = true;
+          const { name, xml } = r.value;
+          console.log(`  "${name}": ${xml.length} bytes`);
+          if (!xmlData) xmlData = xml;
+          allEvents.push(...parseCalDAVResponseWithDebug(xml).events);
         } else {
-          const errorText = await response.text();
-          console.log(`Failed with ${url.replace(username, '[username]')}: ${response.status} ${response.statusText}`);
-          lastError = errorText;
+          console.log(`  Collection REPORT failed: ${r.reason?.message}`);
         }
-      } catch (error) {
-        console.error(`Network error with ${url.replace(username, '[username]')}:`, error.message);
-        lastError = error.message;
       }
     }
 
-    if (!response || !response.ok) {
-      console.error('All CalDAV endpoints failed');
-      res.status(response?.status || 500).json({
-        error: `CalDAV request failed: ${response?.status || 'Network Error'} ${response?.statusText || 'All endpoints failed'}`,
-        details: lastError ? lastError.substring(0, 200) : 'No additional details',
-        attempted_urls: urlsToTry.length
-      });
-      return;
+    // Fall back to hardcoded primary URL variants if discovery found nothing or all collections failed
+    if (!anySucceeded) {
+      console.log('Falling back to primary URL variants...');
+      const primaryFallbackUrls = [caldavUrl];
+      if (provider === 'google') {
+        const isGmail = username.endsWith('@gmail.com') || username.endsWith('@googlemail.com');
+        if (isGmail) {
+          primaryFallbackUrls.push(
+            `https://calendar.google.com/calendar/dav/${username}/events/`,
+            `https://calendar.google.com/calendar/dav/${username}/user/`,
+            `https://www.google.com/calendar/dav/${username}/events/`,
+            `https://apidata.googleusercontent.com/caldav/v2/${username}/user/`
+          );
+        } else {
+          primaryFallbackUrls.push(
+            providerConfig.workspaceEndpoint + `${username}/user/`,
+            `https://apidata.googleusercontent.com/caldav/v2/${username}/events/`,
+            providerConfig.workspaceEndpoint + `${username}/`,
+            providerConfig.workspaceEndpoint + `${username.split('@')[0]}/events/`
+          );
+        }
+      }
+
+      let lastError;
+      for (const url of primaryFallbackUrls) {
+        console.log(`Trying: ${url.replace(username, '[username]')}`);
+        try {
+          const response = await fetch(url, { method: 'REPORT', headers: reportHeaders, body: reportBody });
+          console.log(`Status: ${response.status}`);
+          if (response.ok) {
+            xmlData = await response.text();
+            anySucceeded = true;
+            allEvents.push(...parseCalDAVResponseWithDebug(xmlData).events);
+            break;
+          } else {
+            lastError = await response.text();
+          }
+        } catch (err) {
+          console.error(`Error for ${url.replace(username, '[username]')}:`, err.message);
+          lastError = err.message;
+        }
+      }
+
+      if (!anySucceeded) {
+        res.status(502).json({
+          error: 'CalDAV request failed: All endpoints failed',
+          details: lastError ? lastError.substring(0, 200) : 'No additional details'
+        });
+        return;
+      }
     }
 
-    const xmlData = await response.text();
+    // Deduplicate events that appear in multiple calendar collections (matched by UID)
+    const events = deduplicateByUid(allEvents);
+
     console.log('CalDAV response length:', xmlData.length);
     console.log('CalDAV raw response (first 1000 chars):', xmlData.substring(0, 1000));
-
-    const parseResult = parseCalDAVResponseWithDebug(xmlData);
-    const events = parseResult.events;
-    console.log('Parsed events:', events.length);
+    console.log('Parsed events (all collections, deduplicated):', events.length);
 
     if (events.length === 0) {
       console.log('No events parsed - checking XML structure...');
@@ -266,11 +290,7 @@ module.exports = async (req, res) => {
       try {
         const broadResponse = await fetch(caldavUrl, {
           method: 'REPORT',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/xml; charset=utf-8',
-            'Depth': '1'
-          },
+          headers: reportHeaders,
           body: broadReportBody
         });
 
@@ -544,6 +564,7 @@ function parseICSEvent(eventData) {
     all_day: false,
     location: '',
     description: '',
+    uid: '',
     calendar_name: 'CalDAV Calendar'
   };
 
@@ -580,6 +601,8 @@ function parseICSEvent(eventData) {
       event.location = decodeICSText(value);
     } else if (key === 'DESCRIPTION') {
       event.description = decodeICSText(value);
+    } else if (key === 'UID') {
+      event.uid = value;
     }
   }
 
@@ -648,4 +671,116 @@ function decodeICSText(text) {
     .replace(/\\,/g, ',')
     .replace(/\\;/g, ';')
     .replace(/\\\\/g, '\\');
+}
+
+// Resolve a potentially relative href from a CalDAV PROPFIND response to an absolute URL
+function resolveUrl(base, path) {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  try {
+    const url = new URL(base);
+    return path.startsWith('/')
+      ? `${url.protocol}//${url.host}${path}`
+      : `${url.protocol}//${url.host}/${path}`;
+  } catch (e) {
+    return path;
+  }
+}
+
+// Discover all VEVENT-capable calendar collections for an account via PROPFIND chain.
+// Returns array of { url, name }. Returns [] on any failure so callers can fall back.
+async function discoverCalendarCollections(startUrl, authHeader) {
+  const headers0 = { 'Authorization': authHeader, 'Content-Type': 'application/xml; charset=utf-8', 'Depth': '0' };
+
+  // Step 1 — current-user-principal
+  let principalUrl = null;
+  try {
+    const resp = await fetch(startUrl, {
+      method: 'PROPFIND',
+      headers: headers0,
+      body: '<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:"><D:prop><D:current-user-principal/></D:prop></D:propfind>'
+    });
+    if (resp.ok) {
+      const xml = await resp.text();
+      const m = xml.match(/<[^:>\s]*:?current-user-principal[^>]*>[\s\S]*?<[^:>\s]*:?href[^>]*>([^<]+)<\/[^:>\s]*:?href>/i);
+      if (m) principalUrl = resolveUrl(startUrl, m[1].trim());
+      console.log('Discovery principal:', principalUrl);
+    }
+  } catch (e) {
+    console.log('Discovery step 1 error:', e.message);
+  }
+
+  // Step 2 — calendar-home-set
+  let calendarHomeUrl = null;
+  try {
+    const resp = await fetch(principalUrl || startUrl, {
+      method: 'PROPFIND',
+      headers: headers0,
+      body: '<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav"><D:prop><C:calendar-home-set/></D:prop></D:propfind>'
+    });
+    if (resp.ok) {
+      const xml = await resp.text();
+      const m = xml.match(/<[^:>\s]*:?calendar-home-set[^>]*>[\s\S]*?<[^:>\s]*:?href[^>]*>([^<]+)<\/[^:>\s]*:?href>/i);
+      if (m) calendarHomeUrl = resolveUrl(startUrl, m[1].trim());
+      console.log('Discovery calendar home:', calendarHomeUrl);
+    }
+  } catch (e) {
+    console.log('Discovery step 2 error:', e.message);
+  }
+
+  if (!calendarHomeUrl) return [];
+
+  // Step 3 — list all calendar collections under the home set
+  try {
+    const resp = await fetch(calendarHomeUrl, {
+      method: 'PROPFIND',
+      headers: { ...headers0, 'Depth': '1' },
+      body: '<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav"><D:prop><D:resourcetype/><D:displayname/><C:supported-calendar-component-set/></D:prop></D:propfind>'
+    });
+    if (!resp.ok) return [];
+
+    const xml = await resp.text();
+    const collections = [];
+    const responseRe = /<[^:>\s]*:?response[^>]*>([\s\S]*?)<\/[^:>\s]*:?response>/gi;
+    let m;
+
+    while ((m = responseRe.exec(xml)) !== null) {
+      const block = m[1];
+
+      // Must be a calendar collection (resourcetype contains both 'collection' and 'calendar')
+      const rtMatch = block.match(/<[^:>\s]*:?resourcetype[^>]*>([\s\S]*?)<\/[^:>\s]*:?resourcetype>/i);
+      if (!rtMatch) continue;
+      const rt = rtMatch[1];
+      if (!rt.includes('collection') || !rt.includes('calendar')) continue;
+
+      // Skip if explicitly declared to not support VEVENT
+      const compSetMatch = block.match(/<[^:>\s]*:?supported-calendar-component-set[^>]*>([\s\S]*?)<\/[^:>\s]*:?supported-calendar-component-set>/i);
+      if (compSetMatch && !compSetMatch[1].toLowerCase().includes('vevent')) continue;
+
+      const hrefMatch = block.match(/<[^:>\s]*:?href[^>]*>([^<]+)<\/[^:>\s]*:?href>/i);
+      if (!hrefMatch) continue;
+
+      const nameMatch = block.match(/<[^:>\s]*:?displayname[^>]*>([^<]*)<\/[^:>\s]*:?displayname>/i);
+      const name = nameMatch ? nameMatch[1].trim() || 'Unnamed Calendar' : 'Unnamed Calendar';
+      const url = resolveUrl(calendarHomeUrl, hrefMatch[1].trim());
+      if (url) collections.push({ url, name });
+    }
+
+    console.log('Discovery collections:', collections.map(c => `"${c.name}"`).join(', '));
+    return collections;
+  } catch (e) {
+    console.log('Discovery step 3 error:', e.message);
+    return [];
+  }
+}
+
+// Remove duplicate events that appear in multiple calendar collections, matched by UID
+function deduplicateByUid(events) {
+  const seen = new Set();
+  return events.filter(event => {
+    if (!event.uid) return true;
+    if (seen.has(event.uid)) return false;
+    seen.add(event.uid);
+    return true;
+  });
 }
