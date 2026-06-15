@@ -1018,6 +1018,14 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         }
     }
 
+    getWindDirectionInfo(deg) {
+        if (deg === null || deg === undefined) return { cardinal: 'N/A', arrow: '–' };
+        const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+        const arrows = ['↓','↙','←','↖','↑','↗','→','↘']; // arrow shows where wind is blowing TO
+        const idx = Math.round(((deg % 360) + 360) % 360 / 45) % 8;
+        return { cardinal: dirs[idx], arrow: arrows[idx] };
+    }
+
     getSunPillInfo() {
         if (!this.sunData) return { icon: '🌇', label: 'Sunset', time: 'N/A' };
 
@@ -1094,6 +1102,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         const laterSentence = this.getLaterTodaySentence(data);
         const tempAlert = this.getTempShiftAlert(data);
         const sunPill = this.getSunPillInfo();
+        const wind = this.getWindDirectionInfo(data.windDirection ?? data.daily_summary?.windDirection);
 
         return `
             <!-- Today's Main Display - Full Height -->
@@ -1122,8 +1131,25 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     ${sunPill.label}: ${sunPill.time}
                 </div>
-                <div style="font-size: 96px; font-weight: 200; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.05; margin: 2px 0 8px;">
-                    ${currentTemp}°F
+
+                <!-- Temperature + Wind Direction Row -->
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 2px 0 8px;">
+                    <div style="font-size: 96px; font-weight: 200; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); line-height: 1.05;">
+                        ${currentTemp}°F
+                    </div>
+                    <div style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        background: rgba(0,0,0,0.25);
+                        border-radius: 14px;
+                        padding: 10px 16px;
+                        min-width: 80px;
+                    ">
+                        <div style="font-size: 64px; line-height: 1; text-shadow: 2px 2px 6px rgba(0,0,0,0.3);">${wind.arrow}</div>
+                        <div style="font-size: 18px; font-weight: 700; margin-top: 4px; letter-spacing: 1px;">${wind.cardinal}</div>
+                        <div style="font-size: 14px; font-weight: 500; opacity: 0.85;">${data.windSpeed ?? '?'} mph</div>
+                    </div>
                 </div>
 
                 <!-- Today's Weather Summary -->
