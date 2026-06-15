@@ -233,6 +233,7 @@ class APIClient {
             humidity: currentData.main.humidity,
             pressure: currentData.main.pressure,
             windSpeed: Math.round(currentData.wind?.speed || 0),
+            windDirection: currentData.wind?.deg ?? null,
             visibility: Math.round((currentData.visibility || 10000) / 1609.34), // Convert m to miles
             icon: currentData.weather[0].icon,
             date_requested: date_param,
