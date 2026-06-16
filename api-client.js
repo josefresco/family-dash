@@ -328,6 +328,7 @@ class APIClient {
                 humidity: current.main.humidity,
                 pressure: current.main.pressure,
                 windSpeed: Math.round(current.wind.speed),
+                windDirection: current.wind?.deg ?? null,
                 visibility: Math.round((current.visibility || 10000) / 1609.34), // Convert m to miles
                 icon: current.weather[0].icon,
                 date_requested: date_param,
@@ -359,6 +360,7 @@ class APIClient {
             humidity: firstForecast.main.humidity,
             pressure: firstForecast.main.pressure,
             windSpeed: Math.round(firstForecast.wind.speed),
+            windDirection: firstForecast.wind?.deg ?? null,
             visibility: Math.round((firstForecast.visibility || 10000) / 1609.34),
             icon: firstForecast.weather[0].icon,
             date_requested: date_param,
