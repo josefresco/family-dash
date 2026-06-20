@@ -516,6 +516,8 @@ const PER_PAGE = 50;
 let selectedIds = new Set();
 let authHeader = null;       // stored from Fetch Live for reuse in delete calls
 let pendingForce = false;    // whether pending delete is permanent
+let pluginEndpoint = null;   // seo-audit/v1/delete endpoint URL
+let pluginToken = null;      // X-Audit-Token secret
 
 // ─── CSV Parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
@@ -879,53 +881,72 @@ function closeModal() {
 async function executeDelete() {
   closeModal();
 
-  // Prompt for credentials if we don't have them
-  if (!authHeader) {
-    const user = prompt('WordPress username (for REST API):');
-    if (!user) return;
-    const pass = prompt('WordPress application password or login password:');
-    if (!pass) return;
-    authHeader = 'Basic ' + btoa(user + ':' + pass);
+  // Prompt for plugin endpoint + token if not yet set
+  if (!pluginEndpoint) {
+    const ep = prompt(
+      'Plugin endpoint URL:\n(e.g. https://josiahcole.com/wp-json/seo-audit/v1/delete)',
+      'https://www.josiahcole.com/wp-json/seo-audit/v1/delete'
+    );
+    if (!ep) return;
+    pluginEndpoint = ep.trim();
+  }
+  if (!pluginToken) {
+    const tok = prompt('Secret token (from WP Admin → Settings → SEO Audit Delete):');
+    if (!tok) return;
+    pluginToken = tok.trim();
   }
 
   const ids = Array.from(selectedIds);
   const force = pendingForce;
-  const base = 'https://www.josiahcole.com/wp-json/wp/v2/posts/';
-  const suffix = force ? '?force=true' : '';
 
   showToast('info', `Deleting ${ids.length} posts…`, 'Please wait');
 
   let ok = 0, fail = 0, failMsgs = [];
 
-  for (const id of ids) {
-    try {
-      const res = await fetch(base + id + suffix, {
-        method: 'DELETE',
-        headers: { 'Authorization': authHeader }
-      });
-      if (res.ok) {
+  try {
+    const res = await fetch(pluginEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Audit-Token': pluginToken
+      },
+      body: JSON.stringify({ ids, force })
+    });
+
+    if (res.status === 403) {
+      pluginToken = null;
+      showToast('error', 'Invalid token', 'Token rejected — try again');
+      return;
+    }
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      showToast('error', 'Request failed', body.message || `HTTP ${res.status}`);
+      return;
+    }
+
+    const data = await res.json();
+    for (const [id, result] of Object.entries(data.results || {})) {
+      if (result.status === 'deleted' || result.status === 'trashed') {
         ok++;
-        // Mark row visually and remove from allRows
         const tr = document.querySelector(`tr[data-id="${id}"]`);
         if (tr) tr.classList.add('deleted-row');
-        allRows = allRows.filter(r => r.ID !== id);
-        selectedIds.delete(id);
+        allRows = allRows.filter(r => String(r.ID) !== String(id));
+        selectedIds.delete(Number(id));
       } else {
         fail++;
-        const body = await res.json().catch(() => ({}));
-        failMsgs.push(`#${id}: ${body.message || res.status}`);
+        failMsgs.push(`#${id}: ${result.status}`);
       }
-    } catch (e) {
-      fail++;
-      failMsgs.push(`#${id}: ${e.message}`);
     }
+  } catch (e) {
+    showToast('error', 'Network error', e.message);
+    return;
   }
 
   updateActionBar();
   renderStats();
 
   if (fail === 0) {
-    showToast('success', `${ok} post${ok > 1 ? 's' : ''} ${force ? 'deleted' : 'trashed'}`, 'Done — reloading list');
+    showToast('success', `${ok} post${ok > 1 ? 's' : ''} ${force ? 'deleted' : 'trashed'}`, 'Done');
     setTimeout(() => { applyFilters(); hideToast(); }, 1200);
   } else {
     showToast('error', `${ok} succeeded, ${fail} failed`, failMsgs.slice(0, 3).join('\n'));
