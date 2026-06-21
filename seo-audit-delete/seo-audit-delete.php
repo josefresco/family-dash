@@ -25,7 +25,7 @@ add_action( 'admin_menu', function () {
 function seo_audit_page() {
     if ( ! current_user_can( 'delete_posts' ) ) wp_die( 'Insufficient permissions.' );
 
-    $nonce       = wp_create_nonce( 'seo_audit_action' );
+    $nonce       = wp_create_nonce( 'wp_rest' );
     $delete_url  = rest_url( 'seo-audit/v1/delete' );
     $csv_url     = rest_url( 'seo-audit/v1/csv' );
 
@@ -58,10 +58,6 @@ add_action( 'rest_api_init', function () {
 } );
 
 function seo_audit_check_permission( WP_REST_Request $request ) {
-    $nonce = $request->get_header( 'X-WP-Nonce' );
-    if ( ! wp_verify_nonce( $nonce, 'seo_audit_action' ) ) {
-        return new WP_Error( 'forbidden', 'Invalid or expired nonce.', [ 'status' => 403 ] );
-    }
     if ( ! current_user_can( 'delete_posts' ) ) {
         return new WP_Error( 'forbidden', 'Insufficient permissions.', [ 'status' => 403 ] );
     }
