@@ -460,9 +460,13 @@ async function saFetchFromServer() {
   btn.disabled = true; btn.textContent = 'Loading…';
   try {
     const res = await fetch(CFG.csvEndpoint, { credentials: 'include', headers: { 'X-WP-Nonce': CFG.nonce } });
-    if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message || 'HTTP ' + res.status); }
-    const text = await res.text();
-    saInit(text);
+    const rawText = await res.text();
+    if (!res.ok) {
+      let msg = rawText;
+      try { msg = JSON.parse(rawText).message || rawText; } catch {}
+      throw new Error(`HTTP ${res.status}: ${msg}`);
+    }
+    saInit(rawText);
   } catch(e) {
     alert('Could not load CSV: ' + e.message);
   } finally {
