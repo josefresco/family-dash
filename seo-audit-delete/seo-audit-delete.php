@@ -107,7 +107,12 @@ function seo_audit_serve_csv( WP_REST_Request $request ) {
 function seo_audit_render_viewer() {
 ?>
 <style>
-#seo-audit-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Reset WP admin chrome around our page */
+#wpbody-content { padding-bottom: 0 !important; }
+#wpbody-content .wrap { margin: 0 !important; padding: 0 !important; max-width: none !important; }
+html.wp-toolbar { padding-top: 32px; }
+
+#seo-audit-wrap *, #seo-audit-wrap *::before, #seo-audit-wrap *::after { box-sizing: border-box; margin: 0; padding: 0; }
 #seo-audit-wrap {
   --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3350;
   --text: #e2e8f0; --muted: #8892a4;
@@ -119,8 +124,12 @@ function seo_audit_render_viewer() {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px; line-height: 1.5;
   background: var(--bg); color: var(--text);
-  min-height: 100vh; margin: -10px -20px; padding: 0;
+  min-height: calc(100vh - 32px);
+  position: relative;
 }
+
+/* Override WP admin heading styles */
+#seo-audit-wrap h1, #seo-audit-wrap h2 { color: var(--text); border: none; padding: 0; }
 
 /* Buttons */
 #seo-audit-wrap .btn {
@@ -459,7 +468,8 @@ async function saFetchFromServer() {
   const btn = document.getElementById('sa-fetch-btn');
   btn.disabled = true; btn.textContent = 'Loading…';
   try {
-    const res = await fetch(CFG.csvEndpoint, { credentials: 'include', headers: { 'X-WP-Nonce': CFG.nonce } });
+    const csvUrl = CFG.csvEndpoint + '?_wpnonce=' + encodeURIComponent(CFG.nonce);
+    const res = await fetch(csvUrl, { credentials: 'include' });
     const rawText = await res.text();
     if (!res.ok) {
       let msg = rawText;
@@ -731,10 +741,11 @@ async function saExecuteDelete() {
   const force = pendingForce;
   saShowToast('info', `Deleting ${ids.length} posts…`, 'Please wait');
   try {
-    const res = await fetch(CFG.deleteEndpoint, {
+    const deleteUrl = CFG.deleteEndpoint + '?_wpnonce=' + encodeURIComponent(CFG.nonce);
+    const res = await fetch(deleteUrl, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': CFG.nonce },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids, force })
     });
     if (res.status === 403) { saShowToast('error', 'Permission denied', 'Your session may have expired — refresh the page.'); return; }
