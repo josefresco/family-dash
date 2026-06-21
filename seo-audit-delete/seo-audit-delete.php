@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SEO Audit
  * Description: SEO audit viewer with post deletion — served as a full-screen admin page.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Josiah Cole
  */
 
