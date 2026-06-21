@@ -463,7 +463,7 @@ async function saFetchFromServer() {
   const btn = document.getElementById('sa-fetch-btn');
   btn.disabled = true; btn.textContent = 'Loading…';
   try {
-    const res = await fetch(CFG.csvEndpoint, { headers: { 'X-WP-Nonce': CFG.nonce } });
+    const res = await fetch(CFG.csvEndpoint, { credentials: 'include', headers: { 'X-WP-Nonce': CFG.nonce } });
     if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message || 'HTTP ' + res.status); }
     const text = await res.text();
     saInit(text);
@@ -733,6 +733,7 @@ async function saExecuteDelete() {
   try {
     const res = await fetch(CFG.deleteEndpoint, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': CFG.nonce },
       body: JSON.stringify({ ids, force })
     });
