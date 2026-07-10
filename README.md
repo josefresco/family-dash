@@ -1,12 +1,16 @@
-# Family Dashboard - v3.33.0 🏠
+# Family Dashboard - v3.33.1 🏠
 
-A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather with narrative commentary, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
+A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
 ---
 
 ## 🎉 Latest Updates
 
-### New Release (v3.33.0) - Wind Direction Icon
+### New Release (v3.33.1) - Weather Summary Cleanup
+- **Commentary removed**: the secondary weather "commentary" line (encouragement text) no longer renders in the today/tomorrow weather panels
+- **Larger summary text**: the main weather summary now uses a larger `clamp(26px, 6.5vw, 44px)` font size (was `clamp(20px, 5vw, 34px)`) since it's the only line in the summary panel
+
+### Previous Release (v3.33.0) - Wind Direction Icon
 - **Wind direction display**: large directional arrow with cardinal label (N/NE/E/etc.) and wind speed shown alongside the current temperature in the weather panel
 - **API update**: `windDirection` (degrees) now extracted from OpenWeatherMap `wind.deg` and included in weather data payload
 

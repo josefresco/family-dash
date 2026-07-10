@@ -5,6 +5,12 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.33.1] - 2026-07-10
+
+### Changed
+- **Weather summary panel**: removed the secondary "commentary" (encouragement) text from the today/tomorrow weather summary panels — only the main forecast summary now renders
+- **Larger summary font**: main weather summary text size increased from `clamp(20px, 5vw, 34px)` to `clamp(26px, 6.5vw, 44px)` now that it's the sole line in the panel
+
 ## [3.33.0] - 2026-06-15
 
 ### Added
