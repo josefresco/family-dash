@@ -1168,11 +1168,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     text-align: center;
                     gap: 12px;
                 ">
-                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #111111;">
+                    <div style="font-size: clamp(26px, 6.5vw, 44px); line-height: 1.3; font-weight: 700; color: #111111;">
                         ${parts.forecast}
-                    </div>
-                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #333333;">
-                        ${parts.commentary}
                     </div>
                 </div>
 
@@ -1274,11 +1271,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     text-align: center;
                     gap: 12px;
                 ">
-                    <div style="font-size: clamp(20px, 5vw, 34px); line-height: 1.3; font-weight: 700; color: #111111;">
+                    <div style="font-size: clamp(26px, 6.5vw, 44px); line-height: 1.3; font-weight: 700; color: #111111;">
                         ${parts.forecast}
-                    </div>
-                    <div style="font-size: clamp(18px, 4vw, 28px); line-height: 1.3; font-weight: 600; color: #333333;">
-                        ${parts.commentary}
                     </div>
                 </div>
             </div>
