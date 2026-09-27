@@ -1054,7 +1054,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     getTempShiftAlert(data) {
         const todayHigh = data.daily_summary?.high_temp;
         const upcoming = data.upcoming_daily_highs;
-        if (!todayHigh || !upcoming?.length) return null;
+        if (todayHigh == null || !upcoming?.length) return null;
 
         const ordinal = (n) => {
             const s = ['th', 'st', 'nd', 'rd'];
@@ -1097,8 +1097,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     }
 
     renderTodayWeather(data, colors, mainIcon) {
-        const currentTemp = data.temperature || data.daily_summary.current_temp || data.daily_summary.high_temp;
-        const parts = window.weatherNarrativeEngine.createTodayNarrativeParts(data);
+        const currentTemp = data.temperature ?? data.daily_summary.current_temp ?? data.daily_summary.high_temp;
+        const forecast = window.weatherNarrativeEngine.createTodayForecast(data);
         const laterSentence = this.getLaterTodaySentence(data);
         const tempAlert = this.getTempShiftAlert(data);
         const sunPill = this.getSunPillInfo();
@@ -1153,25 +1153,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 </div>
 
                 <!-- Today's Weather Summary -->
-                <div style="
-                    background: #ffffff;
-                    border-radius: 15px;
-                    padding: 20px;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                    border: 2px solid rgba(0,0,0,0.08);
-                    flex: 1;
-                    overflow-y: auto;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    text-align: center;
-                    gap: 12px;
-                ">
-                    <div style="font-size: clamp(26px, 6.5vw, 44px); line-height: 1.3; font-weight: 700; color: #111111;">
-                        ${parts.forecast}
-                    </div>
-                </div>
+                ${this.renderForecastPanel(forecast, 20)}
 
                 <!-- Later Today Forecast -->
                 <div style="
@@ -1208,7 +1190,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     }
 
     renderTomorrowWeather(data, colors, mainIcon) {
-        const parts = window.weatherNarrativeEngine.createWeatherNarrativeParts(data);
+        const forecast = window.weatherNarrativeEngine.createTomorrowForecast(data);
         const sunPill = this.getSunPillInfo();
 
         return `
@@ -1256,47 +1238,43 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     ${data.daily_summary.description}
                 </div>
-                <div style="
-                    background: #ffffff;
-                    border-radius: 15px;
-                    padding: 25px;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-                    border: 2px solid rgba(0,0,0,0.08);
-                    flex: 1;
-                    overflow-y: auto;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    text-align: center;
-                    gap: 12px;
-                ">
-                    <div style="font-size: clamp(26px, 6.5vw, 44px); line-height: 1.3; font-weight: 700; color: #111111;">
-                        ${parts.forecast}
-                    </div>
-                </div>
+                ${this.renderForecastPanel(forecast, 25)}
             </div>
         `;
     }
 
-    createTodayNarrative(data) {
-        // Use WeatherNarrativeEngine for consistent narrative generation
-        return window.weatherNarrativeEngine.createTodayNarrative(data);
-    }
+    // Summary panel shared by the Today and Tomorrow views. Longer text steps the
+    // font down, and the font tracks viewport height, so it fits without scrolling
+    // on a wall-mounted display. margin:auto centers without clipping the top if
+    // the text still overflows (justify-content:center would hide it).
+    renderForecastPanel(forecast, padding) {
+        const fontSize = forecast.length > 110 ? 'clamp(20px, min(4.5vw, 4vh), 30px)'
+            : forecast.length > 70 ? 'clamp(22px, min(5.5vw, 5vh), 36px)'
+            : 'clamp(24px, min(6.5vw, 6vh), 44px)';
 
-    createWeatherNarrative(data) {
-        // Use WeatherNarrativeEngine for consistent narrative generation
-        return window.weatherNarrativeEngine.createWeatherNarrative(data);
-    }
-
-    getWeatherEncouragement(summary, precipitation) {
-        // Use WeatherNarrativeEngine for consistent weather encouragement
-        return window.weatherNarrativeEngine.getWeatherEncouragement(summary, precipitation);
+        return `
+                <div style="
+                    background: #ffffff;
+                    border-radius: 15px;
+                    padding: ${padding}px;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    border: 2px solid rgba(0,0,0,0.08);
+                    flex: 1;
+                    min-height: 0;
+                    overflow-y: auto;
+                    display: flex;
+                    text-align: center;
+                ">
+                    <div style="margin: auto; font-size: ${fontSize}; line-height: 1.3; font-weight: 700; color: #111111;">
+                        ${forecast}
+                    </div>
+                </div>
+        `;
     }
 
     checkWeatherAlerts(data) {
         const condition = (data.daily_summary?.description || data.description || '').toLowerCase();
-        const temp = data.daily_summary?.high_temp || data.temperature || 70;
+        const temp = data.daily_summary?.high_temp ?? data.temperature ?? 70;
         const windSpeed = data.windSpeed || 0;
         const conditions = [];
         let level = null;
@@ -1551,8 +1529,8 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
         // Create simplified data structure for legacy compatibility
         const legacyData = {
             daily_summary: {
-                high_temp: data.temperature || 70,
-                low_temp: Math.round((data.temperature || 70) - 10),
+                high_temp: data.temperature ?? 70,
+                low_temp: Math.round((data.temperature ?? 70) - 10),
                 description: data.description || 'clear sky',
                 icon: data.icon || '01d'
             },
@@ -1579,7 +1557,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     </div>
                     <div style="font-size: 60px; margin: 8px 0;">${weatherIcon}</div>
                     <div style="font-size: 48px; font-weight: 300; margin: 5px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-                        ${data.temperature || 'N/A'}°F
+                        ${data.temperature ?? 'N/A'}°F
                     </div>
                     <div style="font-size: 20px; font-weight: 500; text-transform: capitalize; opacity: 0.95;">
                         ${data.description || 'Current conditions'}
@@ -1595,7 +1573,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     text-align: center;
                 ">
                     <div style="font-size: 14px; font-weight: 600;">
-                        Humidity: ${data.humidity || 'N/A'}% • Wind: ${data.windSpeed || 'N/A'} mph
+                        Humidity: ${data.humidity ?? 'N/A'}% • Wind: ${data.windSpeed ?? 'N/A'} mph
                     </div>
                 </div>
             `;
@@ -1614,7 +1592,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                     </div>
                     <div style="font-size: 70px; margin: 10px 0;">${weatherIcon}</div>
                     <div style="font-size: 36px; font-weight: 300; margin: 8px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-                        ${data.temperature || 'N/A'}°F
+                        ${data.temperature ?? 'N/A'}°F
                     </div>
                     <div style="font-size: 18px; font-weight: 500; text-transform: capitalize; opacity: 0.95; margin-bottom: 10px;">
                         ${data.description || 'Tomorrow\'s forecast'}

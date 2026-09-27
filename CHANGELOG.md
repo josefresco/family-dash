@@ -5,6 +5,22 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.33.2] - 2026-09-27
+
+### Fixed
+- **0°F readings**: the current temperature, fallback narrative, weather alerts, legacy weather view and temperature-shift alert used `||` fallbacks that treated a real 0°F (or 0% humidity / 0 mph wind) as missing. They now use `??`, so a 0°F morning shows 0°F instead of the day's high or a "Beautiful weather" 70°F default
+- **Weather panel crash path**: summary rendering no longer calls the commentary generator, which threw a TypeError (and failed the whole weather panel) when `daily_summary.description` was missing
+- **Tomorrow forecast guard**: `createTomorrowForecast()` no longer throws when `daily_summary`, `description` or `precipitation.hours` is absent; it falls back to "Forecast details unavailable."
+- **Summary text overflow**: long summaries at 44px overflowed the panel on shorter tablet screens (e.g. 1024x600), and `justify-content: center` clipped the top of the text beyond scroll reach. Font size now steps down for longer text and tracks viewport height, and centering uses `margin: auto` so any overflow stays scrollable
+
+### Changed
+- **Weather narrative engine**: `createTodayNarrativeParts()` / `createWeatherNarrativeParts()` replaced by `createTodayForecast()` / `createTomorrowForecast()`, which return the forecast string only
+- **Summary panel markup**: the duplicated today/tomorrow summary panel is now one `renderForecastPanel()` helper; the unused `gap` was dropped
+
+### Removed
+- **Dead commentary code**: the 56 weather comments, `getWeatherEncouragement()`, `createTodayNarrative()` / `createWeatherNarrative()` and their `app-client.js` wrappers (none of it rendered after v3.33.1)
+- **Stale bundle tip**: "Reduce weather comment arrays" recommendation removed from `analyze-bundle.js`
+
 ## [3.33.1] - 2026-07-10
 
 ### Changed
