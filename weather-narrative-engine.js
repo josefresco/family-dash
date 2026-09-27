@@ -75,6 +75,19 @@ class WeatherNarrativeEngine {
     }
 
     /**
+     * Classify a condition description as storm, snow or rain
+     * @param {string} description - e.g. "light rain", "thunderstorm with rain"
+     * @returns {Object|null} { label, word } or null when there is no precipitation
+     */
+    getPrecipitation(description) {
+        const d = (description || '').toLowerCase();
+        if (d.includes('thunderstorm') || d.includes('storm')) return { label: 'Storms', word: 'storm' };
+        if (d.includes('snow') || d.includes('sleet') || d.includes('blizzard')) return { label: 'Snow', word: 'snow' };
+        if (d.includes('rain') || d.includes('drizzle') || d.includes('shower')) return { label: 'Rain', word: 'rain' };
+        return null;
+    }
+
+    /**
      * One plain heads-up line for the summary panel: upcoming rain/snow/storms
      * and temperatures below 40°F. Returns '' when there is nothing to flag.
      * @param {Object} data - Weather data object
@@ -86,15 +99,8 @@ class WeatherNarrativeEngine {
         const cues = [];
         const shown = (forecast || '').toLowerCase();
 
-        const precipOf = (description) => {
-            const d = (description || '').toLowerCase();
-            if (d.includes('thunderstorm')) return { label: 'Storms', word: 'storm' };
-            if (d.includes('snow') || d.includes('sleet')) return { label: 'Snow', word: 'snow' };
-            if (d.includes('rain') || d.includes('drizzle') || d.includes('shower')) return { label: 'Rain', word: 'rain' };
-            return null;
-        };
         for (const hour of data.hourly_forecasts || []) {
-            const precip = precipOf(hour.description);
+            const precip = this.getPrecipitation(hour.description);
             if (!precip) continue;
             if (!shown.includes(precip.word)) cues.push(`${precip.label} expected around ${hour.time}.`);
             break;

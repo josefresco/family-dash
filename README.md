@@ -1,4 +1,4 @@
-# Family Dashboard - v3.34.0 🏠
+# Family Dashboard - v3.34.1 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,10 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.34.0) - Weather Heads-Up
+### New Release (v3.34.1) - "Later" Line Uses the Forecast
+- **Accurate "Later" sentence**: now based on upcoming hourly forecast slots instead of current conditions, so it agrees with the heads-up line ("Rain expected around 4 PM." / "Later expect rainy and cool.")
+
+### Previous Release (v3.34.0) - Weather Heads-Up
 - **Rain, snow and cold cues**: a plain second line in the summary panel flags upcoming precipitation with its time ("Rain expected around 4 PM.") and temperatures below 40°F
 - **No repeats**: skipped when the summary already mentions that precipitation
 

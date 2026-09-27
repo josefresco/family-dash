@@ -1075,17 +1075,28 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     getLaterTodaySentence(data) {
         const high = data.daily_summary.high_temp;
-        const condition = (data.daily_summary.description || '').toLowerCase();
         const windSpeed = data.windSpeed || 0;
-        const precipExpected = data.precipitation && data.precipitation.expected;
-        const precipType = data.precipitation?.hours?.[0]?.type || 'rain';
+        const engine = window.weatherNarrativeEngine;
+
+        // "Later" means the upcoming forecast slots, not current conditions.
+        // Any precipitation slot wins (storm > snow > rain); otherwise describe
+        // the latest slot. Current conditions only when there is no hourly data.
+        const upcoming = (data.hourly_forecasts || []).map(h => (h.description || '').toLowerCase());
+        const rank = { storm: 3, snow: 2, rain: 1 };
+        let precip = null;
+        for (const desc of upcoming) {
+            const p = engine.getPrecipitation(desc);
+            if (p && (!precip || rank[p.word] > rank[precip.word])) precip = p;
+        }
+        const condition = upcoming.length
+            ? upcoming[upcoming.length - 1]
+            : (data.daily_summary.description || '').toLowerCase();
+        if (!upcoming.length) precip = engine.getPrecipitation(condition);
 
         let tempDesc = high >= 85 ? 'hot' : high >= 72 ? 'warm' : high >= 60 ? 'mild' : high >= 45 ? 'cool' : 'cold';
 
         let condDesc = '';
-        if (condition.includes('thunderstorm') || condition.includes('storm')) condDesc = 'stormy';
-        else if (condition.includes('snow') || condition.includes('blizzard')) condDesc = 'snowy';
-        else if (precipExpected || condition.includes('rain') || condition.includes('shower')) condDesc = precipType === 'snow' ? 'snowy' : 'rainy';
+        if (precip) condDesc = { storm: 'stormy', snow: 'snowy', rain: 'rainy' }[precip.word];
         else if (condition.includes('clear') || condition.includes('sunny')) condDesc = 'sunny';
         else if (condition.includes('cloud') || condition.includes('overcast')) condDesc = 'cloudy';
         else if (windSpeed >= 20) condDesc = 'breezy';
