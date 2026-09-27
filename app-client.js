@@ -1099,6 +1099,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     renderTodayWeather(data, colors, mainIcon) {
         const currentTemp = data.temperature ?? data.daily_summary.current_temp ?? data.daily_summary.high_temp;
         const forecast = window.weatherNarrativeEngine.createTodayForecast(data);
+        const headsUp = window.weatherNarrativeEngine.createHeadsUp(data, forecast, 'today');
         const laterSentence = this.getLaterTodaySentence(data);
         const tempAlert = this.getTempShiftAlert(data);
         const sunPill = this.getSunPillInfo();
@@ -1153,7 +1154,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 </div>
 
                 <!-- Today's Weather Summary -->
-                ${this.renderForecastPanel(forecast, 20)}
+                ${this.renderForecastPanel(forecast, headsUp, 20)}
 
                 <!-- Later Today Forecast -->
                 <div style="
@@ -1191,6 +1192,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
 
     renderTomorrowWeather(data, colors, mainIcon) {
         const forecast = window.weatherNarrativeEngine.createTomorrowForecast(data);
+        const headsUp = window.weatherNarrativeEngine.createHeadsUp(data, forecast, 'tomorrow');
         const sunPill = this.getSunPillInfo();
 
         return `
@@ -1238,7 +1240,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     ${data.daily_summary.description}
                 </div>
-                ${this.renderForecastPanel(forecast, 25)}
+                ${this.renderForecastPanel(forecast, headsUp, 25)}
             </div>
         `;
     }
@@ -1247,9 +1249,11 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
     // font down, and the font tracks viewport height, so it fits without scrolling
     // on a wall-mounted display. margin:auto centers without clipping the top if
     // the text still overflows (justify-content:center would hide it).
-    renderForecastPanel(forecast, padding) {
-        const fontSize = forecast.length > 110 ? 'clamp(20px, min(4.5vw, 4vh), 30px)'
-            : forecast.length > 70 ? 'clamp(22px, min(5.5vw, 5vh), 36px)'
+    // headsUp (rain/snow/cold cue) renders as a smaller second line when present.
+    renderForecastPanel(forecast, headsUp, padding) {
+        const length = forecast.length + (headsUp ? headsUp.length * 0.6 : 0);
+        const fontSize = length > 110 ? 'clamp(20px, min(4.5vw, 4vh), 30px)'
+            : length > 70 ? 'clamp(22px, min(5.5vw, 5vh), 36px)'
             : 'clamp(24px, min(6.5vw, 6vh), 44px)';
 
         return `
@@ -1267,6 +1271,7 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 ">
                     <div style="margin: auto; font-size: ${fontSize}; line-height: 1.3; font-weight: 700; color: #111111;">
                         ${forecast}
+                        ${headsUp ? `<div style="font-size: 0.6em; font-weight: 600; color: #333333; margin-top: 0.5em;">${headsUp}</div>` : ''}
                     </div>
                 </div>
         `;

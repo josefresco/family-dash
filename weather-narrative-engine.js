@@ -75,6 +75,42 @@ class WeatherNarrativeEngine {
     }
 
     /**
+     * One plain heads-up line for the summary panel: upcoming rain/snow/storms
+     * and temperatures below 40°F. Returns '' when there is nothing to flag.
+     * @param {Object} data - Weather data object
+     * @param {string} forecast - Forecast text already shown, so a cue it covers is skipped
+     * @param {string} view - 'today' or 'tomorrow'
+     * @returns {string} Heads-up text
+     */
+    createHeadsUp(data, forecast, view) {
+        const cues = [];
+        const shown = (forecast || '').toLowerCase();
+
+        const precipOf = (description) => {
+            const d = (description || '').toLowerCase();
+            if (d.includes('thunderstorm')) return { label: 'Storms', word: 'storm' };
+            if (d.includes('snow') || d.includes('sleet')) return { label: 'Snow', word: 'snow' };
+            if (d.includes('rain') || d.includes('drizzle') || d.includes('shower')) return { label: 'Rain', word: 'rain' };
+            return null;
+        };
+        for (const hour of data.hourly_forecasts || []) {
+            const precip = precipOf(hour.description);
+            if (!precip) continue;
+            if (!shown.includes(precip.word)) cues.push(`${precip.label} expected around ${hour.time}.`);
+            break;
+        }
+
+        const high = data.daily_summary?.high_temp;
+        const low = data.daily_summary?.low_temp;
+        const now = data.temperature ?? data.daily_summary?.current_temp;
+        if (high != null && high < 40) cues.push(`Cold all day, high of ${high}°F.`);
+        else if (view === 'today' && now != null && now < 40) cues.push(`Cold now, warming to ${high ?? now}°F.`);
+        else if (view === 'tomorrow' && low != null && low < 40) cues.push(`Cold morning, low of ${low}°F.`);
+
+        return cues.join(' ');
+    }
+
+    /**
      * Generate a simple weather summary (used by API client)
      * @param {Object} currentData - Current weather data
      * @param {number} highTemp - High temperature

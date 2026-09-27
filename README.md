@@ -1,4 +1,4 @@
-# Family Dashboard - v3.33.2 🏠
+# Family Dashboard - v3.34.0 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,11 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.33.2) - Weather Summary Fixes
+### New Release (v3.34.0) - Weather Heads-Up
+- **Rain, snow and cold cues**: a plain second line in the summary panel flags upcoming precipitation with its time ("Rain expected around 4 PM.") and temperatures below 40°F
+- **No repeats**: skipped when the summary already mentions that precipitation
+
+### Previous Release (v3.33.2) - Weather Summary Fixes
 - **0°F shows 0°F**: sub-zero-boundary readings no longer fall back to the day's high or a 70°F default
 - **No more clipped summaries**: summary text scales with text length and screen height so it fits shorter tablet screens
 - **Leaner engine**: unused weather commentary code removed; forecast text generation can no longer crash the weather panel on missing fields
@@ -63,7 +67,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 ## ✨ Key Features
 
 - **Multi-Account CalDAV**: up to 3 Google Calendar (or other CalDAV) accounts simultaneously, each with a distinct color
-- **Weather Narratives**: condition-matched color themes, narrative forecast, extreme weather alerts
+- **Weather Narratives**: condition-matched color themes, narrative forecast, rain/snow/cold heads-up, extreme weather alerts
 - **Weekend Preview**: dedicated Saturday/Sunday event section
 - **Birthdays & Holidays**: 30-day lookahead across all calendar accounts
 - **Time-Based Switching**: automatically shows tomorrow's view after 5 PM Eastern

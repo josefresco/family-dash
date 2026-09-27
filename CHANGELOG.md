@@ -5,6 +5,15 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.34.0] - 2026-09-27
+
+### Added
+- **Weather heads-up line**: the today/tomorrow summary panel shows a smaller second line when rain, snow or storms are coming ("Rain expected around 4 PM.") or it is below 40°F ("Cold now, warming to 45°F.", "Cold all day, high of 35°F.", "Cold morning, low of 34°F."). Restores the cold and precipitation cues lost when commentary was removed in v3.33.1, without the jokes
+- **`createHeadsUp()`** in `weather-narrative-engine.js`: precipitation timing comes from `hourly_forecasts` (the API never populates `data.precipitation`), and a precipitation cue the summary text already mentions is skipped
+
+### Changed
+- **Summary panel sizing**: `renderForecastPanel()` counts the heads-up line when stepping the font size down, so both lines still fit on short tablet screens
+
 ## [3.33.2] - 2026-09-27
 
 ### Fixed
