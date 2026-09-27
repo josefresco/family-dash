@@ -1,4 +1,4 @@
-# Family Dashboard - v3.33.1 🏠
+# Family Dashboard - v3.33.2 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,12 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.33.1) - Weather Summary Cleanup
+### New Release (v3.33.2) - Weather Summary Fixes
+- **0°F shows 0°F**: sub-zero-boundary readings no longer fall back to the day's high or a 70°F default
+- **No more clipped summaries**: summary text scales with text length and screen height so it fits shorter tablet screens
+- **Leaner engine**: unused weather commentary code removed; forecast text generation can no longer crash the weather panel on missing fields
+
+### Previous Release (v3.33.1) - Weather Summary Cleanup
 - **Commentary removed**: the secondary weather "commentary" line (encouragement text) no longer renders in the today/tomorrow weather panels
 - **Larger summary text**: the main weather summary now uses a larger `clamp(26px, 6.5vw, 44px)` font size (was `clamp(20px, 5vw, 34px)`) since it's the only line in the summary panel
 
@@ -58,7 +63,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 ## ✨ Key Features
 
 - **Multi-Account CalDAV**: up to 3 Google Calendar (or other CalDAV) accounts simultaneously, each with a distinct color
-- **Weather Narratives**: condition-matched color themes, narrative forecast, weather commentary, extreme weather alerts
+- **Weather Narratives**: condition-matched color themes, narrative forecast, extreme weather alerts
 - **Weekend Preview**: dedicated Saturday/Sunday event section
 - **Birthdays & Holidays**: 30-day lookahead across all calendar accounts
 - **Time-Based Switching**: automatically shows tomorrow's view after 5 PM Eastern
@@ -186,7 +191,7 @@ family-dash/
 ├── config.js                      # Fetches /api/config on init
 ├── api-client.js                  # OpenWeatherMap API
 ├── api/calendar.js                # CalDAV proxy route
-├── weather-narrative-engine.js    # 56 weather comments
+├── weather-narrative-engine.js    # Forecast summary text
 ├── logger.js / error-handler.js / date-utils.js
 └── sw.js                          # Service worker (PWA)
 ```

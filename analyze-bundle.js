@@ -143,7 +143,6 @@ function generateSummary() {
     console.log('1. Run build script to remove console.log/debug statements');
     console.log('2. Use advanced build (npm run build:advanced) for aggressive minification');
     console.log('3. Consider lazy loading large modules (caldav-client.js, weather-narrative-engine.js)');
-    console.log('4. Reduce weather comment arrays in weather-narrative-engine.js');
 
     // Save analysis to JSON
     const outputPath = path.join(__dirname, 'bundle-analysis.json');
