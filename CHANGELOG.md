@@ -5,6 +5,16 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.35.0] - 2026-09-27
+
+### Added
+- **Auto-reload on deploy**: tablets poll `GET /api/version` every 10 minutes and reload when the server's version differs from the one the page loaded (the `?v=` on the `app-client.js` script tag). Cache Storage is cleared before reloading so the service worker cannot serve old files back. The check starts first in `init()`, so a deployed fix also reaches a tablet whose startup failed
+- **`GET /api/version`** in `server.js`: returns `{ version }` from `package.json`, read from disk on every request so a `git pull` is picked up without a `pm2 restart`. Behind Basic Auth, `Cache-Control: no-store`
+
+### Changed
+- **Reload loop guard**: at most one reload per server version per tab (tracked in `sessionStorage`). If `package.json` and the `dashboard.html` `?v=` strings are out of sync, the tablet logs a warning and stops checking instead of reloading every interval
+- **`package-lock.json`** version field synced (was stuck at 3.33.0)
+
 ## [3.34.1] - 2026-09-27
 
 ### Fixed
