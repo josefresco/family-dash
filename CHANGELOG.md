@@ -5,6 +5,15 @@ All notable changes to Family Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.34.1] - 2026-09-27
+
+### Fixed
+- **"Later" line ignored the forecast**: `getLaterTodaySentence()` read `data.precipitation` (never populated by the API) and the current conditions, so a clear morning with rain at 4 PM said "Later it will be cool and sunny." It now reads the upcoming `hourly_forecasts` slots: any rain, snow or storm slot wins (storm > snow > rain), otherwise the latest slot decides sunny/cloudy. Current conditions are used only when there is no hourly data
+- **Sleet** now counts as snow in the "Later" line
+
+### Changed
+- **Shared precipitation matcher**: `getPrecipitation()` in `weather-narrative-engine.js` is used by both the heads-up line and the "Later" line so they cannot disagree
+
 ## [3.34.0] - 2026-09-27
 
 ### Added
