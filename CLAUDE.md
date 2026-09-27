@@ -35,6 +35,7 @@ Always-on family dashboard for wall-mounted tablet displays. Self-hosted on Rasp
 - **Server init**: `dashboard.html` load handler is `async`; `await config.loadFromServer()` must complete before any data fetches
 - **Timezone**: always use `toLocaleDateString('en-CA', { timeZone: tz })` for date string comparisons. Never use `getDate()` / `getMonth()` for cross-timezone logic.
 - **ICS datetime parsing**: `parseICSDateTime()` in `api/calendar.js` appends `Z` to Eastern time strings before `new Date()` to force UTC parsing — prevents double timezone shift on non-UTC servers
+- **Auto-reload**: tablets poll `GET /api/version` (reads `package.json` from disk per request) and reload when it differs from the `?v=` on the `app-client.js` script tag in `dashboard.html`. Keep `package.json` `"version"` and every `?v=` in sync, or tablets will log a mismatch warning and stop auto-reloading
 - **Colors**: per-account colors come from `CALDAV_N_COLOR` in `.env`; hex values must be quoted (unquoted `#` is treated as a dotenv comment)
 
 ## Do Not Modify (without explicit instruction)

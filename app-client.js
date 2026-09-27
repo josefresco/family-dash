@@ -41,11 +41,15 @@ class DashboardApp {
         this.abortController = null; // For cancelling requests
         this.alertCycleTimer = null;
         this._alertCountdownTimer = null;
+        this.versionCheckTimer = null;
     }
 
     async init() {
         try {
             console.log('=== DASHBOARD INITIALIZATION ===');
+
+            // Start first so a deployed fix still reaches a tablet whose init fails below
+            this.setupVersionCheck();
             
             // Get API clients from global scope (set by dashboard.html)
             this.apiClient = window.apiClient;
@@ -1845,6 +1849,60 @@ This eliminates token refresh issues and works perfectly for always-on dashboard
                 this.loadAllData();
             }
         }, 60000);
+    }
+
+    // Always-on tablets never reload on their own, so poll the server's version
+    // (package.json) and reload when it differs from the version this page loaded
+    // (the ?v= on the app-client.js script tag). Caches are cleared first so the
+    // service worker cannot serve the old files back.
+    setupVersionCheck() {
+        const script = document.querySelector('script[src*="app-client.js"]');
+        const loadedVersion = script && new URL(script.src, location.href).searchParams.get('v');
+        if (!loadedVersion) {
+            console.warn('Version check disabled: no ?v= on app-client.js script tag');
+            return;
+        }
+
+        if (this.versionCheckTimer) clearInterval(this.versionCheckTimer);
+        this.versionCheckTimer = setInterval(() => this.checkForNewVersion(loadedVersion), 10 * 60 * 1000);
+    }
+
+    async checkForNewVersion(loadedVersion) {
+        let serverVersion;
+        try {
+            const res = await fetch('/api/version');
+            if (!res.ok) return;
+            serverVersion = (await res.json()).version;
+        } catch (error) {
+            return; // offline or server restarting; try again next interval
+        }
+        if (!serverVersion || serverVersion === loadedVersion) return;
+
+        // Reload once per server version. If the page still reports the old version
+        // afterwards (package.json and dashboard.html ?v= out of sync), stop rather
+        // than reload every interval.
+        const guardKey = 'dash-reloaded-for-version';
+        try {
+            if (sessionStorage.getItem(guardKey) === serverVersion) {
+                console.warn(`Server is v${serverVersion} but page loaded v${loadedVersion} after reloading; check the ?v= query strings in dashboard.html`);
+                clearInterval(this.versionCheckTimer);
+                return;
+            }
+            sessionStorage.setItem(guardKey, serverVersion);
+        } catch (error) {
+            // sessionStorage unavailable: reload anyway, at most once per interval
+        }
+
+        console.log(`New version v${serverVersion} (running v${loadedVersion}), reloading`);
+        try {
+            if (window.caches) {
+                const names = await caches.keys();
+                await Promise.all(names.map(name => caches.delete(name)));
+            }
+        } catch (error) {
+            console.warn('Cache clear failed before reload:', error);
+        }
+        location.reload();
     }
 
     setupEventListeners() {

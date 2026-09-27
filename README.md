@@ -1,4 +1,4 @@
-# Family Dashboard - v3.34.1 🏠
+# Family Dashboard - v3.35.0 🏠
 
 A room-readable personal dashboard for always-on wall-mounted displays. Shows real-time weather, Google Calendar events across multiple accounts, upcoming birthdays & holidays, and weekend previews. Built with vanilla JS, self-hosted on a Raspberry Pi.
 
@@ -6,7 +6,11 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 
 ## 🎉 Latest Updates
 
-### New Release (v3.34.1) - "Later" Line Uses the Forecast
+### New Release (v3.35.0) - Auto-Reload on Deploy
+- **Hands-off updates**: wall tablets check `/api/version` every 10 minutes and reload themselves when a new version is deployed. No more walking around reloading each screen
+- **No restart needed**: the server reads the version from `package.json` on each request, so a `git pull` alone is enough for frontend-only releases
+
+### Previous Release (v3.34.1) - "Later" Line Uses the Forecast
 - **Accurate "Later" sentence**: now based on upcoming hourly forecast slots instead of current conditions, so it agrees with the heads-up line ("Rain expected around 4 PM." / "Later expect rainy and cool.")
 
 ### Previous Release (v3.34.0) - Weather Heads-Up
@@ -75,6 +79,7 @@ A room-readable personal dashboard for always-on wall-mounted displays. Shows re
 - **Birthdays & Holidays**: 30-day lookahead across all calendar accounts
 - **Time-Based Switching**: automatically shows tomorrow's view after 5 PM Eastern
 - **HTTP Basic Auth**: private — requires shared family password
+- **Auto-Reload on Deploy**: tablets pick up new releases within ~10 minutes of a `git pull`
 - **PWA**: installable as a native app with service worker
 
 ---

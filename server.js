@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const basicAuth = require('express-basic-auth');
+const fs = require('fs');
 const path = require('path');
 const calendarRoute = require('./api/calendar');
 
@@ -38,6 +39,14 @@ app.get('/api/config', (req, res) => {
     location: Object.keys(location).length ? location : undefined,
     caldav_accounts: accounts,
   });
+});
+
+// Version endpoint — tablets poll this and reload when it changes. Read from
+// disk per request so a git pull is picked up without a pm2 restart.
+app.get('/api/version', (req, res) => {
+  const { version } = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  res.set('Cache-Control', 'no-store');
+  res.json({ version });
 });
 
 // Block setup page — config is managed via .env
